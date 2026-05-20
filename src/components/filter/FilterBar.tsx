@@ -1,0 +1,185 @@
+import type { Group, Party, FilterState, TaskStatus } from '../../types'
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+
+interface FilterBarProps {
+  groups: Group[]
+  parties: Party[]
+  taskCount: number
+  visibleCount: number
+  searchTerm: string
+  filterState: FilterState
+  onSearch: (q: string) => void
+  onFilter: (f: FilterState) => void
+}
+
+// ─── Status chip data ─────────────────────────────────────────────────────────
+
+const STATUS_CHIPS: Array<{ value: TaskStatus; label: string }> = [
+  { value: 'not_started', label: 'Not Started' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'at_risk',     label: 'At Risk' },
+  { value: 'delayed',     label: 'Delayed' },
+  { value: 'complete',    label: 'Complete' },
+]
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function toggle<T>(arr: T[], val: T): T[] {
+  return arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]
+}
+
+// ─── FilterBar ────────────────────────────────────────────────────────────────
+
+export function FilterBar({
+  groups, parties, taskCount, visibleCount,
+  searchTerm, filterState, onSearch, onFilter,
+}: FilterBarProps) {
+  const isFiltered = filterState.phases.length > 0 || filterState.statuses.length > 0 || filterState.parties.length > 0
+
+  const clearAll = () => {
+    onSearch('')
+    onFilter({ phases: [], statuses: [], parties: [] })
+  }
+
+  return (
+    <div style={{
+      background: 'var(--color-surface)',
+      borderBottom: '1px solid var(--color-border)',
+      display: 'flex', alignItems: 'center',
+      padding: '0 16px', height: '100%',
+      gap: 8, flexShrink: 0, overflowX: 'auto',
+    }}>
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search tasks…"
+        value={searchTerm}
+        onChange={e => onSearch(e.target.value)}
+        style={{
+          height: 26, borderRadius: 'var(--radius)',
+          border: '1px solid var(--color-border)',
+          padding: '0 10px', fontSize: 'var(--text-xs)', width: 160,
+          flexShrink: 0,
+          fontFamily: 'var(--font-sans)',
+          background: 'var(--color-surface)',
+          color: 'var(--color-text-primary)',
+        }}
+      />
+
+      {/* Phase chips */}
+      {groups.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)', marginRight: 2 }}>Phase</span>
+          {groups.map(g => {
+            const active = filterState.phases.includes(g.id)
+            return (
+              <button
+                key={g.id}
+                onClick={() => onFilter({ ...filterState, phases: toggle(filterState.phases, g.id) })}
+                title={g.name}
+                style={{
+                  height: 22, padding: '0 8px',
+                  borderRadius: 99,
+                  border: `1.5px solid ${active ? g.color : 'var(--color-border)'}`,
+                  background: active ? g.color + '22' : 'transparent',
+                  color: active ? g.color : 'var(--color-text-secondary)',
+                  fontSize: 'var(--text-2xs)',
+                  fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.1s',
+                }}
+              >
+                {g.name}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Status chips */}
+      <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+        <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)', marginRight: 2 }}>Status</span>
+        {STATUS_CHIPS.map(s => {
+          const active = filterState.statuses.includes(s.value)
+          return (
+            <button
+              key={s.value}
+              onClick={() => onFilter({ ...filterState, statuses: toggle(filterState.statuses, s.value) })}
+              style={{
+                height: 22, padding: '0 8px',
+                borderRadius: 99,
+                border: `1.5px solid ${active ? 'var(--accent)' : 'var(--color-border)'}`,
+                background: active ? 'rgba(39,170,225,0.12)' : 'transparent',
+                color: active ? 'var(--accent)' : 'var(--color-text-secondary)',
+                fontSize: 'var(--text-2xs)',
+                fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.1s',
+              }}
+            >
+              {s.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Party chips */}
+      {parties.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)', marginRight: 2 }}>Party</span>
+          {parties.map(p => {
+            const active = filterState.parties.includes(p.id)
+            return (
+              <button
+                key={p.id}
+                onClick={() => onFilter({ ...filterState, parties: toggle(filterState.parties, p.id) })}
+                title={p.name}
+                style={{
+                  height: 22, padding: '0 8px',
+                  borderRadius: 99,
+                  border: `1.5px solid ${active ? p.color : 'var(--color-border)'}`,
+                  background: active ? p.color + '22' : 'transparent',
+                  color: active ? p.color : 'var(--color-text-secondary)',
+                  fontSize: 'var(--text-2xs)',
+                  fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.1s',
+                }}
+              >
+                {p.abbr}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      <div style={{ flex: 1 }} />
+
+      {/* Clear + count */}
+      {isFiltered && (
+        <button
+          onClick={clearAll}
+          style={{
+            height: 24, padding: '0 10px',
+            borderRadius: 99,
+            border: '1px solid var(--color-border)',
+            background: 'none',
+            color: 'var(--color-text-tertiary)',
+            fontSize: 'var(--text-2xs)',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+        >
+          Clear filters
+        </button>
+      )}
+      <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)', flexShrink: 0 }}>
+        {isFiltered ? `${visibleCount} / ${taskCount}` : `${taskCount}`} task{taskCount !== 1 ? 's' : ''}
+      </span>
+    </div>
+  )
+}

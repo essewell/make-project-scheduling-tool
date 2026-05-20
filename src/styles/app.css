@@ -1,0 +1,254 @@
+/* ─── Keyframe Animations ───────────────────────────────────────────────────── */
+
+@keyframes schedule-slide-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes schedule-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Toast — spring overshoot */
+@keyframes schedule-toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Mobile bottom sheet */
+@keyframes schedule-sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* Setup wizard card entrance */
+@keyframes schedule-wizard-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Task completion flash */
+@keyframes schedule-completion-pulse {
+  0%   { background-color: var(--color-selected-bg); }
+  60%  { background-color: rgba(29, 158, 117, 0.18); }
+  100% { background-color: transparent; }
+}
+
+/* Gantt pulse — first-task onboarding */
+@keyframes schedule-gantt-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 2px transparent; }
+  40%, 60% { box-shadow: inset 0 0 0 2px var(--accent); }
+}
+
+/* Spinner */
+@keyframes schedule-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── App shell ─────────────────────────────────────────────────────────────── */
+
+.app {
+  display: grid;
+  grid-template-rows: var(--topbar-height) var(--stat-bar-height) var(--filter-bar-height) 1fr;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+/* Main 3-pane area */
+.app-main {
+  display: grid;
+  grid-template-columns: var(--task-list-width) 1fr;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.app-main.panel-open {
+  grid-template-columns: var(--task-list-width) 1fr var(--side-panel-width);
+}
+
+/* ─── Scrollbars ────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-dim);
+}
+
+/* ─── Modal overlay ─────────────────────────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 18, 30, 0.54);
+  backdrop-filter: blur(3px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-box {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  animation: schedule-slide-in 0.16s ease-out both;
+}
+
+/* ─── Utility classes ───────────────────────────────────────────────────────── */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Focus styles ──────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── Selection highlight ───────────────────────────────────────────────────── */
+
+::selection {
+  background: var(--accent-dim);
+  color: var(--color-text-primary);
+}
+
+/* ─── Onboarding visual cues ────────────────────────────────────────────────── */
+
+/* Gantt border pulse when first task is added */
+[data-phase="first_added"] .gantt-scroll {
+  animation: schedule-gantt-pulse 1.8s ease-in-out 3;
+}
+
+/* Baseline tip tooltip — fades in after 900ms delay */
+.baseline-tip {
+  position: fixed;
+  top: calc(var(--topbar-height) - 6px);
+  right: 180px;
+  background: var(--color-toast-bg);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.28);
+  z-index: var(--z-toast);
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  animation: schedule-fade-in 0.2s ease-out 0.9s both;
+}
+
+.baseline-tip::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 24px;
+  border: 6px solid transparent;
+  border-bottom-color: var(--color-toast-bg);
+  border-top: none;
+}
+
+/* ─── Mobile tab switching ──────────────────────────────────────────────────── */
+
+/* Hide the tab bar on desktop — only show on narrow viewports */
+.mobile-tab-switcher {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobile-tab-switcher {
+    display: flex;
+  }
+
+  /* Add bottom padding so content doesn't hide behind the tab bar */
+  .app {
+    padding-bottom: 56px;
+  }
+
+  /* Default: hide gantt and panel, show task list */
+  .app-main > *:nth-child(2),
+  .app-main > *:nth-child(3) {
+    display: none;
+  }
+
+  /* tasks tab: show task list only (nth-child(1)) */
+  .app-main[data-mobile-tab="tasks"] > *:nth-child(1) { display: flex; }
+  .app-main[data-mobile-tab="tasks"] > *:nth-child(2) { display: none; }
+  .app-main[data-mobile-tab="tasks"] > *:nth-child(3) { display: none; }
+
+  /* gantt tab */
+  .app-main[data-mobile-tab="gantt"] > *:nth-child(1) { display: none; }
+  .app-main[data-mobile-tab="gantt"] > *:nth-child(2) { display: flex; }
+  .app-main[data-mobile-tab="gantt"] > *:nth-child(3) { display: none; }
+
+  /* panel tab */
+  .app-main[data-mobile-tab="panel"] > *:nth-child(1) { display: none; }
+  .app-main[data-mobile-tab="panel"] > *:nth-child(2) { display: none; }
+  .app-main[data-mobile-tab="panel"] > *:nth-child(3) { display: flex; }
+}
+
+/* ─── Print ─────────────────────────────────────────────────────────────────── */
+
+@media print {
+  /* Hide everything — the visibility trick keeps layout but removes ink */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only the A3 canvas and its children */
+  .print-canvas,
+  .print-canvas * {
+    visibility: visible;
+  }
+
+  /* Pin canvas to top-left, remove preview scale, fill the page */
+  .print-canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  /* No margin on the page itself */
+  @page {
+    margin: 0;
+    size: A3 landscape;
+  }
+}

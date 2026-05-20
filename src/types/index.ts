@@ -1,0 +1,164 @@
+// ─── Task ────────────────────────────────────────────────────────────────────
+
+export type TaskStatus = 'not_started' | 'in_progress' | 'at_risk' | 'delayed' | 'complete'
+
+export interface Task {
+  id: string
+  name: string
+  group: string
+  s: string         // planned start — YYYY-MM-DD
+  e: string         // planned end   — YYYY-MM-DD
+  actualStart: string | null
+  actualFinish: string | null
+  pct: number       // 0–100
+  status: TaskStatus
+  party: string | null
+  notes: string
+  milestone: boolean
+  manualStatus: boolean
+  manualPct: boolean
+  /** derived — IDs of predecessor tasks (for backward compat display) */
+  deps: string[]
+}
+
+// ─── Dependency edge (C1 — per-edge type+lag) ─────────────────────────────────
+
+export type DepType = 'FS' | 'SS' | 'FF' | 'SF'
+
+export interface Dependency {
+  fromId: string
+  toId: string
+  type: DepType
+  lag: number   // calendar days; negative = lead
+}
+
+// ─── Groups / Parties ────────────────────────────────────────────────────────
+
+export interface Group {
+  id: string
+  name: string
+  color: string
+}
+
+export interface Party {
+  id: string
+  name: string
+  abbr: string
+  color: string
+}
+
+// ─── Notes / Log ─────────────────────────────────────────────────────────────
+
+export interface Note {
+  id: string
+  taskId: string
+  text: string
+  when: string   // ISO timestamp
+}
+
+// ─── Baseline ────────────────────────────────────────────────────────────────
+
+export interface Baseline {
+  id: string
+  name: string
+  date: string   // YYYY-MM-DD snapshot date
+  tasks: Task[]
+}
+
+// ─── Workweek / Calendar ─────────────────────────────────────────────────────
+
+export interface WorkweekConfig {
+  mon: boolean
+  tue: boolean
+  wed: boolean
+  thu: boolean
+  fri: boolean
+  sat: boolean
+  sun: boolean
+}
+
+// ─── Onboarding ──────────────────────────────────────────────────────────────
+
+export type OnboardingPhase = 'fresh' | 'first_added' | 'baseline_tip' | 'complete'
+
+// ─── Ghost style (C2 — persisted) ────────────────────────────────────────────
+
+export type GhostStyle = 'stripe' | 'solid' | 'outline'
+
+// ─── Undo ─────────────────────────────────────────────────────────────────────
+
+export interface UndoEntry {
+  label: string
+  restore: () => void
+}
+
+// ─── Persisted state (localStorage) ─────────────────────────────────────────
+
+export interface PersistedState {
+  projectName: string
+  tasks: Task[]
+  groups: Group[]
+  parties: Party[]
+  notes: Note[]
+  dependencies: Dependency[]   // C1 — per-edge storage
+  collapsedGroups: string[]
+  baselines: Baseline[]
+  workweek: WorkweekConfig
+  holidays: string[]           // YYYY-MM-DD strings
+  onboardingPhase: OnboardingPhase
+  ghostStyle: GhostStyle       // C2 — persisted
+}
+
+// ─── Visible rows (task list rendering) ──────────────────────────────────────
+
+export type VisibleRow =
+  | { kind: 'group'; groupId: string; name: string; color: string; count: number; collapsed: boolean }
+  | { kind: 'task'; task: Task }
+
+// ─── Gantt timeline ──────────────────────────────────────────────────────────
+
+export interface TimelineBucket {
+  label: string
+  year?: number
+  days: number
+  offset: number   // px from gantt left edge
+}
+
+export interface Timeline {
+  min: Date
+  max: Date
+  totalDays: number
+  totalPx: number
+  months: TimelineBucket[]
+  quarters: TimelineBucket[]
+  years: TimelineBucket[]
+  weeks: Array<{ offset: number; label: string }>
+  days: Array<{ offset: number; date: Date }>
+}
+
+// ─── CPM output ──────────────────────────────────────────────────────────────
+
+export interface CpmResult {
+  /** task IDs on the critical path (total float = 0) */
+  criticalIds: Set<string>
+  earlyStart: Map<string, number>
+  earlyFinish: Map<string, number>
+  lateStart: Map<string, number>
+  lateFinish: Map<string, number>
+  totalFloat: Map<string, number>
+}
+
+// ─── Filter state ────────────────────────────────────────────────────────────
+
+export interface FilterState {
+  phases: string[]    // group IDs
+  statuses: TaskStatus[]
+  parties: string[]   // party IDs
+}
+
+// ─── Zoom ─────────────────────────────────────────────────────────────────────
+
+export interface ZoomLevel {
+  label: string
+  dayPx: number
+}

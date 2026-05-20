@@ -1,0 +1,608 @@
+import { useState, useCallback, useMemo, useEffect } from 'react'
+import type { PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline } from '../types'
+import { loadState, saveState } from '../lib/storage'
+import { refreshAutoProgress } from '../lib/progress'
+import { computeCriticalPath } from '../lib/cpm'
+import { buildTimeline } from '../lib/timeline'
+import { generateCSV, triggerCSVDownload } from '../lib/csv'
+import { EXAMPLE_TASKS, EXAMPLE_GROUPS, EXAMPLE_PARTIES } from '../lib/exampleData'
+import { useMidnightTicker } from '../hooks/useMidnightTicker'
+import { useScrollSync } from '../hooks/useScrollSync'
+import { useKeyboard } from '../hooks/useKeyboard'
+import { useOnboarding } from '../hooks/useOnboarding'
+import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX } from '../constants'
+import { TaskList } from './task-list/TaskList'
+import { Gantt } from './gantt/Gantt'
+import { SidePanel } from './panels/SidePanel'
+import { TopBar } from './topbar/TopBar'
+import { FilterBar } from './filter/FilterBar'
+import { SetupWizard } from './overlays/SetupWizard'
+import { UndoToast } from './overlays/UndoToast'
+import type { UndoEntry } from './overlays/UndoToast'
+import { MobileTabSwitcher } from './mobile/MobileTabSwitcher'
+import type { MobileTab } from './mobile/MobileTabSwitcher'
+import { LinkBuilderModal } from './modals/LinkBuilderModal'
+import { WorkweekModal } from './modals/WorkweekModal'
+import { GroupsManager } from './modals/GroupsManager'
+import { PartiesManager } from './modals/PartiesManager'
+import { CsvImportDialog } from './modals/CsvImportDialog'
+import { PrintPreviewModal } from './modals/PrintPreviewModal'
+import { StatBar } from './StatBar'
+
+// ─── Initial state ────────────────────────────────────────────────────────────
+
+const INITIAL_STATE: PersistedState = loadState()
+
+const INITIAL_FILTER: FilterState = { phases: [], statuses: [], parties: [] }
+
+// ─── App ─────────────────────────────────────────────────────────────────────
+
+export function App() {
+  // ── Persisted state ───────────────────────────────────────────────────────
+  const [state, setState] = useState<PersistedState>(INITIAL_STATE)
+  const { tasks, groups, parties, dependencies, notes, collapsedGroups,
+          workweek, holidays, onboardingPhase,
+          projectName, baselines, ghostStyle } = state
+
+  // ── Transient UI state ────────────────────────────────────────────────────
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [kbFocusId, setKbFocusId] = useState<string | null>(null)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterState, setFilterState] = useState<FilterState>(INITIAL_FILTER)
+  const [zoomIndex, setZoomIndex] = useState(DEFAULT_ZOOM_INDEX)
+  const [showCriticalPath, setShowCriticalPath] = useState(false)
+  const [completionFlashId, setCompletionFlashId] = useState<string | null>(null)
+  const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
+
+  // ── Modal state ───────────────────────────────────────────────────────────
+  const [linkBuilderTaskId, setLinkBuilderTaskId] = useState<string | null>(null)
+  const [workweekModalOpen, setWorkweekModalOpen] = useState(false)
+  const [groupsManagerOpen, setGroupsManagerOpen] = useState(false)
+  const [partiesManagerOpen, setPartiesManagerOpen] = useState(false)
+  const [csvImportOpen, setCsvImportOpen] = useState(false)
+  const [printPreviewOpen, setPrintPreviewOpen] = useState(false)
+
+  // ── Undo stack (transient — restore fns can't be serialized) ─────────────────
+  const [undoStack, setUndoStack] = useState<UndoEntry[]>([])
+
+  // ── Mobile tab ────────────────────────────────────────────────────────────────
+  const [mobileTab, setMobileTab] = useState<MobileTab>('tasks')
+
+  // ── Hooks ─────────────────────────────────────────────────────────────────
+  const today = useMidnightTicker()
+  const { listRef, ganttRef, handleListScroll, handleGanttScroll } = useScrollSync()
+
+  const dayPx = ZOOM_LEVELS[zoomIndex]?.dayPx ?? 16
+
+  // ── Derived / memoized ────────────────────────────────────────────────────
+
+  const enrichedTasks = useMemo(
+    () => refreshAutoProgress(tasks, workweek, holidays, today),
+    [tasks, workweek, holidays, today],
+  )
+
+  const visibleRows = useMemo(() => {
+    const filtered = enrichedTasks.filter(t => {
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase()
+        if (!t.name.toLowerCase().includes(q)) return false
+      }
+      if (filterState.statuses.length > 0 && !filterState.statuses.includes(t.status)) return false
+      if (filterState.parties.length > 0 && !(t.party && filterState.parties.includes(t.party))) return false
+      if (filterState.phases.length > 0 && !filterState.phases.includes(t.group)) return false
+      return true
+    })
+
+    const rows: import('../types').VisibleRow[] = []
+    const seenGroups = new Set<string>()
+
+    for (const task of filtered) {
+      if (!seenGroups.has(task.group)) {
+        seenGroups.add(task.group)
+        const group = groups.find(g => g.id === task.group)
+        const count = filtered.filter(t => t.group === task.group).length
+        rows.push({
+          kind: 'group',
+          groupId: task.group,
+          name: group?.name ?? task.group,
+          color: group?.color ?? '#378ADD',
+          count,
+          collapsed: collapsedGroups.includes(task.group),
+        })
+      }
+      if (!collapsedGroups.includes(task.group)) {
+        rows.push({ kind: 'task', task })
+      }
+    }
+    return rows
+  }, [enrichedTasks, groups, collapsedGroups, searchTerm, filterState])
+
+  const visibleTaskIds = useMemo(
+    () => visibleRows.filter(r => r.kind === 'task').map(r => (r as { kind: 'task'; task: Task }).task.id),
+    [visibleRows],
+  )
+
+  const timeline = useMemo(() => {
+    if (enrichedTasks.length === 0) {
+      const base = today
+      return buildTimeline(base, base, dayPx)
+    }
+    const minDate = enrichedTasks.reduce((min, t) => t.s < min ? t.s : min, enrichedTasks[0]!.s)
+    const maxDate = enrichedTasks.reduce((max, t) => t.e > max ? t.e : max, enrichedTasks[0]!.e)
+    return buildTimeline(minDate, maxDate, dayPx)
+  }, [enrichedTasks, dayPx, today])
+
+  const hasDeps = dependencies.length > 0
+
+  const criticalPath = useMemo(() => {
+    if (!showCriticalPath || !hasDeps) return null
+    return computeCriticalPath(enrichedTasks, dependencies)
+  }, [showCriticalPath, hasDeps, enrichedTasks, dependencies])
+
+  // ── Persistence ───────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    saveState(state)
+  }, [state])
+
+  // ── State updaters ────────────────────────────────────────────────────────
+
+  const updateState = useCallback((patch: Partial<PersistedState>) => {
+    setState(prev => ({ ...prev, ...patch }))
+  }, [])
+
+  const setTasks = useCallback((t: Task[]) => updateState({ tasks: t }), [updateState])
+
+  const setOnboardingPhase = useCallback(
+    (p: OnboardingPhase) => updateState({ onboardingPhase: p }),
+    [updateState],
+  )
+
+  const setGhostStyle = useCallback(
+    (style: GhostStyle) => updateState({ ghostStyle: style }),
+    [updateState],
+  )
+
+  // ── Task mutations ────────────────────────────────────────────────────────
+
+  const onUpdateTask = useCallback((id: string, patch: Partial<Task>) => {
+    if (patch.status === 'complete') {
+      setCompletionFlashId(id)
+      setTimeout(() => setCompletionFlashId(null), 1200)
+    }
+    setState(prev => ({
+      ...prev,
+      tasks: prev.tasks.map(t => t.id === id ? { ...t, ...patch } : t),
+    }))
+  }, [])
+
+  const onDeleteTask = useCallback((id: string) => {
+    const task = tasks.find(t => t.id === id)
+    if (!task) return
+    if (!window.confirm(`Delete "${task.name}"?`)) return
+
+    const snapTasks = tasks
+    const snapDeps = dependencies
+    const snapNotes = notes
+    const entryId = Math.random().toString(36).slice(2)
+
+    setState(prev => ({
+      ...prev,
+      tasks: prev.tasks.filter(t => t.id !== id),
+      dependencies: prev.dependencies.filter(d => d.fromId !== id && d.toId !== id),
+      notes: prev.notes.filter(n => n.taskId !== id),
+    }))
+    if (selectedTaskId === id) {
+      setSelectedTaskId(null)
+      setPanelOpen(false)
+    }
+
+    setUndoStack(prev => [{
+      id: entryId,
+      label: `Deleted "${task.name}"`,
+      restore: () => setState(s => ({ ...s, tasks: snapTasks, dependencies: snapDeps, notes: snapNotes })),
+    }, ...prev].slice(0, UNDO_STACK_MAX))
+  }, [tasks, dependencies, notes, selectedTaskId])
+
+  const onAddNote = useCallback((taskId: string, text: string) => {
+    const note: Note = {
+      id: Math.random().toString(36).slice(2) + Date.now().toString(36),
+      taskId,
+      text,
+      when: new Date().toISOString(),
+    }
+    setState(prev => ({ ...prev, notes: [...prev.notes, note] }))
+  }, [])
+
+  const onToggleGroup = useCallback((groupId: string) => {
+    setState(prev => {
+      const collapsed = prev.collapsedGroups.includes(groupId)
+        ? prev.collapsedGroups.filter(id => id !== groupId)
+        : [...prev.collapsedGroups, groupId]
+      return { ...prev, collapsedGroups: collapsed }
+    })
+  }, [])
+
+  // ── Zoom ─────────────────────────────────────────────────────────────────
+
+  const onZoomIn = useCallback(() => {
+    setZoomIndex(prev => Math.max(0, prev - 1))
+  }, [])
+
+  const onZoomOut = useCallback(() => {
+    setZoomIndex(prev => Math.min(ZOOM_LEVELS.length - 1, prev + 1))
+  }, [])
+
+  // ── Onboarding ────────────────────────────────────────────────────────────
+
+  const { onTaskAdded, onTaskCountChange, onExampleDataLoaded: advanceOnboarding } = useOnboarding(
+    onboardingPhase,
+    tasks.length,
+    setOnboardingPhase,
+  )
+
+  useEffect(() => {
+    onTaskCountChange(tasks.length)
+  }, [tasks.length, onTaskCountChange])
+
+  const handleLoadExample = useCallback(() => {
+    updateState({ tasks: EXAMPLE_TASKS, groups: EXAMPLE_GROUPS, parties: EXAMPLE_PARTIES, projectName: 'Residential Build' })
+    advanceOnboarding()
+  }, [updateState, advanceOnboarding])
+
+  // ── Task actions ──────────────────────────────────────────────────────────
+
+  const handleNewTask = useCallback(() => {
+    const id = Math.random().toString(36).slice(2) + Date.now().toString(36)
+    const newTask: Task = {
+      id,
+      name: 'New Task',
+      group: groups[0]?.id ?? '',
+      s: today,
+      e: today,
+      actualStart: null,
+      actualFinish: null,
+      pct: 0,
+      status: 'not_started',
+      party: null,
+      notes: '',
+      milestone: false,
+      manualStatus: false,
+      manualPct: false,
+      deps: [],
+    }
+    setTasks([...tasks, newTask])
+    setSelectedTaskId(id)
+    setPanelOpen(true)
+    onTaskAdded()
+  }, [tasks, groups, today, setTasks, onTaskAdded])
+
+  const handleSelectTask = useCallback((id: string) => {
+    setSelectedTaskId(id)
+    setKbFocusId(id)
+  }, [])
+
+  const handleOpenPanel = useCallback((id: string) => {
+    setSelectedTaskId(id)
+    setPanelOpen(true)
+  }, [])
+
+  // ── CSV import ────────────────────────────────────────────────────────────
+
+  const handleCsvImport = useCallback((imported: Task[], mode: 'replace' | 'append') => {
+    const snapTasks = tasks
+    const entryId = Math.random().toString(36).slice(2)
+    setState(prev => ({
+      ...prev,
+      tasks: mode === 'replace' ? imported : [...prev.tasks, ...imported],
+    }))
+    setUndoStack(prev => [{
+      id: entryId,
+      label: mode === 'replace'
+        ? 'CSV import (replaced all tasks)'
+        : `CSV import (added ${imported.length} task${imported.length !== 1 ? 's' : ''})`,
+      restore: () => setState(s => ({ ...s, tasks: snapTasks })),
+    }, ...prev].slice(0, UNDO_STACK_MAX))
+  }, [tasks])
+
+  // ── Baseline actions ──────────────────────────────────────────────────────
+
+  const captureBaseline = useCallback(() => {
+    const newBaseline: Baseline = {
+      id: Math.random().toString(36).slice(2) + Date.now().toString(36),
+      name: `Baseline ${baselines.length + 1}`,
+      date: today,
+      tasks: enrichedTasks,
+    }
+    updateState({ baselines: [...baselines, newBaseline] })
+    setActiveBaselineId(newBaseline.id)
+  }, [baselines, enrichedTasks, today, updateState])
+
+  const deleteBaseline = useCallback((id: string) => {
+    updateState({ baselines: baselines.filter(b => b.id !== id) })
+    if (activeBaselineId === id) setActiveBaselineId(null)
+  }, [baselines, activeBaselineId, updateState])
+
+  // ── Reset ─────────────────────────────────────────────────────────────────
+
+  const handleReset = useCallback(() => {
+    if (!window.confirm('Reset project? This will clear all tasks, groups, and baselines.')) return
+    const snapTasks = tasks
+    const snapDeps = dependencies
+    const snapNotes = notes
+    const entryId = Math.random().toString(36).slice(2)
+    updateState({
+      tasks: [],
+      dependencies: [],
+      notes: [],
+      baselines: [],
+      groups: INITIAL_STATE.groups,
+      parties: INITIAL_STATE.parties,
+      onboardingPhase: 'fresh',
+    })
+    setSelectedTaskId(null)
+    setPanelOpen(false)
+    setActiveBaselineId(null)
+    setUndoStack(prev => [{
+      id: entryId,
+      label: 'Reset project',
+      restore: () => setState(s => ({ ...s, tasks: snapTasks, dependencies: snapDeps, notes: snapNotes })),
+    }, ...prev].slice(0, UNDO_STACK_MAX))
+  }, [tasks, dependencies, notes, updateState])
+
+  // ── Export ────────────────────────────────────────────────────────────────
+
+  const handleExportCsv = useCallback(() => {
+    const csv = generateCSV(enrichedTasks)
+    triggerCSVDownload(csv, `${projectName}-schedule.csv`)
+  }, [enrichedTasks, projectName])
+
+  // ── Keyboard ──────────────────────────────────────────────────────────────
+
+  const handleNavigate = useCallback((dir: 'up' | 'down') => {
+    if (visibleTaskIds.length === 0) return
+    const idx = kbFocusId ? visibleTaskIds.indexOf(kbFocusId) : -1
+    let next: number
+    if (dir === 'up') {
+      next = idx <= 0 ? visibleTaskIds.length - 1 : idx - 1
+    } else {
+      next = idx >= visibleTaskIds.length - 1 ? 0 : idx + 1
+    }
+    setKbFocusId(visibleTaskIds[next] ?? null)
+  }, [kbFocusId, visibleTaskIds])
+
+  const handleEscape = useCallback(() => {
+    setPanelOpen(false)
+    setKbFocusId(null)
+  }, [])
+
+  const handleUndo = useCallback(() => {
+    const [top, ...rest] = undoStack
+    if (!top) return
+    top.restore()
+    setUndoStack(rest)
+  }, [undoStack])
+
+  useKeyboard({
+    kbFocusId,
+    visibleTaskIds,
+    onNewTask: handleNewTask,
+    onNavigate: handleNavigate,
+    onSelect: setSelectedTaskId,
+    onOpenPanel: handleOpenPanel,
+    onEscape: handleEscape,
+    onUndo: handleUndo,
+  })
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  const showWizard = onboardingPhase === 'fresh' && tasks.length === 0
+
+  const selectedTask = enrichedTasks.find(t => t.id === selectedTaskId) ?? null
+
+  return (
+    <div className="app" data-phase={onboardingPhase}>
+      {showWizard && (
+        <SetupWizard
+          projectName={projectName}
+          onRenameProject={name => updateState({ projectName: name })}
+          onStartBlank={handleNewTask}
+          onLoadExample={handleLoadExample}
+        />
+      )}
+
+      {/* Main app shell */}
+      {!showWizard && (
+        <>
+          <TopBar
+            projectName={projectName}
+            onRenameProject={name => updateState({ projectName: name })}
+            zoomIndex={zoomIndex}
+            onZoomIn={onZoomIn}
+            onZoomOut={onZoomOut}
+            baselines={baselines}
+            activeBaselineId={activeBaselineId}
+            ghostStyle={ghostStyle}
+            onCaptureBaseline={captureBaseline}
+            onSetActiveBaseline={setActiveBaselineId}
+            onDeleteBaseline={deleteBaseline}
+            onSetGhostStyle={setGhostStyle}
+            onOpenWorkweek={() => setWorkweekModalOpen(true)}
+            onOpenGroups={() => setGroupsManagerOpen(true)}
+            onOpenParties={() => setPartiesManagerOpen(true)}
+            onOpenCsvImport={() => setCsvImportOpen(true)}
+            onOpenPrint={() => setPrintPreviewOpen(true)}
+            onExportCsv={handleExportCsv}
+            hasDeps={hasDeps}
+            showCriticalPath={showCriticalPath}
+            onToggleCriticalPath={() => setShowCriticalPath(v => !v)}
+            onReset={handleReset}
+            onNewTask={handleNewTask}
+          />
+
+          <StatBar tasks={enrichedTasks} today={today} />
+
+          <FilterBar
+            groups={groups}
+            parties={parties}
+            taskCount={enrichedTasks.length}
+            visibleCount={visibleTaskIds.length}
+            searchTerm={searchTerm}
+            filterState={filterState}
+            onSearch={setSearchTerm}
+            onFilter={setFilterState}
+          />
+
+          {/* ── Main content area ── */}
+          <div className={`app-main${panelOpen ? ' panel-open' : ''}`} data-mobile-tab={mobileTab}>
+            <TaskList
+              visibleRows={visibleRows}
+              groups={groups}
+              parties={parties}
+              today={today}
+              selectedTaskId={selectedTaskId}
+              kbFocusId={kbFocusId}
+              completionFlashId={completionFlashId}
+              listRef={listRef}
+              onScroll={handleListScroll}
+              onSelectTask={handleSelectTask}
+              onOpenPanel={handleOpenPanel}
+              onToggleGroup={onToggleGroup}
+              onNewTask={handleNewTask}
+            />
+
+            <Gantt
+              visibleRows={visibleRows}
+              groups={groups}
+              timeline={timeline}
+              dayPx={dayPx}
+              zoomIndex={zoomIndex}
+              today={today}
+              selectedTaskId={selectedTaskId}
+              kbFocusId={kbFocusId}
+              completionFlashId={completionFlashId}
+              dependencies={dependencies}
+              baselines={baselines}
+              activeBaselineId={activeBaselineId}
+              ghostStyle={ghostStyle}
+              showCriticalPath={showCriticalPath}
+              criticalPath={criticalPath}
+              workweek={workweek}
+              holidays={holidays}
+              ganttRef={ganttRef}
+              onScroll={handleGanttScroll}
+              onUpdateTask={onUpdateTask}
+              onSelectTask={handleSelectTask}
+              onOpenPanel={handleOpenPanel}
+              onZoomIn={onZoomIn}
+              onZoomOut={onZoomOut}
+              onSetGhostStyle={setGhostStyle}
+            />
+
+            {/* Side panel */}
+            {panelOpen && selectedTask && (
+              <SidePanel
+                task={selectedTask}
+                tasks={enrichedTasks}
+                groups={groups}
+                parties={parties}
+                notes={notes}
+                dependencies={dependencies}
+                workweek={workweek}
+                holidays={holidays}
+                today={today}
+                onUpdateTask={onUpdateTask}
+                onDeleteTask={onDeleteTask}
+                onAddNote={onAddNote}
+                onClose={() => setPanelOpen(false)}
+                onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
+              />
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ── Modals ── */}
+
+      {linkBuilderTaskId && (
+        <LinkBuilderModal
+          taskId={linkBuilderTaskId}
+          tasks={enrichedTasks}
+          dependencies={dependencies}
+          onSave={newDeps => updateState({ dependencies: newDeps })}
+          onClose={() => setLinkBuilderTaskId(null)}
+        />
+      )}
+
+      {workweekModalOpen && (
+        <WorkweekModal
+          workweek={workweek}
+          holidays={holidays}
+          onSave={(ww, hols) => updateState({ workweek: ww, holidays: hols })}
+          onClose={() => setWorkweekModalOpen(false)}
+        />
+      )}
+
+      {groupsManagerOpen && (
+        <GroupsManager
+          groups={groups}
+          onSave={newGroups => updateState({ groups: newGroups })}
+          onClose={() => setGroupsManagerOpen(false)}
+        />
+      )}
+
+      {partiesManagerOpen && (
+        <PartiesManager
+          parties={parties}
+          onSave={newParties => updateState({ parties: newParties })}
+          onClose={() => setPartiesManagerOpen(false)}
+        />
+      )}
+
+      {csvImportOpen && (
+        <CsvImportDialog
+          existingTasks={tasks}
+          onImport={handleCsvImport}
+          onClose={() => setCsvImportOpen(false)}
+        />
+      )}
+
+      {printPreviewOpen && (
+        <PrintPreviewModal
+          tasks={enrichedTasks}
+          groups={groups}
+          parties={parties}
+          projectName={projectName}
+          workweek={workweek}
+          holidays={holidays}
+          today={today}
+          onClose={() => setPrintPreviewOpen(false)}
+        />
+      )}
+
+      {/* ── Onboarding baseline tip ── */}
+      {onboardingPhase === 'baseline_tip' && (
+        <div className="baseline-tip">
+          Save a baseline to track schedule variance
+        </div>
+      )}
+
+      {/* ── Undo toast ── */}
+      {undoStack[0] && (
+        <UndoToast
+          entry={undoStack[0]}
+          onUndo={handleUndo}
+          onDismiss={() => setUndoStack(prev => prev.slice(1))}
+        />
+      )}
+
+      {/* ── Mobile tab switcher ── */}
+      <MobileTabSwitcher
+        activeTab={mobileTab}
+        panelAvailable={selectedTask !== null}
+        onChange={setMobileTab}
+      />
+    </div>
+  )
+}

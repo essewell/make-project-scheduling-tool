@@ -1,0 +1,172 @@
+import { useState } from 'react'
+import type { Party } from '../../types'
+
+interface PartiesManagerProps {
+  parties: Party[]
+  onSave: (parties: Party[]) => void
+  onClose: () => void
+}
+
+const OVERLAY: React.CSSProperties = {
+  position: 'fixed', inset: 0,
+  background: 'rgba(10,18,30,0.54)',
+  backdropFilter: 'blur(3px)',
+  zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
+}
+
+const BOX: React.CSSProperties = {
+  width: 460, maxWidth: '95vw', maxHeight: '80vh',
+  background: 'var(--color-surface)',
+  borderRadius: 'var(--radius-lg)',
+  boxShadow: 'var(--shadow-xl)',
+  display: 'flex', flexDirection: 'column', overflow: 'hidden',
+  animation: 'schedule-slide-in 0.16s ease-out both',
+}
+
+const INPUT: React.CSSProperties = {
+  height: 30, borderRadius: 'var(--radius)',
+  border: '1px solid var(--color-border)',
+  padding: '0 8px', fontSize: 'var(--text-xs)',
+  fontFamily: 'var(--font-sans)',
+  background: 'var(--color-surface)', color: 'var(--color-text-primary)',
+  boxSizing: 'border-box',
+}
+
+const PRESET_COLORS = ['#378ADD','#27AAE1','#2ECC71','#F39C12','#E74C3C','#9B59B6','#1ABC9C','#E67E22','#34495E','#16A085']
+
+function genId() { return Math.random().toString(36).slice(2, 10) }
+
+export function PartiesManager({ parties, onSave, onClose }: PartiesManagerProps) {
+  const [items, setItems] = useState<Party[]>(parties.map(p => ({ ...p })))
+  const [newName, setNewName] = useState('')
+  const [newAbbr, setNewAbbr] = useState('')
+  const [newColor, setNewColor] = useState(PRESET_COLORS[0] ?? '#378ADD')
+
+  const update = (id: string, patch: Partial<Party>) => {
+    setItems(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p))
+  }
+
+  const remove = (id: string) => {
+    setItems(prev => prev.filter(p => p.id !== id))
+  }
+
+  const add = () => {
+    const name = newName.trim()
+    if (!name) return
+    const abbr = newAbbr.trim() || name.slice(0, 3).toUpperCase()
+    setItems(prev => [...prev, { id: genId(), name, abbr, color: newColor }])
+    setNewName('')
+    setNewAbbr('')
+  }
+
+  return (
+    <div style={OVERLAY} onClick={onClose}>
+      <div style={BOX} onClick={e => e.stopPropagation()}>
+
+        <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
+          <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Manage Parties</div>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
+            {items.length} part{items.length !== 1 ? 'ies' : 'y'}
+          </div>
+        </div>
+
+        {/* List */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {items.map(p => (
+            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="color"
+                value={p.color}
+                onChange={e => update(p.id, { color: e.target.value })}
+                style={{ width: 26, height: 26, padding: 2, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', background: 'none', flexShrink: 0 }}
+              />
+              <input
+                type="text"
+                value={p.name}
+                onChange={e => update(p.id, { name: e.target.value })}
+                placeholder="Party name"
+                style={{ ...INPUT, flex: 1 }}
+              />
+              <input
+                type="text"
+                value={p.abbr}
+                onChange={e => update(p.id, { abbr: e.target.value.slice(0, 5).toUpperCase() })}
+                placeholder="ABR"
+                title="Abbreviation (shown in task list)"
+                style={{ ...INPUT, width: 52, textAlign: 'center', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}
+              />
+              <button
+                onClick={() => remove(p.id)}
+                style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-dim)', fontSize: 16, flexShrink: 0 }}
+              >×</button>
+            </div>
+          ))}
+        </div>
+
+        {/* Add form */}
+        <div style={{ padding: '10px 20px', borderTop: '1px solid var(--color-border-light)', background: 'var(--color-surface-2)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)', fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Add Party
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              type="color"
+              value={newColor}
+              onChange={e => setNewColor(e.target.value)}
+              style={{ width: 26, height: 26, padding: 2, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', background: 'none', flexShrink: 0 }}
+            />
+            <input
+              type="text"
+              placeholder="Party name..."
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && add()}
+              style={{ ...INPUT, flex: 1 }}
+            />
+            <input
+              type="text"
+              placeholder="ABR"
+              value={newAbbr}
+              onChange={e => setNewAbbr(e.target.value.slice(0, 5).toUpperCase())}
+              onKeyDown={e => e.key === 'Enter' && add()}
+              title="Abbreviation (auto-generated if blank)"
+              style={{ ...INPUT, width: 52, textAlign: 'center', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}
+            />
+            <button
+              onClick={add}
+              style={{ height: 30, padding: '0 12px', borderRadius: 'var(--radius)', border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 'var(--text-xs)', cursor: 'pointer', flexShrink: 0 }}
+            >
+              Add
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {PRESET_COLORS.map(c => (
+              <button
+                key={c}
+                onClick={() => setNewColor(c)}
+                style={{
+                  width: 18, height: 18, borderRadius: '50%',
+                  background: c, border: newColor === c ? '2px solid var(--color-text-primary)' : '2px solid transparent',
+                  cursor: 'pointer', padding: 0,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
+            Cancel
+          </button>
+          <button
+            onClick={() => { onSave(items); onClose() }}
+            style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', cursor: 'pointer' }}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

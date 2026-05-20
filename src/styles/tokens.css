@@ -1,0 +1,133 @@
+/* ─── Design Tokens — MAKE Scheduling Tool v4 ─────────────────────────────── */
+
+:root {
+  /* Fonts */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, Menlo, monospace;
+
+  /* Brand */
+  --brand:              #1c3048;
+  --accent:             #27aae1;
+  --accent-hover:       #1a96cc;
+  --accent-dim:         rgba(39, 170, 225, 0.11);
+
+  /* Surfaces */
+  --color-bg:           #eff2f6;
+  --color-surface:      #ffffff;
+  --color-surface-2:    #f5f8fb;
+  --color-border:       #dce3ea;
+  --color-border-light: #ecf1f5;
+
+  /* Text */
+  --color-text-primary:   #1c3048;
+  --color-text-secondary: #466070;
+  --color-text-tertiary:  #7894a6;
+  --color-text-dim:       #a6bcca;
+
+  /* Functional */
+  --color-danger:       #bf3b2e;
+  --color-danger-dim:   rgba(191, 59, 46, 0.09);
+  --color-success:      #1D9E75;
+  --color-warning:      #EF9F27;
+  --color-today:        #27aae1;
+  --color-selected-bg:  #e2f2fb;
+  --color-toast-bg:     #1c2d3f;
+
+  /* Radii */
+  --radius-sm:  3px;
+  --radius:     5px;
+  --radius-lg:  10px;
+  --radius-xl:  14px;
+
+  /* Type scale */
+  --text-2xs: 11px;
+  --text-xs:  12px;
+  --text-sm:  13px;
+  --text-base: 14px;
+  --text-md:  16px;
+  --text-lg:  19px;
+
+  /* Font weights */
+  --weight-normal:   400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* Spacing (8px grid) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Shadows */
+  --shadow-sm:     0 1px 3px rgba(15, 28, 50, 0.08);
+  --shadow:        0 2px 8px rgba(15, 28, 50, 0.10);
+  --shadow-md:     0 4px 16px rgba(15, 28, 50, 0.10);
+  --shadow-panel:  0 16px 48px rgba(15, 28, 50, 0.11), 0 1px 0 rgba(15, 28, 50, 0.05);
+  --shadow-modal:  0 24px 64px rgba(10, 18, 30, 0.24), 0 2px 0 rgba(15, 28, 50, 0.06);
+  --shadow-xl:     0 32px 80px rgba(10, 18, 30, 0.28), 0 4px 0 rgba(15, 28, 50, 0.07);
+
+  /* Transitions */
+  --transition-fast:   120ms ease;
+  --transition:        200ms ease;
+  --transition-slow:   300ms ease;
+
+  /* Z-index scale */
+  --z-gantt-header:  10;
+  --z-today-line:    15;
+  --z-filter-bar:    20;
+  --z-topbar:        30;
+  --z-side-panel:    50;
+  --z-base-menu:     60;
+  --z-overlay:       100;
+  --z-modal:         200;
+  --z-toast:         250;
+  --z-wizard:        300;
+  --z-print:         800;
+
+  /* Layout constants (mirrors src/constants.ts for CSS use) */
+  --task-list-width:    490px;
+  --side-panel-width:   360px;
+  --topbar-height:      52px;
+  --stat-bar-height:    32px;
+  --filter-bar-height:  44px;
+  --gantt-header-height: 64px;
+  --row-height:         36px;
+}
+
+/* ─── Dark mode overrides ───────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --brand:              #0e1c2c;
+    --accent:             #27aae1;
+    --accent-hover:       #3db8ee;
+    --accent-dim:         rgba(39, 170, 225, 0.15);
+
+    --color-bg:           #111d29;
+    --color-surface:      #192a3c;
+    --color-surface-2:    #1f3245;
+    --color-border:       #25364a;
+    --color-border-light: #1f3245;
+
+    --color-text-primary:   #d8eaf4;
+    --color-text-secondary: #8dafc4;
+    --color-text-tertiary:  #5c7f97;
+    --color-text-dim:       #3a5870;
+
+    --color-selected-bg:  rgba(39, 170, 225, 0.14);
+    --color-toast-bg:     #0e1c2c;
+
+    --shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow:        0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-md:     0 4px 16px rgba(0, 0, 0, 0.35);
+    --shadow-panel:  0 16px 48px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(0, 0, 0, 0.2);
+    --shadow-modal:  0 24px 64px rgba(0, 0, 0, 0.5), 0 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-xl:     0 32px 80px rgba(0, 0, 0, 0.55), 0 4px 0 rgba(0, 0, 0, 0.35);
+  }
+}
