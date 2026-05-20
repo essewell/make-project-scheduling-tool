@@ -2,7 +2,6 @@ import { useEffect, useCallback } from 'react'
 
 interface UseKeyboardOptions {
   kbFocusId: string | null
-  visibleTaskIds: string[]
   onNewTask: () => void
   onNavigate: (direction: 'up' | 'down') => void
   onSelect: (id: string) => void
@@ -33,7 +32,6 @@ function isNoteTextarea(): boolean {
  */
 export function useKeyboard({
   kbFocusId,
-  visibleTaskIds,
   onNewTask,
   onNavigate,
   onSelect,
@@ -96,7 +94,7 @@ export function useKeyboard({
         if (kbFocusId) onOpenPanel(kbFocusId)
         break
     }
-  }, [kbFocusId, visibleTaskIds, onNewTask, onNavigate, onSelect, onOpenPanel, onEscape, onUndo, onPostLog])
+  }, [kbFocusId, onNewTask, onNavigate, onSelect, onOpenPanel, onEscape, onUndo, onPostLog])
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown)

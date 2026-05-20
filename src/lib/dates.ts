@@ -6,7 +6,6 @@
 /** Parse YYYY-MM-DD to a local-midnight Date. */
 export function toD(dateStr: string): Date {
   const [y, m, d] = dateStr.split('-').map(Number)
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return new Date(y!, (m! - 1), d!)
 }
 
@@ -125,7 +124,7 @@ export function normalizeDate(raw: string): string | null {
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed
 
   // M/D/YYYY or M-D-YYYY
-  const mdy = trimmed.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/)
+  const mdy = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/)
   if (mdy) {
     const [, m, d, y] = mdy
     return `${y}-${m!.padStart(2,'0')}-${d!.padStart(2,'0')}`

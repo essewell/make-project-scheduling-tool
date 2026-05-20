@@ -1,7 +1,7 @@
 import { memo, useRef, useCallback } from 'react'
 import type { Task } from '../../types'
 import type { Timeline } from '../../types'
-import { dateToOffset, offsetToDate } from '../../lib/timeline'
+import { dateToOffset } from '../../lib/timeline'
 import { daysBetween, addDays } from '../../lib/dates'
 import { BAR_HEIGHT, MIN_BAR_PX, MILESTONE_SIZE, ROW_HEIGHT, GANTT_HEADER_HEIGHT } from '../../constants'
 
@@ -77,39 +77,7 @@ export const GanttBar = memo(function GanttBar({
   // ── Progress fill overlay ──────────────────────────────────────────────────
   const pctWidth = (task.pct / 100) * width
 
-  // ── Milestone rendering ────────────────────────────────────────────────────
-  if (task.milestone) {
-    const cx = left + dayPx / 2
-    const cy = GANTT_HEADER_HEIGHT + rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
-
-    return (
-      <div
-        onClick={(e) => { e.stopPropagation(); onSelectTask(task.id) }}
-        onDoubleClick={(e) => { e.stopPropagation(); onOpenPanel(task.id) }}
-        style={{
-          position: 'absolute',
-          left: cx - MILESTONE_SIZE / 2,
-          top: cy - MILESTONE_SIZE / 2,
-          width: MILESTONE_SIZE,
-          height: MILESTONE_SIZE,
-          background: groupColor,
-          transform: 'rotate(45deg)',
-          borderRadius: 2,
-          cursor: 'pointer',
-          opacity: isDimmed ? 0.3 : 1,
-          outline: isSelected || isCritical
-            ? `2px solid ${isCritical ? '#E24B4A' : 'var(--accent)'}`
-            : isKbFocused ? '2px solid var(--accent)' : undefined,
-          outlineOffset: 2,
-          zIndex: 2,
-        }}
-        title={task.name}
-      />
-    )
-  }
-
-  // ── Normal bar ────────────────────────────────────────────────────────────
-
+  // ── Drag handler — must be defined before any early return (rules-of-hooks) ─
   const onMouseDown = useCallback((e: React.MouseEvent, mode: DragMode) => {
     if (e.button !== 0) return
     e.stopPropagation()
@@ -162,6 +130,39 @@ export const GanttBar = memo(function GanttBar({
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
   }, [task.id, task.s, task.e, dayPx, onSelectTask, onUpdateTask])
+
+  // ── Milestone rendering ────────────────────────────────────────────────────
+  if (task.milestone) {
+    const cx = left + dayPx / 2
+    const cy = GANTT_HEADER_HEIGHT + rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
+
+    return (
+      <div
+        onClick={(e) => { e.stopPropagation(); onSelectTask(task.id) }}
+        onDoubleClick={(e) => { e.stopPropagation(); onOpenPanel(task.id) }}
+        style={{
+          position: 'absolute',
+          left: cx - MILESTONE_SIZE / 2,
+          top: cy - MILESTONE_SIZE / 2,
+          width: MILESTONE_SIZE,
+          height: MILESTONE_SIZE,
+          background: groupColor,
+          transform: 'rotate(45deg)',
+          borderRadius: 2,
+          cursor: 'pointer',
+          opacity: isDimmed ? 0.3 : 1,
+          outline: isSelected || isCritical
+            ? `2px solid ${isCritical ? '#E24B4A' : 'var(--accent)'}`
+            : isKbFocused ? '2px solid var(--accent)' : undefined,
+          outlineOffset: 2,
+          zIndex: 2,
+        }}
+        title={task.name}
+      />
+    )
+  }
+
+  // ── Normal bar ────────────────────────────────────────────────────────────
 
   const border = barBorder(task, isCritical)
   const fill = barFill(task, groupColor)
@@ -269,5 +270,3 @@ export const GanttBar = memo(function GanttBar({
   )
 })
 
-// Re-export offsetToDate for use in Gantt container
-export { offsetToDate }

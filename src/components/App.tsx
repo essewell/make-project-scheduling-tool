@@ -386,7 +386,6 @@ export function App() {
 
   useKeyboard({
     kbFocusId,
-    visibleTaskIds,
     onNewTask: handleNewTask,
     onNavigate: handleNavigate,
     onSelect: setSelectedTaskId,
