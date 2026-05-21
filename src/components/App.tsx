@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import type { PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline } from '../types'
 import { loadState, saveState } from '../lib/storage'
 import { refreshAutoProgress } from '../lib/progress'
@@ -74,6 +74,9 @@ export function App() {
   const { listRef, ganttRef, handleListScroll, handleGanttScroll } = useScrollSync()
 
   const dayPx = ZOOM_LEVELS[zoomIndex]?.dayPx ?? 16
+
+  // Tracks the last-created task while it's still unmodified; cleared on first edit
+  const lastCreatedEmptyTaskId = useRef<string | null>(null)
 
   // ── Derived / memoized ────────────────────────────────────────────────────
 
@@ -167,6 +170,9 @@ export function App() {
   // ── Task mutations ────────────────────────────────────────────────────────
 
   const onUpdateTask = useCallback((id: string, patch: Partial<Task>) => {
+    if (id === lastCreatedEmptyTaskId.current) {
+      lastCreatedEmptyTaskId.current = null
+    }
     if (patch.status === 'complete') {
       setCompletionFlashId(id)
       setTimeout(() => setCompletionFlashId(null), 1200)
@@ -180,7 +186,6 @@ export function App() {
   const onDeleteTask = useCallback((id: string) => {
     const task = tasks.find(t => t.id === id)
     if (!task) return
-    if (!window.confirm(`Delete "${task.name}"?`)) return
 
     const snapTasks = tasks
     const snapDeps = dependencies
@@ -254,6 +259,17 @@ export function App() {
   // ── Task actions ──────────────────────────────────────────────────────────
 
   const handleNewTask = useCallback(() => {
+    // If the last created task is still unmodified, focus it instead of creating another
+    if (lastCreatedEmptyTaskId.current !== null) {
+      const stillExists = tasks.some(t => t.id === lastCreatedEmptyTaskId.current)
+      if (stillExists) {
+        setSelectedTaskId(lastCreatedEmptyTaskId.current)
+        setPanelOpen(true)
+        return
+      }
+      lastCreatedEmptyTaskId.current = null
+    }
+
     const id = Math.random().toString(36).slice(2) + Date.now().toString(36)
     const newTask: Task = {
       id,
@@ -272,6 +288,7 @@ export function App() {
       manualPct: false,
       deps: [],
     }
+    lastCreatedEmptyTaskId.current = id
     setTasks([...tasks, newTask])
     setSelectedTaskId(id)
     setPanelOpen(true)
@@ -291,20 +308,36 @@ export function App() {
   // ── CSV import ────────────────────────────────────────────────────────────
 
   const handleCsvImport = useCallback((imported: Task[], mode: 'replace' | 'append') => {
+    // Snapshot everything an import can affect transitively. A replace blows away tasks AND
+    // any dependency edges that reference them; an append doesn't touch existing edges, but
+    // the user's mental "undo this import" includes both layers, so we snapshot uniformly.
     const snapTasks = tasks
+    const snapDeps = dependencies
+    const snapNotes = notes
     const entryId = Math.random().toString(36).slice(2)
     setState(prev => ({
       ...prev,
       tasks: mode === 'replace' ? imported : [...prev.tasks, ...imported],
+      // On replace, drop dependency edges that reference removed task IDs.
+      dependencies: mode === 'replace'
+        ? prev.dependencies.filter(d => {
+            const ids = new Set(imported.map(t => t.id))
+            return ids.has(d.fromId) && ids.has(d.toId)
+          })
+        : prev.dependencies,
+      // Replace also discards notes attached to removed tasks.
+      notes: mode === 'replace'
+        ? prev.notes.filter(n => imported.some(t => t.id === n.taskId))
+        : prev.notes,
     }))
     setUndoStack(prev => [{
       id: entryId,
       label: mode === 'replace'
         ? 'CSV import (replaced all tasks)'
         : `CSV import (added ${imported.length} task${imported.length !== 1 ? 's' : ''})`,
-      restore: () => setState(s => ({ ...s, tasks: snapTasks })),
+      restore: () => setState(s => ({ ...s, tasks: snapTasks, dependencies: snapDeps, notes: snapNotes })),
     }, ...prev].slice(0, UNDO_STACK_MAX))
-  }, [tasks])
+  }, [tasks, dependencies, notes])
 
   // ── Baseline actions ──────────────────────────────────────────────────────
 

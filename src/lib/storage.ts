@@ -1,8 +1,6 @@
 import type { PersistedState, Task, Dependency } from '../types'
+import { PERSISTED_SCHEMA_VERSION } from '../types'
 import { STORAGE_KEY } from '../constants'
-
-// Persisted schema version — increment when storage shape changes
-const PERSISTED_SCHEMA_VERSION = 1
 
 // ─── Default state ────────────────────────────────────────────────────────────
 
@@ -10,6 +8,7 @@ export const DEFAULT_WORKWEEK = { mon: true, tue: true, wed: true, thu: true, fr
 
 export function makeDefaultState(projectName = 'My Project'): PersistedState {
   return {
+    persistedSchemaVersion: PERSISTED_SCHEMA_VERSION,
     projectName,
     tasks: [],
     groups: [],
@@ -26,14 +25,14 @@ export function makeDefaultState(projectName = 'My Project'): PersistedState {
 }
 
 // Migrate old persisted payloads to the current schema version
-function migrateState(parsed: any): PersistedState {
+function migrateState(parsed: Record<string, unknown>): PersistedState {
   const base = {
-    ...makeDefaultState(parsed?.projectName),
+    ...makeDefaultState(parsed?.projectName as string | undefined),
     ...parsed,
   }
 
   // If no schema version, assume legacy (0) and migrate
-  const version = parsed?.persistedSchemaVersion ?? 0
+  const version = (parsed?.persistedSchemaVersion as number | undefined) ?? 0
 
   if (version === 0) {
     // Legacy: tasks may have `deps: string[]`. Convert to dependency edges if needed.
@@ -60,7 +59,8 @@ function migrateState(parsed: any): PersistedState {
     if (!base.ghostStyle) base.ghostStyle = 'stripe'
   }
 
-  // Finally, stamp the current schema version when saving
+  // Stamp the current schema version so downstream code can rely on the field.
+  base.persistedSchemaVersion = PERSISTED_SCHEMA_VERSION
   return base as PersistedState
 }
 
@@ -82,8 +82,8 @@ export function loadState(): PersistedState {
 
 export function saveState(state: PersistedState): void {
   try {
-    // Ensure schema version saved
-    const out = { ...state, persistedSchemaVersion: PERSISTED_SCHEMA_VERSION }
+    // Always stamp the current schema version on save, regardless of caller.
+    const out: PersistedState = { ...state, persistedSchemaVersion: PERSISTED_SCHEMA_VERSION }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(out))
   } catch {
     // localStorage full or unavailable — fail silently

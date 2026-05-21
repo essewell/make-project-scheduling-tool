@@ -112,7 +112,7 @@ const GroupRow = memo(function GroupRow({
           fontSize: 'var(--text-2xs)',
           color: 'var(--color-text-dim)',
           flexShrink: 0,
-          minWidth: 18,
+          minWidth: 24,
         }}>
           {wbs}
         </span>
@@ -211,7 +211,7 @@ const TaskRow = memo(function TaskRow({
           fontSize: 'var(--text-2xs)',
           color: 'var(--color-text-dim)',
           flexShrink: 0,
-          minWidth: 22,
+          minWidth: 24,
         }}>
           {wbs}
         </span>
@@ -290,7 +290,7 @@ const TaskRow = memo(function TaskRow({
       }}>
         <span style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: 10,
+          fontSize: 'var(--text-3xs)',
           color: 'var(--color-text-tertiary)',
           lineHeight: 1.2,
         }}>
@@ -298,7 +298,7 @@ const TaskRow = memo(function TaskRow({
         </span>
         <span style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: 10,
+          fontSize: 'var(--text-3xs)',
           color: 'var(--color-text-tertiary)',
           lineHeight: 1.2,
         }}>
@@ -316,7 +316,7 @@ const TaskRow = memo(function TaskRow({
         {float !== null && (
           <span style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 10,
+            fontSize: 'var(--text-3xs)',
             color: float < 0 ? 'var(--color-danger)' : 'var(--color-text-dim)',
             fontWeight: float < 0 ? 'var(--weight-medium)' : undefined,
           }}>

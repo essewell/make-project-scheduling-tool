@@ -1,7 +1,9 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import type { Task } from '../../types'
 import { parseCSVText, csvRowsToTasks } from '../../lib/csv'
-import type { CsvRow } from '../../lib/csv'
+import type { CsvRow, CsvRowError } from '../../lib/csv'
+
+const MAX_VISIBLE_ERRORS = 5
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -125,13 +127,27 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
     if (file) handleFileSelect(file)
   }, [handleFileSelect])
 
+  // Validate on every mapping change so the user sees errors before clicking Import.
+  // Pure derivation — no side effects, deterministic for given (rows, mapping, mode).
+  const validation = useMemo(() => {
+    if (step !== 'map' || rawRows.length === 0) {
+      return { tasks: [] as Task[], errors: [] as CsvRowError[] }
+    }
+    return csvRowsToTasks(rawRows, columnMap, mode === 'append' ? existingTasks : [])
+  }, [step, rawRows, columnMap, mode, existingTasks])
+
+  const importableCount = validation.tasks.length
+  const errorCount = validation.errors.length
+  const visibleErrors = validation.errors.slice(0, MAX_VISIBLE_ERRORS)
+  const hiddenErrorCount = Math.max(0, errorCount - MAX_VISIBLE_ERRORS)
+  const blocked = step === 'map' && importableCount === 0
+
   const handleImport = () => {
-    const tasks = csvRowsToTasks(rawRows, columnMap, mode === 'append' ? existingTasks : [])
-    if (tasks.length === 0) {
-      setError('No tasks could be imported. Check your column mapping.')
+    if (blocked) {
+      setError('No tasks could be imported. Fix the errors below or check your column mapping.')
       return
     }
-    onImport(tasks, mode)
+    onImport(validation.tasks, mode)
     onClose()
   }
 
@@ -263,6 +279,31 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
                 </div>
               </div>
 
+              {/* Row validation errors */}
+              {errorCount > 0 && (
+                <div>
+                  <div style={{ fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-semibold)', color: blocked ? 'var(--color-danger)' : 'var(--color-warning)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+                    {blocked
+                      ? `Cannot import — ${errorCount} row error${errorCount !== 1 ? 's' : ''}`
+                      : `${errorCount} row warning${errorCount !== 1 ? 's' : ''} (${importableCount} of ${importCount} importable)`}
+                  </div>
+                  <div style={{ borderRadius: 'var(--radius)', border: `1px solid ${blocked ? 'var(--color-danger)' : 'var(--color-border)'}`, background: blocked ? 'var(--color-danger-dim)' : 'var(--color-surface-2)', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {visibleErrors.map((err, i) => (
+                      <div key={i} style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                        <span style={{ color: 'var(--color-text-tertiary)' }}>Row {err.row}</span>
+                        {err.field && <span style={{ color: 'var(--color-text-tertiary)' }}> · {err.field}</span>}
+                        <span style={{ color: 'var(--color-text-primary)' }}> — {err.reason}</span>
+                      </div>
+                    ))}
+                    {hiddenErrorCount > 0 && (
+                      <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)', fontStyle: 'italic' }}>
+                        …and {hiddenErrorCount} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Preview table */}
               {previewRows.length > 0 && (
                 <div>
@@ -326,9 +367,16 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
             {step === 'map' && (
               <button
                 onClick={handleImport}
-                style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', cursor: 'pointer' }}
+                disabled={blocked}
+                style={{
+                  height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: 'none',
+                  background: blocked ? 'var(--color-border)' : 'var(--accent)',
+                  color: '#fff', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)',
+                  cursor: blocked ? 'not-allowed' : 'pointer',
+                  opacity: blocked ? 0.7 : 1,
+                }}
               >
-                Import {importCount} task{importCount !== 1 ? 's' : ''}
+                Import {importableCount} task{importableCount !== 1 ? 's' : ''}
               </button>
             )}
           </div>

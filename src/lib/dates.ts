@@ -60,23 +60,6 @@ export function todayStr(): string {
   return fmtDate(new Date())
 }
 
-/** Is dateStr today or in the past? */
-export function isPast(dateStr: string): boolean {
-  return daysBetween(todayStr(), dateStr) < 0
-}
-
-/** Is dateStr in the future (strictly after today)? */
-export function isFuture(dateStr: string): boolean {
-  return daysBetween(todayStr(), dateStr) > 0
-}
-
-/** Clamp a date string between min and max. */
-export function clampDate(dateStr: string, min: string, max: string): string {
-  if (dateStr < min) return min
-  if (dateStr > max) return max
-  return dateStr
-}
-
 /** Day-of-week index 0=Sun … 6=Sat for a YYYY-MM-DD string. */
 export function dayOfWeek(dateStr: string): number {
   return toD(dateStr).getDay()
@@ -96,15 +79,6 @@ export function monthName(date: Date, short = false): string {
 /** Quarter label "Q1" for a Date. */
 export function quarterLabel(date: Date): string {
   return `Q${Math.floor(date.getMonth() / 3) + 1}`
-}
-
-/** Week start (Monday) of the week containing dateStr. */
-export function weekStart(dateStr: string): string {
-  const d = toD(dateStr)
-  const dow = d.getDay()         // 0=Sun
-  const diff = (dow === 0) ? -6 : 1 - dow   // shift to Monday
-  d.setDate(d.getDate() + diff)
-  return fmtDate(d)
 }
 
 /** Milliseconds until next midnight + offsetMs. */

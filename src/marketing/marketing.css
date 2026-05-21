@@ -1,0 +1,536 @@
+/* ─── Marketing — Swiss System layer ─────────────────────────────────────────
+   Inherits all design tokens from ../styles/tokens.css.
+   Reset comes from ../styles/reset.css.
+   This file defines the typographic baseline and structural primitives
+   used only by the marketing entry point.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+html, body {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: tabular-nums;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ─── Containers ─────────────────────────────────────────────────────────── */
+
+.m-page {
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.m-container {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+@media (max-width: 720px) {
+  .m-container { padding: 0 20px; }
+}
+
+/* ─── Top nav ────────────────────────────────────────────────────────────── */
+
+.m-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: saturate(140%);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.m-nav-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  height: 64px;
+  gap: 32px;
+}
+
+.m-wordmark {
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  font-size: 16px;
+  color: var(--brand);
+}
+
+.m-nav-list {
+  display: flex;
+  gap: 28px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.01em;
+}
+
+.m-nav-list a {
+  transition: color var(--transition-fast);
+}
+
+.m-nav-list a:hover {
+  color: var(--brand);
+}
+
+@media (max-width: 720px) {
+  .m-nav-list { display: none; }
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+
+.m-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.01em;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.m-btn--primary {
+  background: var(--brand);
+  color: #fff;
+}
+
+.m-btn--primary:hover {
+  background: #0f2335;
+}
+
+.m-btn--ghost {
+  background: transparent;
+  color: var(--brand);
+  border-color: var(--color-border);
+}
+
+.m-btn--ghost:hover {
+  border-color: var(--brand);
+}
+
+.m-btn--accent {
+  background: var(--accent);
+  color: #fff;
+}
+
+.m-btn--accent:hover {
+  background: var(--accent-hover);
+}
+
+.m-btn .m-btn-arrow {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1;
+  transform: translateY(-1px);
+  transition: transform var(--transition-fast);
+}
+
+.m-btn:hover .m-btn-arrow {
+  transform: translate(2px, -1px);
+}
+
+/* ─── Typography ─────────────────────────────────────────────────────────── */
+
+.m-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.m-eyebrow--accent {
+  color: var(--accent);
+}
+
+.m-display {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  color: var(--brand);
+  font-size: clamp(40px, 6vw, 84px);
+}
+
+.m-h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  color: var(--brand);
+  font-size: clamp(28px, 3.4vw, 44px);
+}
+
+.m-h3 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  font-size: 22px;
+  color: var(--brand);
+}
+
+.m-lead {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+}
+
+.m-body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.m-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Sections ───────────────────────────────────────────────────────────── */
+
+.m-section {
+  padding: clamp(72px, 9vw, 128px) 0;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.m-section--hero {
+  border-top: none;
+  padding: clamp(56px, 7vw, 96px) 0 clamp(48px, 6vw, 80px);
+}
+
+.m-section--flush {
+  padding-top: 0;
+  border-top: none;
+}
+
+.m-section--dark {
+  background: var(--brand);
+  color: #fff;
+  border-top: none;
+}
+
+.m-section--dark .m-h2,
+.m-section--dark .m-h3,
+.m-section--dark .m-display {
+  color: #fff;
+}
+
+.m-section--dark .m-eyebrow {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.m-section--dark .m-body,
+.m-section--dark .m-lead {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* ─── Hero grid ──────────────────────────────────────────────────────────── */
+
+.m-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 56px;
+  align-items: end;
+}
+
+@media (max-width: 960px) {
+  .m-hero { grid-template-columns: 1fr; gap: 40px; }
+}
+
+.m-hero-text > * + * {
+  margin-top: 24px;
+}
+
+.m-hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.m-hero-visual {
+  position: relative;
+}
+
+/* Index numbers in a rule-separated strip */
+.m-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--color-border-light);
+  border-block: 1px solid var(--color-border-light);
+  margin-top: clamp(56px, 7vw, 88px);
+}
+
+.m-stat {
+  background: var(--color-surface);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.m-stat-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.m-stat-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  font-weight: var(--weight-medium);
+}
+
+@media (max-width: 720px) {
+  .m-stat-strip { grid-template-columns: 1fr 1fr; }
+}
+
+/* ─── Capabilities grid ──────────────────────────────────────────────────── */
+
+.m-cap-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1px;
+  background: var(--color-border-light);
+  border: 1px solid var(--color-border-light);
+}
+
+.m-cap {
+  background: var(--color-surface);
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 280px;
+}
+
+.m-cap--wide { grid-column: span 7; }
+.m-cap--narrow { grid-column: span 5; }
+.m-cap--half { grid-column: span 6; }
+.m-cap--third { grid-column: span 4; }
+
+@media (max-width: 960px) {
+  .m-cap--wide,
+  .m-cap--narrow,
+  .m-cap--half,
+  .m-cap--third { grid-column: span 12; }
+}
+
+.m-cap-index {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--color-text-tertiary);
+}
+
+.m-cap-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--brand);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.m-cap-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  max-width: 38ch;
+}
+
+.m-cap-figure {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+/* ─── Process list ───────────────────────────────────────────────────────── */
+
+.m-process {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.m-step {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: 32px;
+  padding: 32px 0;
+  border-top: 1px solid var(--color-border-light);
+  align-items: baseline;
+}
+
+.m-step:last-child { border-bottom: 1px solid var(--color-border-light); }
+
+.m-step-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.m-step-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--brand);
+}
+
+.m-step-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  max-width: 50ch;
+}
+
+@media (max-width: 720px) {
+  .m-step { grid-template-columns: 56px 1fr; gap: 16px; }
+  .m-step-body { grid-column: 1 / -1; }
+}
+
+/* ─── Closing CTA ────────────────────────────────────────────────────────── */
+
+.m-closing {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+  gap: 56px;
+  align-items: end;
+}
+
+@media (max-width: 960px) {
+  .m-closing { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
+
+.m-footer {
+  padding: 56px 0 40px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.m-footer-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: end;
+  gap: 32px;
+}
+
+.m-footer-meta {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 720px) {
+  .m-footer-row { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* ─── Hero entry — restrained, exact fade ────────────────────────────────── */
+
+@keyframes m-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.m-rise {
+  animation: m-rise 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.m-rise[data-delay="1"] { animation-delay: 60ms; }
+.m-rise[data-delay="2"] { animation-delay: 120ms; }
+.m-rise[data-delay="3"] { animation-delay: 180ms; }
+.m-rise[data-delay="4"] { animation-delay: 240ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .m-rise { animation: none; }
+  .m-btn .m-btn-arrow { transition: none; }
+}
+
+/* ─── Dark mode overrides for marketing ──────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  html, body {
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+  }
+
+  .m-nav {
+    background: rgba(17, 29, 41, 0.82);
+    border-bottom-color: var(--color-border);
+  }
+
+  .m-stat,
+  .m-cap {
+    background: var(--color-surface);
+  }
+
+  .m-stat-strip,
+  .m-cap-grid {
+    background: var(--color-border);
+    border-color: var(--color-border);
+  }
+
+  .m-btn--primary {
+    background: var(--accent);
+    color: #0e1c2c;
+  }
+
+  .m-btn--primary:hover {
+    background: var(--accent-hover);
+  }
+
+  .m-btn--ghost {
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+  }
+
+  .m-btn--ghost:hover {
+    border-color: var(--color-text-secondary);
+  }
+}
