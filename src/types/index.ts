@@ -85,16 +85,14 @@ export type OnboardingPhase = 'fresh' | 'first_added' | 'baseline_tip' | 'comple
 
 export type GhostStyle = 'stripe' | 'solid' | 'outline'
 
-// ─── Undo ─────────────────────────────────────────────────────────────────────
-
-export interface UndoEntry {
-  label: string
-  restore: () => void
-}
-
 // ─── Persisted state (localStorage) ─────────────────────────────────────────
 
+/** Current persisted-state schema version. Bump in lockstep with `migrateState` in storage.ts. */
+export const PERSISTED_SCHEMA_VERSION = 1
+
 export interface PersistedState {
+  /** Stamped on save by storage.ts. Absent on legacy (v0) payloads. */
+  persistedSchemaVersion: number
   projectName: string
   tasks: Task[]
   groups: Group[]

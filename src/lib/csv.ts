@@ -1,15 +1,23 @@
 import type { Task } from '../types'
-import { normalizeDate, fmtDate, addDays, todayStr } from './dates'
+import { normalizeDate, addDays, todayStr } from './dates'
 
 // ─── CSV import ───────────────────────────────────────────────────────────────
 
-export interface CsvColumn {
-  field: keyof Task | 'skip'
-  header: string
-}
-
 export interface CsvRow {
   [key: string]: string
+}
+
+/** Per-row validation error. `row` is the 1-indexed data row (header is row 1, first data row is row 2). */
+export interface CsvRowError {
+  row: number
+  field?: string
+  reason: string
+}
+
+/** Result of converting CSV rows to tasks: importable tasks + non-fatal errors. */
+export interface CsvImportResult {
+  tasks: Task[]
+  errors: CsvRowError[]
 }
 
 /** Parse raw CSV text into rows of {header: value} objects. */
@@ -34,17 +42,25 @@ export function parseCSVText(text: string): CsvRow[] {
   return rows
 }
 
-/** Convert parsed CSV rows + column mapping into Task objects. */
+/** Convert parsed CSV rows + column mapping into tasks with per-row validation errors. */
 export function csvRowsToTasks(
   rows: CsvRow[],
   columnMap: Record<string, keyof Task | 'skip'>,
   existingTasks: Task[],
-): Task[] {
+): CsvImportResult {
   const today = todayStr()
   const tasks: Task[] = []
+  const errors: CsvRowError[] = []
   const existingIds = new Set(existingTasks.map(t => t.id))
 
+  // Which CSV header (if any) is mapped to the `name` field?
+  const nameHeader = Object.entries(columnMap).find(([, f]) => f === 'name')?.[0]
+
   rows.forEach((row, i) => {
+    const rowNum = i + 2 // header is row 1, first data row is row 2
+    const rowErrors: CsvRowError[] = []
+    let skipRow = false
+
     const task: Partial<Task> = {
       id: '',
       name: '',
@@ -69,40 +85,54 @@ export function csvRowsToTasks(
 
       switch (field) {
         case 'name':
-          task.name = value
+          task.name = value.trim()
           break
         case 'group':
           task.group = value
           break
         case 's': {
+          if (value.trim() === '') break
           const d = normalizeDate(value)
           if (d) task.s = d
+          else rowErrors.push({ row: rowNum, field: csvHeader, reason: `Invalid start date "${value}"` })
           break
         }
         case 'e': {
+          if (value.trim() === '') break
           const d = normalizeDate(value)
           if (d) task.e = d
+          else rowErrors.push({ row: rowNum, field: csvHeader, reason: `Invalid end date "${value}"` })
           break
         }
         case 'actualStart': {
-          task.actualStart = normalizeDate(value)
+          if (value.trim() === '') break
+          const d = normalizeDate(value)
+          if (d) task.actualStart = d
+          else rowErrors.push({ row: rowNum, field: csvHeader, reason: `Invalid actual start "${value}"` })
           break
         }
         case 'actualFinish': {
-          task.actualFinish = normalizeDate(value)
-          if (task.actualFinish) {
+          if (value.trim() === '') break
+          const d = normalizeDate(value)
+          if (d) {
+            task.actualFinish = d
             task.pct = 100
             task.status = 'complete'
             task.manualStatus = true
             task.manualPct = true
+          } else {
+            rowErrors.push({ row: rowNum, field: csvHeader, reason: `Invalid actual finish "${value}"` })
           }
           break
         }
         case 'pct': {
+          if (value.trim() === '') break
           const n = parseInt(value, 10)
           if (!isNaN(n)) {
             task.pct = Math.min(100, Math.max(0, n))
             task.manualPct = true
+          } else {
+            rowErrors.push({ row: rowNum, field: csvHeader, reason: `Invalid progress "${value}" (expected number 0–100)` })
           }
           break
         }
@@ -123,7 +153,21 @@ export function csvRowsToTasks(
       }
     }
 
-    // Ensure required fields
+    // Skip rows that meaningfully lack data: name column was mapped but value is blank.
+    if (nameHeader && (row[nameHeader] ?? '').trim() === '') {
+      rowErrors.push({ row: rowNum, field: nameHeader, reason: 'Missing name — row skipped' })
+      skipRow = true
+    }
+
+    // Cross-field check: start must not be after end. Non-fatal — keep the row, log a warning.
+    if (!skipRow && task.s && task.e && task.s > task.e) {
+      rowErrors.push({ row: rowNum, reason: `Start (${task.s}) is after end (${task.e})` })
+    }
+
+    errors.push(...rowErrors)
+    if (skipRow) return
+
+    // Fallback name when name column was never mapped at all.
     if (!task.name) task.name = `Task ${i + 1}`
 
     // Generate unique id if missing or collision
@@ -135,7 +179,7 @@ export function csvRowsToTasks(
     tasks.push(task as Task)
   })
 
-  return tasks
+  return { tasks, errors }
 }
 
 /** Generate CSV text from a task list. */
@@ -180,24 +224,6 @@ export function triggerCSVDownload(csv: string, filename = 'schedule.csv'): void
   URL.revokeObjectURL(url)
 }
 
-/** Trigger a browser CSV file picker and return the file contents. */
-export function triggerCSVImport(): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.csv,text/csv'
-    input.onchange = () => {
-      const file = input.files?.[0]
-      if (!file) { reject(new Error('No file selected')); return }
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = () => reject(new Error('Failed to read file'))
-      reader.readAsText(file)
-    }
-    input.click()
-  })
-}
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function splitCsvLine(line: string): string[] {
@@ -235,5 +261,3 @@ function escapeCsv(value: string): string {
 function generateId(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36)
 }
-
-export { fmtDate }

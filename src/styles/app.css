@@ -95,7 +95,6 @@
   position: fixed;
   inset: 0;
   background: rgba(10, 18, 30, 0.54);
-  backdrop-filter: blur(3px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -122,6 +121,14 @@
 
 .mono {
   font-family: var(--font-mono);
+}
+
+/* Swiss numerals — proportional sans renders numbers with variable widths;
+   force fixed-width columns for any input or cell whose value changes. */
+.nums,
+input[type="number"],
+input[type="range"] {
+  font-variant-numeric: tabular-nums;
 }
 
 .truncate {
@@ -179,6 +186,85 @@
   border: 6px solid transparent;
   border-bottom-color: var(--color-toast-bg);
   border-top: none;
+}
+
+/* ─── Delete button (SidePanel footer) ─────────────────────────────────────── */
+
+.btn-delete:hover {
+  filter: brightness(0.92);
+}
+
+/* ─── Progress slider (SidePanel) ──────────────────────────────────────────── */
+
+.progress-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+  border: none;
+  display: block;
+  background: var(--color-border);
+}
+
+.progress-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--accent) var(--fill-pct, 0%),
+    var(--color-border) var(--fill-pct, 0%)
+  );
+}
+
+.progress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 1.5px var(--accent);
+  transition: box-shadow var(--transition-fast);
+}
+
+.progress-slider:hover::-webkit-slider-thumb,
+.progress-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px var(--accent-dim);
+}
+
+.progress-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+}
+
+.progress-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.progress-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 1.5px var(--accent);
+  transition: box-shadow var(--transition-fast);
+}
+
+.progress-slider:hover::-moz-range-thumb,
+.progress-slider:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px var(--accent-dim);
 }
 
 /* ─── Mobile tab switching ──────────────────────────────────────────────────── */

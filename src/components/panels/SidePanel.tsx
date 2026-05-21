@@ -1,4 +1,4 @@
-import { useState, useCallback, type KeyboardEvent } from 'react'
+import { useState, useCallback, useEffect, useRef, type KeyboardEvent } from 'react'
 import type { Task, Group, Party, Note, Dependency, WorkweekConfig } from '../../types'
 import { daysBetween } from '../../lib/dates'
 import { workdays } from '../../lib/workdays'
@@ -93,6 +93,8 @@ export function SidePanel({
   onOpenLinkBuilder,
 }: SidePanelProps) {
   const [newNoteText, setNewNoteText] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const update = useCallback((patch: Partial<Task>) => {
     onUpdateTask(task.id, patch)
@@ -123,9 +125,34 @@ export function SidePanel({
     }
   }, [newNoteText, task.id, onAddNote])
 
-  const handleDelete = useCallback(() => {
-    onDeleteTask(task.id)
-  }, [task.id, onDeleteTask])
+  // Reset confirm state when user switches to a different task
+  useEffect(() => {
+    setConfirmDelete(false)
+    if (confirmTimerRef.current !== null) {
+      clearTimeout(confirmTimerRef.current)
+      confirmTimerRef.current = null
+    }
+    return () => {
+      if (confirmTimerRef.current !== null) clearTimeout(confirmTimerRef.current)
+    }
+  }, [task.id])
+
+  const handleDeleteClick = useCallback(() => {
+    if (confirmDelete) {
+      if (confirmTimerRef.current !== null) {
+        clearTimeout(confirmTimerRef.current)
+        confirmTimerRef.current = null
+      }
+      setConfirmDelete(false)
+      onDeleteTask(task.id)
+    } else {
+      setConfirmDelete(true)
+      confirmTimerRef.current = setTimeout(() => {
+        setConfirmDelete(false)
+        confirmTimerRef.current = null
+      }, 3000)
+    }
+  }, [confirmDelete, task.id, onDeleteTask])
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -210,10 +237,21 @@ export function SidePanel({
               />
             </div>
           </div>
-          {/* Progress bar */}
-          <div style={{ height: 4, borderRadius: 2, background: 'var(--color-border)', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${task.pct}%`, background: 'var(--accent)', borderRadius: 2, transition: 'width 0.2s' }} />
-          </div>
+          {/* Progress slider */}
+          <input
+            type="range"
+            className="progress-slider"
+            aria-label="Progress percent"
+            min={0}
+            max={100}
+            step={1}
+            value={task.pct}
+            onChange={e => {
+              const n = Math.min(100, Math.max(0, parseInt(e.target.value, 10) || 0))
+              update({ pct: n, manualPct: true })
+            }}
+            style={{ '--fill-pct': `${task.pct}%` } as React.CSSProperties}
+          />
           {(task.manualStatus || task.manualPct) && (
             <button
               onClick={() => update({ manualStatus: false, manualPct: false })}
@@ -425,21 +463,6 @@ export function SidePanel({
         background: 'var(--color-surface)',
       }}>
         <button
-          onClick={handleDelete}
-          style={{
-            height: 30, padding: '0 12px',
-            borderRadius: 'var(--radius)',
-            border: '1px solid var(--color-danger)',
-            background: 'none',
-            color: 'var(--color-danger)',
-            fontSize: 'var(--text-xs)',
-            fontWeight: 'var(--weight-medium)',
-            cursor: 'pointer',
-          }}
-        >
-          Delete
-        </button>
-        <button
           onClick={() => onOpenLinkBuilder(task.id)}
           style={{
             height: 30, padding: '0 12px',
@@ -454,8 +477,24 @@ export function SidePanel({
         >
           Links
         </button>
+        <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)' }}>Autosaves</span>
         <span style={{ flex: 1 }} />
-        <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)' }}>Autosaves</span>
+        <button
+          className="btn-delete"
+          onClick={handleDeleteClick}
+          style={{
+            height: 30, padding: '0 14px',
+            borderRadius: 'var(--radius)',
+            border: 'none',
+            background: 'var(--color-danger)',
+            color: 'white',
+            fontSize: 'var(--text-xs)',
+            fontWeight: 'var(--weight-medium)',
+            cursor: 'pointer',
+          }}
+        >
+          {confirmDelete ? 'Delete?' : 'Delete'}
+        </button>
       </div>
     </div>
   )

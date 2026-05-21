@@ -112,6 +112,9 @@ export function GanttHeader({ timeline, dayPx, totalPx }: GanttHeaderProps) {
       <div style={{ position: 'relative', height: TIER_H }}>
         {secondaryItems.map((item, i) => {
           const isWeekend = '_weekend' in item && (item as SecondaryItem & { _weekend?: boolean })._weekend
+          // At Month zoom (dayPx < 6) hide every other week label to prevent crowding;
+          // the tick border still shows so rhythm is preserved
+          const hideWeekLabel = secondary === 'week' && dayPx < 6 && i % 2 !== 0
           return (
             <div
               key={item.label + item.offset + i}
@@ -127,18 +130,22 @@ export function GanttHeader({ timeline, dayPx, totalPx }: GanttHeaderProps) {
                 paddingLeft: secondary === 'day' ? 0 : 6,
                 overflow: 'hidden',
                 boxSizing: 'border-box',
-                borderRight: secondary === 'day' ? '1px solid var(--color-border-light)' : undefined,
+                borderRight: secondary === 'day' || secondary === 'week'
+                  ? '1px solid var(--color-border-light)'
+                  : undefined,
                 background: isWeekend ? 'var(--color-surface-2)' : undefined,
               }}
             >
-              <span style={{
-                fontSize: 'var(--text-2xs)',
-                color: isWeekend ? 'var(--color-text-dim)' : 'var(--color-text-tertiary)',
-                whiteSpace: 'nowrap',
-                fontFamily: secondary === 'day' ? 'var(--font-mono)' : undefined,
-              }}>
-                {item.label}
-              </span>
+              {!hideWeekLabel && (
+                <span style={{
+                  fontSize: 'var(--text-2xs)',
+                  color: isWeekend ? 'var(--color-text-dim)' : 'var(--color-text-tertiary)',
+                  whiteSpace: 'nowrap',
+                  fontFamily: secondary === 'day' ? 'var(--font-mono)' : undefined,
+                }}>
+                  {item.label}
+                </span>
+              )}
             </div>
           )
         })}

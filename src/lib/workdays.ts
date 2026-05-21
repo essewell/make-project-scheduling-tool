@@ -55,19 +55,3 @@ export function workdayRatio(
   return Math.min(1, elapsed / total)
 }
 
-/** Advance a date by n working days. */
-export function addWorkdays(
-  startStr: string,
-  n: number,
-  workweek: WorkweekConfig,
-  holidays: string[],
-): string {
-  const d = toD(startStr)
-  let remaining = Math.abs(n)
-  const step = n >= 0 ? 1 : -1
-  while (remaining > 0) {
-    d.setDate(d.getDate() + step)
-    if (isWorkday(fmtDate(d), workweek, holidays)) remaining--
-  }
-  return fmtDate(d)
-}

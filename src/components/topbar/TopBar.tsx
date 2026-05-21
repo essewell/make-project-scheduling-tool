@@ -130,7 +130,7 @@ export function TopBar({
           style={{ ...ICON_BTN, padding: '0 8px' }}
           title="Capture current schedule as a baseline"
         >
-          ⊕
+          ⊕ Capture
         </button>
       </div>
 
@@ -177,7 +177,7 @@ export function TopBar({
         title="Reset project"
         style={{ ...ICON_BTN, color: 'rgba(255,255,255,0.5)' }}
       >
-        ↺
+        ↺ Reset
       </button>
 
       <div style={DIVIDER} />

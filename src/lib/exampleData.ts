@@ -38,7 +38,7 @@ export const EXAMPLE_TASKS: Task[] = [
     group: 'g-site', s: '2025-06-12', e: '2025-06-20',
     actualStart: '2025-06-12', actualFinish: null,
     pct: 75, status: 'in_progress',
-    party: 'p-sub', notes: '', milestone: false, manualStatus: true, manualPct: true, deps: ['t-02'],
+    party: 'p-sub', notes: '', milestone: false, manualStatus: false, manualPct: false, deps: ['t-02'],
   },
   // Foundation
   {

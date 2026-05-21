@@ -101,30 +101,3 @@ export function refreshAutoProgress(
   return changed ? next : tasks
 }
 
-/**
- * Handle actualFinish being set: auto-complete the task and set manual flags.
- */
-export function applyActualFinish(_task: Task, actualFinish: string | null): Partial<Task> {
-  if (actualFinish) {
-    return { actualFinish, status: 'complete', pct: 100, manualStatus: true, manualPct: true }
-  }
-  // Clearing actualFinish reverts to auto-progress
-  return { actualFinish: null, manualStatus: false, manualPct: false }
-}
-
-/**
- * Compute overall project progress as a weighted average by task duration.
- */
-export function computeOverallProgress(tasks: Task[]): number {
-  if (tasks.length === 0) return 0
-  const totalWeight = tasks.reduce((acc, t) => {
-    const days = Math.max(1, daysBetween(t.s, t.e) + 1)
-    return acc + days
-  }, 0)
-  if (totalWeight === 0) return 0
-  const weightedPct = tasks.reduce((acc, t) => {
-    const days = Math.max(1, daysBetween(t.s, t.e) + 1)
-    return acc + t.pct * days
-  }, 0)
-  return Math.round(weightedPct / totalWeight)
-}
