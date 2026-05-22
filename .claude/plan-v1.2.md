@@ -1085,7 +1085,32 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - Changes: replaced inline SVG triangle caret with Phosphor `CaretRight` / `CaretDown`.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
 
+- **2026-05-22 — Phase C.1: surface-sunken applied to recessed tracks**
+  - Files: `src/styles/app.css`, `src/components/gantt/GanttGrid.tsx`
+  - Changes: moved scrollbar tracks, SidePanel progress-slider tracks, and Gantt weekend bands to `--surface-sunken`.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase C.2: TaskList group completion meter**
+  - Files: `src/components/App.tsx`, `src/components/task-list/TaskList.tsx`
+  - Changes: added a 4px end-of-row vertical completion meter on group rows; wired filtered task data into `TaskList` so completion stays accurate even when groups are collapsed.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase C.3: Gantt bar inner highlight**
+  - Files: `src/components/gantt/GanttBar.tsx`
+  - Changes: added 1px inset top highlight to bars (`inset 0 1px 0 rgba(255,255,255,0.18)`).
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase C.4: selected TaskList row rail treatment**
+  - Files: `src/components/task-list/TaskList.tsx`
+  - Changes: selected rows now use 2px accent left rail and remove bottom border for clearer selection state.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase C.5: StatBar tri-color meter**
+  - Files: `src/components/StatBar.tsx`
+  - Changes: converted progress meter to status-distribution segments (positive/caution/negative) and added diagonal stripe treatment for at-risk segment.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase B complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 landed locally)
+**Status:** Active — Phase C complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 landed locally)

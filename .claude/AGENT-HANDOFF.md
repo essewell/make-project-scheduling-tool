@@ -9,7 +9,7 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 
 - **When:** 2026-05-22
 - **Agent:** Codex
-- **Did:** Completed v1.2 Phase B (B.1–B.5) iconography swap after prior Phase A completion. Ran full local gates after each task commit.
+- **Did:** Completed v1.2 Phase C (C.1–C.5) with one task per commit and full local gates after each landing.
 
 ---
 
@@ -17,17 +17,22 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 
 - **Active version:** v1.2 (visual refinement / de-vibecoded surface)
 - **Plan:** [.claude/plan-v1.2.md](./plan-v1.2.md)
-- **Phase in progress:** Ready for Phase C (surface ladder & materiality)
+- **Phase in progress:** Ready for Phase D (SetupWizard redesign milestone)
 
 ---
 
 ## What Just Landed
 
-- **Phase B.1** — TopBar glyph/emoji controls replaced with Phosphor icons in `src/components/topbar/TopBar.tsx`.
-- **Phase B.2** — SidePanel close + CSV modal back controls replaced with `X` and `ArrowLeft` icons.
-- **Phase B.3** — CSV drop zone emoji replaced with `FileArrowUp`.
-- **Phase B.4** — StatusBadge now uses status-specific icons (`CircleHalf`, `Warning`, `Clock`, `Check`) with dot retained for not-started.
-- **Phase B.5** — TaskList group carets replaced with `CaretRight` / `CaretDown`.
+- **C.1** `src/styles/app.css`, `src/components/gantt/GanttGrid.tsx`
+  - Applied `--surface-sunken` to scrollbar tracks, progress-slider tracks, and weekend bands.
+- **C.2** `src/components/App.tsx`, `src/components/task-list/TaskList.tsx`
+  - Added 4px group-row completion meters and passed filtered task data so values remain accurate when collapsed.
+- **C.3** `src/components/gantt/GanttBar.tsx`
+  - Added 1px inner top highlight to bars.
+- **C.4** `src/components/task-list/TaskList.tsx`
+  - Selected rows now use 2px accent rail and remove bottom border.
+- **C.5** `src/components/StatBar.tsx`
+  - Added tri-color progress meter logic with diagonal stripe for at-risk segment.
 - Build Changelog updated in `plan-v1.2.md §23`.
 
 All five gates passed after each landed task:
@@ -41,13 +46,13 @@ All five gates passed after each landed task:
 
 ## Next Action
 
-1. **Start Phase C.1** (`plan-v1.2.md §16`): apply `--surface-sunken` to progress slider track, Gantt weekend bands, and scrollbar tracks.
-2. Continue C.2–C.5 with one task per commit, running full local gates after each landing.
-3. Keep appending `plan-v1.2.md §23` and refreshing this file at each stop.
+1. Start **Phase D.1** in `plan-v1.2.md §16`: replace SetupWizard centered-card composition with split-canvas asymmetric layout.
+2. Execute D.2–D.6 as the bundled wizard visual milestone, then run full gates.
+3. Append `plan-v1.2.md §23` and refresh this handoff at the next stop.
 
 ---
 
 ## Blockers / Open Threads
 
-- **Push still pending human approval:** `.github` tracking is committed locally; origin CI-fire confirmation still requires approved push.
+- **Push still pending human approval:** origin CI-fire confirmation for `.github` tracking remains unverified until push is approved.
 - **Mobile real-device QA still owed:** tracked in `docs/mobile-qa.md`; required before Phase 11.8 ships.
