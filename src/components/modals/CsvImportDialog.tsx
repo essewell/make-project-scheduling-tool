@@ -364,8 +364,8 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
+        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             {step === 'map' && (
               <button
                 onClick={() => { setStep('upload'); setError(null) }}
@@ -375,14 +375,14 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
                 Back
               </button>
             )}
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={onClose}
               style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
             >
               Cancel
             </button>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
             {step === 'map' && (
               <button
                 onClick={handleImport}

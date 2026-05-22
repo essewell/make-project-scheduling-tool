@@ -257,16 +257,18 @@ export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose 
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
-            {checkedCount} predecessor{checkedCount !== 1 ? 's' : ''} selected
-          </span>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+              {checkedCount} predecessor{checkedCount !== 1 ? 's' : ''} selected
+            </span>
             <button
               onClick={onClose}
               style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
             >
               Cancel
             </button>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleSave}
               style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', cursor: 'pointer' }}
