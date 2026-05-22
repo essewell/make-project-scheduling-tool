@@ -114,7 +114,7 @@ button {
   font-size: 13px;
   font-weight: var(--weight-semibold);
   letter-spacing: 0.01em;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
 }
