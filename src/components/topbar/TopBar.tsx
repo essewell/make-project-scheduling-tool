@@ -15,6 +15,7 @@ import {
   Printer,
   SquaresFour,
   UploadSimple,
+  Users,
   UsersThree,
 } from '../../lib/icons'
 
@@ -36,6 +37,7 @@ interface TopBarProps {
   onOpenWorkweek: () => void
   onOpenGroups: () => void
   onOpenParties: () => void
+  onOpenResources: () => void
   onOpenCsvImport: () => void
   onOpenPrint: () => void
   onExportCsv: () => void
@@ -85,7 +87,7 @@ export function TopBar({
   zoomIndex, onZoomIn, onZoomOut,
   baselines, activeBaselineId, ghostStyle,
   onCaptureBaseline, onSetActiveBaseline, onDeleteBaseline, onSetGhostStyle,
-  onOpenWorkweek, onOpenGroups, onOpenParties,
+  onOpenWorkweek, onOpenGroups, onOpenParties, onOpenResources,
   onOpenCsvImport, onOpenPrint, onExportCsv,
   hasDeps, showCriticalPath, onToggleCriticalPath,
   onReset, onNewTask,
@@ -167,6 +169,7 @@ export function TopBar({
           <button onClick={onOpenWorkweek} style={ICON_BTN}><CalendarBlank size={14} weight="regular" aria-hidden="true" />Calendar</button>
           <button onClick={onOpenGroups} style={ICON_BTN}><SquaresFour size={14} weight="regular" aria-hidden="true" />Phases</button>
           <button onClick={onOpenParties} style={ICON_BTN}><UsersThree size={14} weight="regular" aria-hidden="true" />Parties</button>
+          <button onClick={onOpenResources} style={ICON_BTN}><Users size={14} weight="regular" aria-hidden="true" />Resources</button>
         </div>
 
         {/* Data buttons */}

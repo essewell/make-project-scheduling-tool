@@ -19,6 +19,7 @@ export {
   Printer,
   SquaresFour,
   UploadSimple,
+  Users,
   UsersThree,
   Warning,
   X,
