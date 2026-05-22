@@ -1325,4 +1325,4 @@ Running log of work executed against this plan. Each entry: date, scope, files t
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase O complete (O.1–O.5 complete; O.3/O.4 confirmed already satisfied)
+**Status:** Shipped — v1.2 complete (A–O landed; released 2026-05-22 as `v0.2.0`)

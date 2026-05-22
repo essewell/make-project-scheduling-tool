@@ -9,15 +9,15 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 
 - **When:** 2026-05-22
 - **Agent:** Codex
-- **Did:** Completed Phase O (O.1–O.5): landed O.2 and O.5, and verified O.3/O.4 already satisfied; all landed steps passed full local gates.
+- **Did:** Shipped v1.2 (`v0.2.0`): finalized docs/artifacts, verified gates, updated version tracker, and prepared next-version handoff.
 
 ---
 
 ## Current Focus
 
-- **Active version:** v1.2 (visual refinement / de-vibecoded surface)
-- **Plan:** [.claude/plan-v1.2.md](./plan-v1.2.md)
-- **Phase in progress:** Post-Phase O closeout / v1.2 ship-readiness review
+- **Active version:** v1.3 (resource foundation)
+- **Plan:** none yet (planning required before build work)
+- **Phase in progress:** v1.2 closed / awaiting v1.3 planning
 
 ---
 
@@ -35,7 +35,10 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
   - Print canvas title-bar pattern already present in `PrintPreviewModal` A3 output.
 - **O.5** (commit `9d748a7`) — `src/components/topbar/TopBar.tsx`, `src/components/overlays/SetupWizard.tsx`
   - Refined MAKE wordmark with optical `K` baseline alignment tweak.
+- **M.4 evidence** (commit `1057b68`) — `docs/dark-mode-audit-1.2.md`, `docs/v1.2-screenshots/dark-mode/*`
+  - Added dark-mode audit report and screenshot set to align tracked evidence with landed phase status.
 - Build Changelog updated in `plan-v1.2.md §23`.
+- Version tracker updated: `v1.2` marked shipped; `v1.3` set active.
 
 All gates passed:
 - `npm run lint` ✅
@@ -52,9 +55,9 @@ None in tracked source. Remaining local generated/untracked artifacts are non-pr
 
 ## Next Action
 
-1. Run v1.2 acceptance sweep against `.claude/plan-v1.2.md §19`.
-2. If accepted, prepare ship handoff updates (`version-status.md` + final handoff note) and request push approval.
-3. Do NOT push to origin without explicit user approval.
+1. Claude/PM lane: author v1.3 plan (resource foundation) before codex implementation work begins.
+2. Codex lane: once v1.3 plan lands, execute per START-HERE read-order and update plan changelog + handoff each landing.
+3. Keep `docs/mobile-qa.md` owed real-device QA thread visible for Phase 11.8 dependency continuity.
 
 ---
 
