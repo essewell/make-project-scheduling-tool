@@ -74,7 +74,7 @@ export function GanttHeader({ timeline, dayPx, totalPx }: GanttHeaderProps) {
       userSelect: 'none',
     }}>
       {/* ── Primary tier ── */}
-      <div style={{ position: 'relative', height: TIER_H, borderBottom: '1px solid var(--color-border-light)' }}>
+      <div style={{ position: 'relative', height: TIER_H, borderBottom: '1px solid var(--rule)', background: 'var(--color-surface)' }}>
         {primaryBuckets.map((bucket, i) => {
           const next = primaryBuckets[i + 1]
           const width = next ? next.offset - bucket.offset : bucket.days * dayPx
@@ -98,7 +98,8 @@ export function GanttHeader({ timeline, dayPx, totalPx }: GanttHeaderProps) {
               <span style={{
                 fontSize: 'var(--text-xs)',
                 fontWeight: 'var(--weight-semibold)',
-                color: 'var(--color-text-secondary)',
+                color: 'var(--ink-primary)',
+                letterSpacing: '0.01em',
                 whiteSpace: 'nowrap',
               }}>
                 {bucket.label}
@@ -109,7 +110,7 @@ export function GanttHeader({ timeline, dayPx, totalPx }: GanttHeaderProps) {
       </div>
 
       {/* ── Secondary tier ── */}
-      <div style={{ position: 'relative', height: TIER_H }}>
+      <div style={{ position: 'relative', height: TIER_H, background: 'var(--color-surface-2)' }}>
         {secondaryItems.map((item, i) => {
           const isWeekend = '_weekend' in item && (item as SecondaryItem & { _weekend?: boolean })._weekend
           // At Month zoom (dayPx < 6) hide every other week label to prevent crowding;
@@ -139,9 +140,10 @@ export function GanttHeader({ timeline, dayPx, totalPx }: GanttHeaderProps) {
               {!hideWeekLabel && (
                 <span style={{
                   fontSize: 'var(--text-2xs)',
-                  color: isWeekend ? 'var(--color-text-dim)' : 'var(--color-text-tertiary)',
+                  color: isWeekend ? 'var(--ink-quiet)' : 'var(--ink-tertiary)',
                   whiteSpace: 'nowrap',
                   fontFamily: secondary === 'day' ? 'var(--font-mono)' : undefined,
+                  fontWeight: 'var(--weight-medium)',
                 }}>
                   {item.label}
                 </span>
