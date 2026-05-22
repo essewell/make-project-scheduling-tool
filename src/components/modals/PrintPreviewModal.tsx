@@ -131,25 +131,55 @@ export function PrintPreviewModal({
             </div>
           </div>
 
-          {/* Mode tabs */}
+          {/* Mode thumbnail strip */}
           <div style={{ display: 'flex', gap: 4, background: 'var(--color-surface-2)', padding: 3, borderRadius: 'var(--radius)' }}>
-            {(['gantt', 'summary'] as PrintMode[]).map(m => (
+            {([
+              {
+                id: 'gantt' as PrintMode,
+                label: 'Gantt',
+                thumb: (
+                  <svg width="36" height="20" viewBox="0 0 36 20" fill="none" aria-hidden="true">
+                    <rect x="2" y="3" width="18" height="3" rx="1" fill="currentColor" opacity="0.5" />
+                    <rect x="2" y="9" width="26" height="3" rx="1" fill="currentColor" opacity="0.7" />
+                    <rect x="2" y="15" width="12" height="3" rx="1" fill="currentColor" opacity="0.5" />
+                    <line x1="32" y1="1" x2="32" y2="19" stroke="currentColor" strokeWidth="1" opacity="0.35" />
+                  </svg>
+                ),
+              },
+              {
+                id: 'summary' as PrintMode,
+                label: 'Summary',
+                thumb: (
+                  <svg width="36" height="20" viewBox="0 0 36 20" fill="none" aria-hidden="true">
+                    <rect x="2" y="2" width="32" height="4" rx="1" fill="currentColor" opacity="0.25" />
+                    <line x1="2" y1="9" x2="34" y2="9" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+                    <line x1="2" y1="13" x2="34" y2="13" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+                    <line x1="2" y1="17" x2="34" y2="17" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+                    <line x1="10" y1="2" x2="10" y2="20" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
+                    <line x1="20" y1="2" x2="20" y2="20" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
+                  </svg>
+                ),
+              },
+            ]).map(({ id, label, thumb }) => (
               <button
-                key={m}
-                onClick={() => setMode(m)}
+                key={id}
+                onClick={() => setMode(id)}
                 style={{
-                  height: 28, padding: '0 12px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                  padding: '5px 10px 4px',
                   borderRadius: 'calc(var(--radius) - 2px)',
                   border: 'none',
-                  background: mode === m ? 'var(--color-surface)' : 'transparent',
-                  color: mode === m ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
-                  fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)',
+                  background: mode === id ? 'var(--color-surface)' : 'transparent',
+                  color: mode === id ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
+                  fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-medium)',
                   cursor: 'pointer',
-                  boxShadow: mode === m ? 'var(--shadow-sm)' : 'none',
+                  boxShadow: mode === id ? 'var(--shadow-sm)' : 'none',
                   transition: 'all 0.12s',
+                  lineHeight: 1,
                 }}
               >
-                {m === 'gantt' ? 'Gantt' : 'Summary'}
+                {thumb}
+                {label}
               </button>
             ))}
           </div>
@@ -236,10 +266,16 @@ function GanttPrintLayout({ tasks, groupMap, projectName, minDate, dayPx, today 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Title row */}
-      <div style={{ padding: '6px 10px', borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontWeight: 700, fontSize: 13 }}>{projectName}</div>
-        <div style={{ fontSize: 9, color: '#666' }}>Printed {prettyDate(today)}</div>
+      {/* Title bar */}
+      <div style={{ padding: '5px 10px', borderBottom: '1.5px solid #1c3048', background: '#1c3048', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: 7, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#7ca9cc', marginBottom: 1 }}>Project Schedule</div>
+          <div style={{ fontWeight: 700, fontSize: 12, color: '#fff' }}>{projectName}</div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: 7, color: '#7ca9cc', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Printed</div>
+          <div style={{ fontSize: 9, color: '#fff', fontFamily: 'monospace' }}>{prettyDate(today)}</div>
+        </div>
       </div>
 
       {/* Two-column layout */}
@@ -357,9 +393,15 @@ function SummaryPrintLayout({ tasks, groupMap, partyMap, projectName, workweek, 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '10px 14px' }}>
       {/* Title */}
-      <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-        <div style={{ fontWeight: 700, fontSize: 14 }}>{projectName}</div>
-        <div style={{ fontSize: 9, color: '#666' }}>Printed {prettyDate(today)}</div>
+      <div style={{ marginBottom: 8, padding: '5px 0', borderBottom: '1.5px solid #1c3048', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <div style={{ fontSize: 7, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#7ca9cc', marginBottom: 1 }}>Project Schedule — Summary</div>
+          <div style={{ fontWeight: 700, fontSize: 13, color: '#1c3048' }}>{projectName}</div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: 7, color: '#999', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Printed</div>
+          <div style={{ fontSize: 9, color: '#444', fontFamily: 'monospace' }}>{prettyDate(today)}</div>
+        </div>
       </div>
 
       {/* Table */}
