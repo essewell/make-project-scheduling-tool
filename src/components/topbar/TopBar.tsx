@@ -3,6 +3,20 @@ import type { Baseline, GhostStyle } from '../../types'
 import { ZOOM_LEVELS } from '../../constants'
 import { EditableTitle } from './EditableTitle'
 import { BaselineMenu } from '../overlays/BaselineMenu'
+import {
+  ArrowCounterClockwise,
+  Bookmarks,
+  CalendarBlank,
+  Camera,
+  Download,
+  Minus,
+  Path,
+  Plus,
+  Printer,
+  SquaresFour,
+  UploadSimple,
+  UsersThree,
+} from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -41,7 +55,7 @@ const ICON_BTN: React.CSSProperties = {
   background: 'transparent', color: 'white',
   fontSize: 'var(--text-xs)', cursor: 'pointer',
   fontFamily: 'var(--font-sans)',
-  display: 'flex', alignItems: 'center', gap: 4,
+  display: 'flex', alignItems: 'center', gap: 5,
   whiteSpace: 'nowrap', flexShrink: 0,
   transition: 'background 0.12s',
 }
@@ -98,7 +112,7 @@ export function TopBar({
           style={{ ...ICON_BTN, padding: '0 7px', fontSize: 14 }}
           title="Zoom out"
           disabled={zoomIndex >= ZOOM_LEVELS.length - 1}
-        >−</button>
+        ><Minus size={13} weight="regular" aria-hidden="true" /></button>
         <span style={{ fontSize: 'var(--text-xs)', color: 'rgba(255,255,255,0.7)', padding: '0 4px', minWidth: 44, textAlign: 'center' }}>
           {zoomLabel}
         </span>
@@ -107,7 +121,7 @@ export function TopBar({
           style={{ ...ICON_BTN, padding: '0 7px', fontSize: 14 }}
           title="Zoom in"
           disabled={zoomIndex <= 0}
-        >+</button>
+        ><Plus size={13} weight="regular" aria-hidden="true" /></button>
       </div>
 
       <div style={DIVIDER} />
@@ -123,33 +137,36 @@ export function TopBar({
           }}
           title="Baselines"
         >
-          ◎ Baselines{activeBaseline ? ` · ${activeBaseline.name}` : ''}
+          <Bookmarks size={14} weight="regular" aria-hidden="true" />
+          Baselines{activeBaseline ? ` · ${activeBaseline.name}` : ''}
         </button>
         <button
           onClick={onCaptureBaseline}
           style={{ ...ICON_BTN, padding: '0 8px' }}
           title="Capture current schedule as a baseline"
         >
-          ⊕ Capture
+          <Camera size={14} weight="regular" aria-hidden="true" />
+          Capture
         </button>
       </div>
 
       <div style={DIVIDER} />
 
       {/* Settings buttons */}
-      <button onClick={onOpenWorkweek} style={ICON_BTN}>Calendar</button>
-      <button onClick={onOpenGroups} style={ICON_BTN}>Phases</button>
-      <button onClick={onOpenParties} style={ICON_BTN}>Parties</button>
+      <button onClick={onOpenWorkweek} style={ICON_BTN}><CalendarBlank size={14} weight="regular" aria-hidden="true" />Calendar</button>
+      <button onClick={onOpenGroups} style={ICON_BTN}><SquaresFour size={14} weight="regular" aria-hidden="true" />Phases</button>
+      <button onClick={onOpenParties} style={ICON_BTN}><UsersThree size={14} weight="regular" aria-hidden="true" />Parties</button>
 
       <div style={DIVIDER} />
 
       {/* Data buttons */}
-      <button onClick={onOpenCsvImport} style={ICON_BTN}>Import</button>
-      <button onClick={onExportCsv} style={ICON_BTN}>Export</button>
+      <button onClick={onOpenCsvImport} style={ICON_BTN}><UploadSimple size={14} weight="regular" aria-hidden="true" />Import</button>
+      <button onClick={onExportCsv} style={ICON_BTN}><Download size={14} weight="regular" aria-hidden="true" />Export</button>
       <button
         onClick={onOpenPrint}
         style={{ ...ICON_BTN, background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.4)' }}
       >
+        <Printer size={14} weight="regular" aria-hidden="true" />
         Print
       </button>
 
@@ -167,6 +184,7 @@ export function TopBar({
             color: showCriticalPath ? '#ff8080' : 'rgba(255,255,255,0.7)',
           }}
         >
+          <Path size={14} weight="regular" aria-hidden="true" />
           CP
         </button>
       )}
@@ -177,7 +195,8 @@ export function TopBar({
         title="Reset project"
         style={{ ...ICON_BTN, color: 'rgba(255,255,255,0.5)' }}
       >
-        ↺ Reset
+        <ArrowCounterClockwise size={14} weight="regular" aria-hidden="true" />
+        Reset
       </button>
 
       <div style={DIVIDER} />
@@ -224,7 +243,8 @@ function NewTaskButton({ onClick }: { onClick: () => void }) {
         whiteSpace: 'nowrap',
       }}
     >
-      + New Task
+      <Plus size={14} weight="regular" aria-hidden="true" />
+      New Task
       <span style={{
         background: 'rgba(255,255,255,0.22)',
         borderRadius: 3,
