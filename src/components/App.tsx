@@ -6,6 +6,8 @@ import { computeCriticalPath } from '../lib/cpm'
 import { buildTimeline } from '../lib/timeline'
 import { generateCSV, triggerCSVDownload } from '../lib/csv'
 import { EXAMPLE_TASKS, EXAMPLE_GROUPS, EXAMPLE_PARTIES } from '../lib/exampleData'
+import { computeProjectTotalCost, computeTaskCosts } from '../lib/cost'
+import { computeResourceDemand } from '../lib/resourceDemand'
 import { useMidnightTicker } from '../hooks/useMidnightTicker'
 import { useScrollSync } from '../hooks/useScrollSync'
 import { useKeyboard } from '../hooks/useKeyboard'
@@ -58,6 +60,8 @@ export function App() {
   const [showCriticalPath, setShowCriticalPath] = useState(false)
   const [completionFlashId, setCompletionFlashId] = useState<string | null>(null)
   const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
+  const [_selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
+  const [_histogramVisible, setHistogramVisible] = useState(false)
 
   // ── Modal state ───────────────────────────────────────────────────────────
   const [linkBuilderTaskId, setLinkBuilderTaskId] = useState<string | null>(null)
@@ -152,6 +156,44 @@ export function App() {
     if (!showCriticalPath || !hasDeps) return null
     return computeCriticalPath(enrichedTasks, dependencies)
   }, [showCriticalPath, hasDeps, enrichedTasks, dependencies])
+
+  const taskCosts = useMemo(
+    () =>
+      computeTaskCosts(enrichedTasks, {
+        resources,
+        assignments,
+        workweek,
+        holidays,
+      }),
+    [enrichedTasks, resources, assignments, workweek, holidays],
+  )
+
+  const projectCost = useMemo(() => computeProjectTotalCost(taskCosts), [taskCosts])
+
+  const overAllocationByResource = useMemo(() => {
+    return resources.map((resource) => {
+      const demand = computeResourceDemand(resource.id, {
+        tasks: enrichedTasks,
+        assignments,
+        resources,
+        timeline,
+        workweek,
+        holidays,
+      })
+      const overCount = demand.filter((point) => point.overAllocation > 0).length
+      return { resourceId: resource.id, overCount }
+    })
+  }, [resources, enrichedTasks, assignments, timeline, workweek, holidays])
+
+  const overAllocationCount = useMemo(
+    () => overAllocationByResource.reduce((sum, item) => sum + item.overCount, 0),
+    [overAllocationByResource],
+  )
+
+  const firstOverAllocatedResourceId = useMemo(
+    () => overAllocationByResource.find((item) => item.overCount > 0)?.resourceId ?? null,
+    [overAllocationByResource],
+  )
 
   // ── Persistence ───────────────────────────────────────────────────────────
 
@@ -583,7 +625,18 @@ export function App() {
             </div>
           )}
 
-          <StatBar tasks={enrichedTasks} today={today} criticalPath={criticalPath} />
+          <StatBar
+            tasks={enrichedTasks}
+            today={today}
+            criticalPath={criticalPath}
+            projectCost={projectCost}
+            overAllocationCount={overAllocationCount}
+            onOpenOverAllocations={() => {
+              if (!firstOverAllocatedResourceId) return
+              setSelectedResourceId(firstOverAllocatedResourceId)
+              setHistogramVisible(true)
+            }}
+          />
 
           <FilterBar
             groups={groups}
