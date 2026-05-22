@@ -10,7 +10,7 @@ import { GanttGrid } from './GanttGrid'
 import { GanttBar } from './GanttBar'
 import { DependencyArrows } from './DependencyArrows'
 import { BaselineGhostBars } from './BaselineGhostBars'
-import { CircleHalf, Minus, Path, Plus, SquaresFour } from '../../lib/icons'
+import { CalendarBlank, CircleHalf, Minus, Path, Plus, SquaresFour } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +40,7 @@ interface GanttProps {
   onZoomIn: () => void
   onZoomOut: () => void
   onSetGhostStyle: (style: GhostStyle) => void
+  isComputing?: boolean
 }
 
 // ─── Gantt ────────────────────────────────────────────────────────────────────
@@ -70,6 +71,7 @@ export function Gantt({
   onZoomIn,
   onZoomOut,
   onSetGhostStyle,
+  isComputing = false,
 }: GanttProps) {
   // ── Derived ────────────────────────────────────────────────────────────────
 
@@ -112,6 +114,7 @@ export function Gantt({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', background: 'var(--color-surface-2)' }}>
+      {isComputing && <div className="computing-bar" aria-hidden="true" />}
       {/* ── Scrollable gantt area ── */}
       <div
         ref={ganttRef}
@@ -316,13 +319,19 @@ export function Gantt({
           position: 'absolute',
           inset: 0,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'var(--color-text-tertiary)',
-          fontSize: 'var(--text-sm)',
+          gap: 8,
           pointerEvents: 'none',
         }}>
-          Add tasks to see the Gantt chart.
+          <CalendarBlank size={28} weight="regular" color="var(--color-text-dim)" aria-hidden="true" />
+          <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-tertiary)' }}>
+            No tasks yet
+          </div>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
+            Add a task to see your schedule.
+          </div>
         </div>
       )}
     </div>

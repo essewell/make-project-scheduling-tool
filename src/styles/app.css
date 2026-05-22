@@ -51,6 +51,33 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes computing-sweep {
+  0%   { left: -40%; width: 40%; }
+  60%  { left: 100%; width: 40%; }
+  100% { left: 100%; width: 40%; }
+}
+
+/* 2px shimmer bar shown during deferred filter computation on large datasets */
+.computing-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  overflow: hidden;
+  z-index: 10;
+  pointer-events: none;
+}
+.computing-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0.7;
+  animation: computing-sweep 1.2s ease-in-out infinite;
+}
+
 /* ─── App shell ─────────────────────────────────────────────────────────────── */
 
 .app {

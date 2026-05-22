@@ -3,7 +3,7 @@ import type { Group, Party, VisibleRow, Task } from '../../types'
 import { daysBetween, shortDate } from '../../lib/dates'
 import { ROW_HEIGHT, GANTT_HEADER_HEIGHT } from '../../constants'
 import { StatusBadge } from './StatusBadge'
-import { CaretDown, CaretRight } from '../../lib/icons'
+import { CaretDown, CaretRight, Funnel } from '../../lib/icons'
 
 const WBS_COL_WIDTH = 24
 
@@ -12,6 +12,8 @@ const WBS_COL_WIDTH = 24
 interface TaskListProps {
   visibleRows: VisibleRow[]
   filteredTasks: Task[]
+  taskCount: number
+  isComputing?: boolean
   groups: Group[]
   parties: Party[]
   selectedTaskId: string | null
@@ -367,6 +369,8 @@ const TaskRow = memo(function TaskRow({
 export function TaskList({
   visibleRows,
   filteredTasks,
+  taskCount,
+  isComputing = false,
   groups,
   parties,
   selectedTaskId,
@@ -404,7 +408,8 @@ export function TaskList({
     groupColorMap.get(task.group) ?? '#378ADD'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--color-surface)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--color-surface)', position: 'relative' }}>
+      {isComputing && <div className="computing-bar" aria-hidden="true" />}
       {/* ── Sticky header ── */}
       <div style={{
         position: 'sticky',
@@ -439,14 +444,15 @@ export function TaskList({
         onScroll={onScroll}
         style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}
       >
-        {visibleRows.length === 0 && (
-          <div style={{
-            padding: '32px 24px',
-            textAlign: 'center',
-            color: 'var(--color-text-tertiary)',
-            fontSize: 'var(--text-sm)',
-          }}>
-            No tasks match the current filters.
+        {visibleRows.length === 0 && taskCount > 0 && (
+          <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, textAlign: 'center' }}>
+            <Funnel size={22} weight="regular" color="var(--color-text-dim)" aria-hidden="true" />
+            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-tertiary)' }}>
+              No results
+            </div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
+              No tasks match the current filters.
+            </div>
           </div>
         )}
 

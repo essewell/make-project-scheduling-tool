@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef, useTransition } from 'react'
 import type { PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline } from '../types'
 import { loadState, saveState } from '../lib/storage'
 import { refreshAutoProgress } from '../lib/progress'
@@ -10,7 +10,7 @@ import { useMidnightTicker } from '../hooks/useMidnightTicker'
 import { useScrollSync } from '../hooks/useScrollSync'
 import { useKeyboard } from '../hooks/useKeyboard'
 import { useOnboarding } from '../hooks/useOnboarding'
-import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX } from '../constants'
+import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX, LARGE_TASK_THRESHOLD } from '../constants'
 import { TaskList } from './task-list/TaskList'
 import { Gantt } from './gantt/Gantt'
 import { SidePanel } from './panels/SidePanel'
@@ -51,6 +51,7 @@ export function App() {
   const [panelOpen, setPanelOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterState, setFilterState] = useState<FilterState>(INITIAL_FILTER)
+  const [isPending, startTransition] = useTransition()
   const [zoomIndex, setZoomIndex] = useState(DEFAULT_ZOOM_INDEX)
   const [showCriticalPath, setShowCriticalPath] = useState(false)
   const [completionFlashId, setCompletionFlashId] = useState<string | null>(null)
@@ -151,8 +152,11 @@ export function App() {
 
   // ── Persistence ───────────────────────────────────────────────────────────
 
+  const [storageFullBanner, setStorageFullBanner] = useState(false)
+
   useEffect(() => {
-    saveState(state)
+    const ok = saveState(state)
+    if (!ok) setStorageFullBanner(true)
   }, [state])
 
   useEffect(() => {
@@ -517,6 +521,32 @@ export function App() {
             onNewTask={handleNewTask}
           />
 
+          {storageFullBanner && (
+            <div style={{
+              background: 'var(--color-danger-dim)',
+              borderBottom: '1px solid var(--color-danger)',
+              padding: '6px 16px',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--color-danger)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 8,
+              flexShrink: 0,
+            }}>
+              <span>
+                <strong>Storage full.</strong> Your last change could not be saved. Export a CSV backup to avoid losing work.
+              </span>
+              <button
+                onClick={() => setStorageFullBanner(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)', fontSize: 'var(--text-xs)', padding: '0 4px', flexShrink: 0 }}
+                aria-label="Dismiss storage warning"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           <StatBar tasks={enrichedTasks} today={today} criticalPath={criticalPath} />
 
           <FilterBar
@@ -526,8 +556,8 @@ export function App() {
             visibleCount={visibleTaskIds.length}
             searchTerm={searchTerm}
             filterState={filterState}
-            onSearch={setSearchTerm}
-            onFilter={setFilterState}
+            onSearch={(q) => startTransition(() => setSearchTerm(q))}
+            onFilter={(f) => startTransition(() => setFilterState(f))}
           />
 
           {/* ── Main content area ── */}
@@ -536,6 +566,8 @@ export function App() {
               <TaskList
               visibleRows={visibleRows}
               filteredTasks={filteredTasks}
+              taskCount={enrichedTasks.length}
+              isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
               groups={groups}
               parties={parties}
               today={today}
@@ -578,6 +610,7 @@ export function App() {
               onZoomIn={onZoomIn}
               onZoomOut={onZoomOut}
               onSetGhostStyle={setGhostStyle}
+              isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
             />
             </div>
 

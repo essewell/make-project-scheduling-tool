@@ -69,3 +69,5 @@ export const ZOOM_LEVELS = [
 ] as const
 
 export const DEFAULT_ZOOM_INDEX = 1  // Week
+
+export const LARGE_TASK_THRESHOLD = 500  // task count above which loading bar appears
