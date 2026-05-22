@@ -11,6 +11,7 @@ import { GanttBar } from './GanttBar'
 import { DependencyArrows } from './DependencyArrows'
 import { BaselineGhostBars } from './BaselineGhostBars'
 import { ResourceHistogram } from './ResourceHistogram'
+import { computeResourceDemand } from '../../lib/resourceDemand'
 import { CalendarBlank, CircleHalf, Minus, Path, Plus, SquaresFour } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -109,6 +110,24 @@ export function Gantt({
     new Map(groups.map(g => [g.id, g.color])),
     [groups]
   )
+  const overAllocatedOffsets = useMemo(() => {
+    if (!selectedResourceId) return new Set<number>()
+    const demand = computeResourceDemand(selectedResourceId, {
+      tasks: visibleTasks,
+      assignments,
+      resources,
+      timeline,
+      workweek,
+      holidays,
+    })
+    const offsets = new Set<number>()
+    demand.forEach((point, index) => {
+      if (point.overAllocation <= 0) return
+      const offset = timeline.days[index]?.offset
+      if (offset !== undefined) offsets.add(offset)
+    })
+    return offsets
+  }, [selectedResourceId, visibleTasks, assignments, resources, timeline, workweek, holidays])
 
   const totalPx = timeline.totalPx
   const totalHeight = GANTT_HEADER_HEIGHT + visibleRows.length * ROW_HEIGHT
@@ -152,6 +171,7 @@ export function Gantt({
             timeline={timeline}
             dayPx={dayPx}
             totalPx={totalPx}
+            overAllocatedOffsets={overAllocatedOffsets}
           />
 
           {/* Grid: weekend bands, lines, today, row dividers */}
