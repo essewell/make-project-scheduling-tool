@@ -793,7 +793,10 @@ export function App() {
       {resourcesManagerOpen && (
         <ResourcesManager
           resources={resources}
+          assignments={assignments}
+          tasks={enrichedTasks}
           onSave={(newResources) => updateState({ resources: newResources })}
+          onSaveAssignments={(newAssignments) => updateState({ assignments: newAssignments })}
           onClose={() => setResourcesManagerOpen(false)}
         />
       )}
