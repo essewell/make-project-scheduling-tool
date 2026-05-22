@@ -1,7 +1,7 @@
 import { useCallback, useMemo, type RefObject } from 'react'
 import type {
   Baseline, CpmResult, Dependency, GhostStyle,
-  Group, Task, VisibleRow, WorkweekConfig,
+  Group, Resource, ResourceAssignment, Task, VisibleRow, WorkweekConfig,
 } from '../../types'
 import type { Timeline } from '../../types'
 import { GANTT_HEADER_HEIGHT, ROW_HEIGHT, ZOOM_LEVELS } from '../../constants'
@@ -10,6 +10,7 @@ import { GanttGrid } from './GanttGrid'
 import { GanttBar } from './GanttBar'
 import { DependencyArrows } from './DependencyArrows'
 import { BaselineGhostBars } from './BaselineGhostBars'
+import { ResourceHistogram } from './ResourceHistogram'
 import { CalendarBlank, CircleHalf, Minus, Path, Plus, SquaresFour } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -32,6 +33,10 @@ interface GanttProps {
   criticalPath: CpmResult | null
   workweek: WorkweekConfig
   holidays: string[]
+  resources: Resource[]
+  assignments: ResourceAssignment[]
+  selectedResourceId: string | null
+  histogramVisible: boolean
   ganttRef: RefObject<HTMLDivElement>
   onScroll: () => void
   onUpdateTask: (id: string, patch: Partial<Task>) => void
@@ -40,6 +45,8 @@ interface GanttProps {
   onZoomIn: () => void
   onZoomOut: () => void
   onSetGhostStyle: (style: GhostStyle) => void
+  onToggleHistogram: () => void
+  onSelectResource: (resourceId: string) => void
   isComputing?: boolean
 }
 
@@ -63,6 +70,10 @@ export function Gantt({
   criticalPath,
   workweek,
   holidays,
+  resources,
+  assignments,
+  selectedResourceId,
+  histogramVisible,
   ganttRef,
   onScroll,
   onUpdateTask,
@@ -71,6 +82,8 @@ export function Gantt({
   onZoomIn,
   onZoomOut,
   onSetGhostStyle,
+  onToggleHistogram,
+  onSelectResource,
   isComputing = false,
 }: GanttProps) {
   // ── Derived ────────────────────────────────────────────────────────────────
@@ -83,6 +96,10 @@ export function Gantt({
     }
     return map
   }, [visibleRows])
+  const visibleTasks = useMemo(
+    () => visibleRows.filter((row): row is { kind: 'task'; task: Task } => row.kind === 'task').map((row) => row.task),
+    [visibleRows],
+  )
 
   const groupColorMap = useMemo(() =>
     new Map(groups.map(g => [g.id, g.color])),
@@ -313,6 +330,29 @@ export function Gantt({
         </div>
       )}
 
+      <div style={{
+        position: 'absolute',
+        bottom: baselines.length > 0 ? 96 : 56,
+        right: 16,
+        zIndex: 10,
+      }}>
+        <button
+          onClick={onToggleHistogram}
+          style={{
+            height: 24,
+            padding: '0 8px',
+            borderRadius: 'var(--radius)',
+            border: '1px solid var(--color-border)',
+            background: histogramVisible ? 'var(--accent-dim)' : 'var(--color-surface)',
+            color: histogramVisible ? 'var(--accent)' : 'var(--color-text-secondary)',
+            fontSize: 'var(--text-2xs)',
+            cursor: 'pointer',
+          }}
+        >
+          Histogram
+        </button>
+      </div>
+
       {/* Empty state */}
       {visibleRows.length === 0 && (
         <div style={{
@@ -333,6 +373,20 @@ export function Gantt({
             Add a task to see your schedule.
           </div>
         </div>
+      )}
+
+      {histogramVisible && (
+        <ResourceHistogram
+          resources={resources}
+          assignments={assignments}
+          tasks={visibleTasks}
+          timeline={timeline}
+          dayPx={dayPx}
+          workweek={workweek}
+          holidays={holidays}
+          selectedResourceId={selectedResourceId}
+          onSelectResource={onSelectResource}
+        />
       )}
     </div>
   )

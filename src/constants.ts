@@ -8,6 +8,9 @@ export const TOPBAR_HEIGHT           = 52   // px
 export const STAT_BAR_HEIGHT         = 32   // px
 export const FILTER_BAR_HEIGHT       = 44   // px
 export const GANTT_HEADER_HEIGHT     = 64   // px — sticky two-tier header
+export const HISTOGRAM_HEIGHT        = 140  // px
+export const HISTOGRAM_PAD_X         = 8    // px
+export const HISTOGRAM_BAR_GAP       = 1    // px
 
 // Gantt bars
 export const BAR_HEIGHT              = 20   // px — main bar height
@@ -71,3 +74,4 @@ export const ZOOM_LEVELS = [
 export const DEFAULT_ZOOM_INDEX = 1  // Week
 
 export const LARGE_TASK_THRESHOLD = 500  // task count above which loading bar appears
+export const RESOURCE_MAX_PER_PROJECT = 200

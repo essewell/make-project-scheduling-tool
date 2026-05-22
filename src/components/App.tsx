@@ -61,8 +61,8 @@ export function App() {
   const [showCostColumn, setShowCostColumn] = useState(false)
   const [completionFlashId, setCompletionFlashId] = useState<string | null>(null)
   const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
-  const [_selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
-  const [_histogramVisible, setHistogramVisible] = useState(false)
+  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
+  const [histogramVisible, setHistogramVisible] = useState(false)
 
   // ── Modal state ───────────────────────────────────────────────────────────
   const [linkBuilderTaskId, setLinkBuilderTaskId] = useState<string | null>(null)
@@ -195,6 +195,15 @@ export function App() {
     () => overAllocationByResource.find((item) => item.overCount > 0)?.resourceId ?? null,
     [overAllocationByResource],
   )
+
+  useEffect(() => {
+    if (resources.length === 0) {
+      setSelectedResourceId(null)
+      return
+    }
+    if (selectedResourceId && resources.some((resource) => resource.id === selectedResourceId)) return
+    setSelectedResourceId(resources[0]?.id ?? null)
+  }, [resources, selectedResourceId])
 
   // ── Persistence ───────────────────────────────────────────────────────────
 
@@ -689,6 +698,10 @@ export function App() {
               kbFocusId={kbFocusId}
               completionFlashId={completionFlashId}
               dependencies={dependencies}
+              resources={resources}
+              assignments={assignments}
+              selectedResourceId={selectedResourceId}
+              histogramVisible={histogramVisible}
               baselines={baselines}
               activeBaselineId={activeBaselineId}
               ghostStyle={ghostStyle}
@@ -704,6 +717,8 @@ export function App() {
               onZoomIn={onZoomIn}
               onZoomOut={onZoomOut}
               onSetGhostStyle={setGhostStyle}
+              onToggleHistogram={() => setHistogramVisible((value) => !value)}
+              onSelectResource={setSelectedResourceId}
               isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
             />
             </div>
