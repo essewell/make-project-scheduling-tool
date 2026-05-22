@@ -464,3 +464,18 @@ input[type="range"] {
 .dep-type-btn:disabled {
   cursor: default;
 }
+
+/* ─── Dark mode grain overlay (M.2) ────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: url('/grain.svg') repeat;
+    background-size: 200px 200px;
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 9998;
+    mix-blend-mode: screen;
+  }
+}
