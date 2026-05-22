@@ -25,7 +25,7 @@ handoff
 *.sw?
 .env
 .env.local
-
+.gitignore
 
 # Claude Code internals (prompts, plans, memory) and other .md files associated with agents and Claude Code
 .claude/

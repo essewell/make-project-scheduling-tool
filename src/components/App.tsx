@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef, useTransition } from 'react'
-import type { PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline } from '../types'
+import type { PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline, ResourceAssignment } from '../types'
 import { loadState, saveState } from '../lib/storage'
 import { refreshAutoProgress } from '../lib/progress'
 import { computeCriticalPath } from '../lib/cpm'
@@ -44,7 +44,7 @@ export function App() {
   const [state, setState] = useState<PersistedState>(INITIAL_STATE)
   const { tasks, groups, parties, dependencies, notes, collapsedGroups,
           workweek, holidays, onboardingPhase,
-          projectName, baselines, ghostStyle } = state
+          projectName, baselines, ghostStyle, assignments } = state
   const resources = state.resources
 
   // ── Transient UI state ────────────────────────────────────────────────────
@@ -218,6 +218,7 @@ export function App() {
       tasks: prev.tasks.filter(t => t.id !== id),
       dependencies: prev.dependencies.filter(d => d.fromId !== id && d.toId !== id),
       notes: prev.notes.filter(n => n.taskId !== id),
+      assignments: prev.assignments.filter(a => a.taskId !== id),
     }))
     if (selectedTaskId === id) {
       setSelectedTaskId(null)
@@ -239,6 +240,37 @@ export function App() {
       when: new Date().toISOString(),
     }
     setState(prev => ({ ...prev, notes: [...prev.notes, note] }))
+  }, [])
+
+  const onAddAssignment = useCallback((taskId: string) => {
+    const defaultResourceId = resources[0]?.id
+    if (!defaultResourceId) return
+
+    const assignment: ResourceAssignment = {
+      id: Math.random().toString(36).slice(2) + Date.now().toString(36),
+      taskId,
+      resourceId: defaultResourceId,
+      quantity: 1,
+      notes: '',
+    }
+
+    setState(prev => ({ ...prev, assignments: [...prev.assignments, assignment] }))
+  }, [resources])
+
+  const onUpdateAssignment = useCallback((assignmentId: string, patch: Partial<ResourceAssignment>) => {
+    setState(prev => ({
+      ...prev,
+      assignments: prev.assignments.map((assignment) =>
+        assignment.id === assignmentId ? { ...assignment, ...patch } : assignment,
+      ),
+    }))
+  }, [])
+
+  const onRemoveAssignment = useCallback((assignmentId: string) => {
+    setState(prev => ({
+      ...prev,
+      assignments: prev.assignments.filter((assignment) => assignment.id !== assignmentId),
+    }))
   }, [])
 
   const onToggleGroup = useCallback((groupId: string) => {
@@ -627,12 +659,17 @@ export function App() {
                 parties={parties}
                 notes={notes}
                 dependencies={dependencies}
+                resources={resources}
+                assignments={assignments}
                 workweek={workweek}
                 holidays={holidays}
                 today={today}
                 onUpdateTask={onUpdateTask}
                 onDeleteTask={onDeleteTask}
                 onAddNote={onAddNote}
+                onAddAssignment={onAddAssignment}
+                onUpdateAssignment={onUpdateAssignment}
+                onRemoveAssignment={onRemoveAssignment}
                 onClose={handleClosePanel}
                 onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
               />
@@ -720,12 +757,17 @@ export function App() {
             parties={parties}
             notes={notes}
             dependencies={dependencies}
+            resources={resources}
+            assignments={assignments}
             workweek={workweek}
             holidays={holidays}
             today={today}
             onUpdateTask={onUpdateTask}
             onDeleteTask={onDeleteTask}
             onAddNote={onAddNote}
+            onAddAssignment={onAddAssignment}
+            onUpdateAssignment={onUpdateAssignment}
+            onRemoveAssignment={onRemoveAssignment}
             onClose={handleClosePanel}
             onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
             mode="mobile"
