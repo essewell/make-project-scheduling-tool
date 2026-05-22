@@ -385,3 +385,10 @@ input[type="range"] {
     size: A3 landscape;
   }
 }
+
+/* ─── Filter chips ────────────────────────────────────────────────────────── */
+
+.filter-chip:hover {
+  background: var(--surface-sunken) !important;
+  border-color: var(--color-border-mid) !important;
+}
