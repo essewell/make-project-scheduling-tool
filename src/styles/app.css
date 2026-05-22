@@ -28,6 +28,11 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes wizard-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Task completion flash */
 @keyframes schedule-completion-pulse {
   0%   { background-color: var(--color-selected-bg); }
@@ -188,6 +193,16 @@ input[type="range"] {
   border-top: none;
 }
 
+.wizard-rise {
+  animation: wizard-rise 420ms ease-out both;
+}
+
+.wizard-rise[data-delay="0"] { animation-delay: 0ms; }
+.wizard-rise[data-delay="1"] { animation-delay: 60ms; }
+.wizard-rise[data-delay="2"] { animation-delay: 120ms; }
+.wizard-rise[data-delay="3"] { animation-delay: 180ms; }
+.wizard-rise[data-delay="4"] { animation-delay: 240ms; }
+
 /* ─── Delete button (SidePanel footer) ─────────────────────────────────────── */
 
 .btn-delete:hover {
@@ -296,6 +311,18 @@ input[type="range"] {
 
   .app-main > div[hidden] {
     display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .wizard-split {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wizard-rise {
+    animation: none !important;
   }
 }
 
