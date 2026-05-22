@@ -15,6 +15,7 @@ interface ResourceHistogramProps {
   holidays: string[]
   selectedResourceId: string | null
   onSelectResource: (resourceId: string) => void
+  isComputing?: boolean
 }
 
 function getResourceById(resources: Resource[], resourceId: string | null): Resource | null {
@@ -32,6 +33,7 @@ export function ResourceHistogram({
   holidays,
   selectedResourceId,
   onSelectResource,
+  isComputing = false,
 }: ResourceHistogramProps) {
   const selectedResource = getResourceById(resources, selectedResourceId)
 
@@ -62,8 +64,11 @@ export function ResourceHistogram({
         background: 'var(--surface-sunken)',
         padding: `8px ${HISTOGRAM_PAD_X}px`,
         boxSizing: 'border-box',
+        position: 'relative',
       }}
     >
+      {isComputing && <div className="computing-bar" aria-hidden="true" />}
+
       <ResourceSelectorPill
         resources={resources}
         selectedResourceId={selectedResourceId}

@@ -415,6 +415,7 @@ export function Gantt({
             holidays={holidays}
             selectedResourceId={selectedResourceId}
             onSelectResource={onSelectResource}
+            isComputing={isComputing}
           />
         </div>
       )}
