@@ -17,7 +17,8 @@ export interface Task {
   milestone: boolean
   manualStatus: boolean
   manualPct: boolean
-  /** derived — IDs of predecessor tasks (for backward compat display) */
+  /** @derived — read-only display value populated from Dependency[] edges during render.
+   *  Never write to this field from new code. Mutations belong in `dependencies`. */
   deps: string[]
 }
 
