@@ -1129,7 +1129,42 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - Added inner-top highlight to New Task button and tightened mono keycap badge styling.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
 
+- **2026-05-22 — Phase F.1: critical path rail + dim calibration**
+  - Files: `src/components/gantt/GanttBar.tsx`
+  - Changes: added 3px critical left rail and tuned non-critical dim state to 60% opacity for clearer context retention.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase F.2: Today line pill labeling**
+  - Files: `src/components/gantt/GanttGrid.tsx`
+  - Changes: updated today pill to explicit `TODAY · <DAY DATE>` format in uppercase.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase F.3: header tier weight differentiation**
+  - Files: `src/components/gantt/GanttHeader.tsx`
+  - Changes: strengthened primary tier emphasis and softened secondary tier with distinct surface/background and ink hierarchy.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase F.4: baseline ghost stripe refinement**
+  - Files: `src/components/gantt/BaselineGhostBars.tsx`
+  - Changes: adjusted stripe angle from 45° to 30° and added subtle outline for baseline/live separation.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase F.5: dependency arrow refinement**
+  - Files: `src/components/gantt/DependencyArrows.tsx`
+  - Changes: set standard arrows to 1px and critical arrows to 1.5px, with critical color unified to `--data-negative`.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase F.6: milestone completion-state styling**
+  - Files: `src/components/gantt/GanttBar.tsx`
+  - Changes: added milestone fill/outline semantics for complete, at-risk, delayed, and default states.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase F.7–F.8: iconized gantt control pills**
+  - Files: `src/components/gantt/Gantt.tsx`
+  - Changes: converted ghost-style toggle to icon-based segmented control and replaced zoom +/- glyphs with Phosphor icons plus explicit `Zoom · <mode>` label.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase E complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 landed locally)
+**Status:** Active — Phase F complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 + F.1..F.8 landed locally)

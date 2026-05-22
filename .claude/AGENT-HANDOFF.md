@@ -9,7 +9,7 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 
 - **When:** 2026-05-22
 - **Agent:** Codex
-- **Did:** Completed v1.2 Phases D and E, including SetupWizard redesign milestone and TopBar polish, with full local gate runs.
+- **Did:** Completed v1.2 Phase F (F.1–F.8) Gantt diagrammatic polish with full local gates per landed task.
 
 ---
 
@@ -17,23 +17,29 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 
 - **Active version:** v1.2 (visual refinement / de-vibecoded surface)
 - **Plan:** [.claude/plan-v1.2.md](./plan-v1.2.md)
-- **Phase in progress:** Ready for Phase F (Gantt diagrammatic polish)
+- **Phase in progress:** Ready for Phase G (TaskList refinement)
 
 ---
 
 ## What Just Landed
 
-- **D.1–D.6** `src/components/overlays/SetupWizard.tsx`, `src/styles/app.css`, `public/setup-wizard.svg`, `public/wizard-bg.svg`
-  - Replaced centered wizard card with split asymmetric composition.
-  - Added upgraded copy hierarchy, wordmark detail, right-panel visual asset, craft overlay asset, and staggered motion with reduced-motion fallback.
-- **E.1–E.4** `src/components/topbar/TopBar.tsx`, `src/components/topbar/EditableTitle.tsx`
-  - Reduced divider clutter to two structural rules and widened group spacing.
-  - Demoted Print visual weight.
-  - Refined wordmark tracking and added project-title keyboard focus underline affordance.
-  - Added New Task inner-top highlight and refined mono key badge.
+- **F.1** `src/components/gantt/GanttBar.tsx`
+  - Critical-path bars now use a 3px left rail; non-critical bars dimmed to 60%.
+- **F.2** `src/components/gantt/GanttGrid.tsx`
+  - Today pill now shows `TODAY · <DAY DATE>`.
+- **F.3** `src/components/gantt/GanttHeader.tsx`
+  - Clearer primary/secondary tier contrast and ink hierarchy.
+- **F.4** `src/components/gantt/BaselineGhostBars.tsx`
+  - Ghost stripe angle updated to 30° with subtle outline.
+- **F.5** `src/components/gantt/DependencyArrows.tsx`
+  - Arrow stroke tuning (1px default / 1.5px critical) and `--data-negative` for critical.
+- **F.6** `src/components/gantt/GanttBar.tsx`
+  - Milestone fill/outline semantics now respond to task completion/risk state.
+- **F.7–F.8** `src/components/gantt/Gantt.tsx`
+  - Ghost-style toggle converted to icon segmented control; zoom pill now uses icon buttons + explicit mode label.
 - Build Changelog updated in `plan-v1.2.md §23`.
 
-All gates passed:
+All gates passed after each landed task:
 - `npm run lint`
 - `npm run type-check`
 - `npm run test:unit`
@@ -44,9 +50,9 @@ All gates passed:
 
 ## Next Action
 
-1. Start **Phase F.1** in `plan-v1.2.md §16`: critical path styling (3px left rail + non-critical dimming polish).
-2. Continue F.2–F.8 (today pill, header tier differentiation, baseline ghost refinement, dependency arrow tuning, milestone logic, ghost toggle, zoom pill) with full gates after each landing.
-3. Keep appending `plan-v1.2.md §23` and refreshing this file at each stop.
+1. Start **Phase G.1** in `plan-v1.2.md §16`: normalize WBS column to 24px.
+2. Continue G.2–G.4 (float sign/tabular, party tint `color-mix`, hover `--surface-sunken`) with full gates per landing.
+3. Keep appending `plan-v1.2.md §23` and refreshing this handoff at each stop.
 
 ---
 
