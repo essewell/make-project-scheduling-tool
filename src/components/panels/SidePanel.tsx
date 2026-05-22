@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect, useRef, type KeyboardEvent } from 'react'
-import type { Task, Group, Party, Note, Dependency, WorkweekConfig } from '../../types'
+import type { Task, Group, Party, Note, Dependency, WorkweekConfig, Resource, ResourceAssignment } from '../../types'
 import { daysBetween } from '../../lib/dates'
 import { workdays } from '../../lib/workdays'
 import { ActualDatesSection } from './ActualDatesSection'
+import { ResourceAssignmentSection } from './ResourceAssignmentSection'
 import { CalendarBlank, X } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -14,12 +15,17 @@ interface SidePanelProps {
   parties: Party[]
   notes: Note[]
   dependencies: Dependency[]
+  resources: Resource[]
+  assignments: ResourceAssignment[]
   workweek: WorkweekConfig
   holidays: string[]
   today: string
   onUpdateTask: (id: string, patch: Partial<Task>) => void
   onDeleteTask: (id: string) => void
   onAddNote: (taskId: string, text: string) => void
+  onAddAssignment: (taskId: string) => void
+  onUpdateAssignment: (assignmentId: string, patch: Partial<ResourceAssignment>) => void
+  onRemoveAssignment: (assignmentId: string) => void
   onClose: () => void
   onOpenLinkBuilder: (taskId: string) => void
   mode?: 'desktop' | 'mobile'
@@ -111,12 +117,17 @@ export function SidePanel({
   parties,
   notes,
   dependencies,
+  resources,
+  assignments,
   workweek,
   holidays,
   today: _today,
   onUpdateTask,
   onDeleteTask,
   onAddNote,
+  onAddAssignment,
+  onUpdateAssignment,
+  onRemoveAssignment,
   onClose,
   onOpenLinkBuilder,
   mode = 'desktop',
@@ -432,6 +443,17 @@ export function SidePanel({
           actualStart={task.actualStart}
           actualFinish={task.actualFinish}
           onChange={patch => update(patch)}
+        />
+
+        <ResourceAssignmentSection
+          task={task}
+          resources={resources}
+          assignments={assignments}
+          workweek={workweek}
+          holidays={holidays}
+          onAddAssignment={onAddAssignment}
+          onUpdateAssignment={onUpdateAssignment}
+          onRemoveAssignment={onRemoveAssignment}
         />
 
         {/* Dependencies preview */}

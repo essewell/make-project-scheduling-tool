@@ -7,11 +7,29 @@ interface StatBarProps {
   tasks: Task[]
   today: string
   criticalPath?: CpmResult | null
+  projectCost?: number
+  overAllocationCount?: number
+  onOpenOverAllocations?: () => void
 }
 
 // ─── StatBar ──────────────────────────────────────────────────────────────────
 
-export function StatBar({ tasks, today, criticalPath }: StatBarProps) {
+function formatMoney(value: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
+export function StatBar({
+  tasks,
+  today,
+  criticalPath,
+  projectCost = 0,
+  overAllocationCount = 0,
+  onOpenOverAllocations,
+}: StatBarProps) {
   const count = tasks.length
 
   // Project window: earliest start → latest end across all tasks
@@ -176,6 +194,40 @@ export function StatBar({ tasks, today, criticalPath }: StatBarProps) {
 
       {/* Spacer */}
       <span style={{ flex: 1 }} />
+
+      {/* Project total cost */}
+      <span>
+        <span style={{ color: 'var(--color-text-tertiary)' }}>Cost</span>
+        {' '}
+        <strong style={{ fontWeight: 'var(--weight-semibold)' as React.CSSProperties['fontWeight'], color: 'var(--color-text-primary)', fontFamily: 'var(--font-mono)' }}>
+          {formatMoney(projectCost)}
+        </strong>
+      </span>
+
+      {overAllocationCount > 0 && (
+        <>
+          <Divider />
+          <button
+            onClick={onOpenOverAllocations}
+            style={{
+              height: 22,
+              padding: '0 8px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--color-danger)',
+              background: 'var(--color-danger-dim)',
+              color: 'var(--color-danger)',
+              fontSize: 'var(--text-2xs)',
+              fontFamily: 'var(--font-mono)',
+              cursor: 'pointer',
+            }}
+            title="Open first over-allocated resource"
+          >
+            Over-alloc {overAllocationCount}
+          </button>
+        </>
+      )}
+
+      <Divider />
 
       {/* Today pill — right-aligned */}
       <span style={{

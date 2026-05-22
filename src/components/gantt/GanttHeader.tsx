@@ -6,11 +6,12 @@ interface GanttHeaderProps {
   timeline: Timeline
   dayPx: number
   totalPx: number
+  overAllocatedOffsets?: Set<number>
 }
 
 const TIER_H = GANTT_HEADER_HEIGHT / 2  // 32px each
 
-export function GanttHeader({ timeline, dayPx, totalPx }: GanttHeaderProps) {
+export function GanttHeader({ timeline, dayPx, totalPx, overAllocatedOffsets }: GanttHeaderProps) {
   const { primary, secondary } = getTiersForDayPx(dayPx)
 
   // ── Primary tier buckets ──────────────────────────────────────────────────
@@ -135,6 +136,9 @@ export function GanttHeader({ timeline, dayPx, totalPx }: GanttHeaderProps) {
                   ? '1px solid var(--color-border-light)'
                   : undefined,
                 background: isWeekend ? 'var(--color-surface-2)' : undefined,
+                borderBottom: overAllocatedOffsets?.has(item.offset)
+                  ? '1px solid var(--color-danger)'
+                  : undefined,
               }}
             >
               {!hideWeekLabel && (

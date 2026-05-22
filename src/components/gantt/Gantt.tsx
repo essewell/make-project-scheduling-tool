@@ -1,7 +1,7 @@
 import { useCallback, useMemo, type RefObject } from 'react'
 import type {
   Baseline, CpmResult, Dependency, GhostStyle,
-  Group, Task, VisibleRow, WorkweekConfig,
+  Group, Resource, ResourceAssignment, Task, VisibleRow, WorkweekConfig,
 } from '../../types'
 import type { Timeline } from '../../types'
 import { GANTT_HEADER_HEIGHT, ROW_HEIGHT, ZOOM_LEVELS } from '../../constants'
@@ -10,6 +10,8 @@ import { GanttGrid } from './GanttGrid'
 import { GanttBar } from './GanttBar'
 import { DependencyArrows } from './DependencyArrows'
 import { BaselineGhostBars } from './BaselineGhostBars'
+import { ResourceHistogram } from './ResourceHistogram'
+import { computeResourceDemand } from '../../lib/resourceDemand'
 import { CalendarBlank, CircleHalf, Minus, Path, Plus, SquaresFour } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -32,7 +34,12 @@ interface GanttProps {
   criticalPath: CpmResult | null
   workweek: WorkweekConfig
   holidays: string[]
+  resources: Resource[]
+  assignments: ResourceAssignment[]
+  selectedResourceId: string | null
+  histogramVisible: boolean
   ganttRef: RefObject<HTMLDivElement>
+  histogramRef: RefObject<HTMLDivElement>
   onScroll: () => void
   onUpdateTask: (id: string, patch: Partial<Task>) => void
   onSelectTask: (id: string) => void
@@ -40,6 +47,9 @@ interface GanttProps {
   onZoomIn: () => void
   onZoomOut: () => void
   onSetGhostStyle: (style: GhostStyle) => void
+  onToggleHistogram: () => void
+  onSelectResource: (resourceId: string) => void
+  onHistogramScroll: () => void
   isComputing?: boolean
 }
 
@@ -63,7 +73,12 @@ export function Gantt({
   criticalPath,
   workweek,
   holidays,
+  resources,
+  assignments,
+  selectedResourceId,
+  histogramVisible,
   ganttRef,
+  histogramRef,
   onScroll,
   onUpdateTask,
   onSelectTask,
@@ -71,6 +86,9 @@ export function Gantt({
   onZoomIn,
   onZoomOut,
   onSetGhostStyle,
+  onToggleHistogram,
+  onSelectResource,
+  onHistogramScroll,
   isComputing = false,
 }: GanttProps) {
   // ── Derived ────────────────────────────────────────────────────────────────
@@ -83,11 +101,33 @@ export function Gantt({
     }
     return map
   }, [visibleRows])
+  const visibleTasks = useMemo(
+    () => visibleRows.filter((row): row is { kind: 'task'; task: Task } => row.kind === 'task').map((row) => row.task),
+    [visibleRows],
+  )
 
   const groupColorMap = useMemo(() =>
     new Map(groups.map(g => [g.id, g.color])),
     [groups]
   )
+  const overAllocatedOffsets = useMemo(() => {
+    if (!selectedResourceId) return new Set<number>()
+    const demand = computeResourceDemand(selectedResourceId, {
+      tasks: visibleTasks,
+      assignments,
+      resources,
+      timeline,
+      workweek,
+      holidays,
+    })
+    const offsets = new Set<number>()
+    demand.forEach((point, index) => {
+      if (point.overAllocation <= 0) return
+      const offset = timeline.days[index]?.offset
+      if (offset !== undefined) offsets.add(offset)
+    })
+    return offsets
+  }, [selectedResourceId, visibleTasks, assignments, resources, timeline, workweek, holidays])
 
   const totalPx = timeline.totalPx
   const totalHeight = GANTT_HEADER_HEIGHT + visibleRows.length * ROW_HEIGHT
@@ -131,6 +171,7 @@ export function Gantt({
             timeline={timeline}
             dayPx={dayPx}
             totalPx={totalPx}
+            overAllocatedOffsets={overAllocatedOffsets}
           />
 
           {/* Grid: weekend bands, lines, today, row dividers */}
@@ -313,6 +354,29 @@ export function Gantt({
         </div>
       )}
 
+      <div style={{
+        position: 'absolute',
+        bottom: baselines.length > 0 ? 96 : 56,
+        right: 16,
+        zIndex: 10,
+      }}>
+        <button
+          onClick={onToggleHistogram}
+          style={{
+            height: 24,
+            padding: '0 8px',
+            borderRadius: 'var(--radius)',
+            border: '1px solid var(--color-border)',
+            background: histogramVisible ? 'var(--accent-dim)' : 'var(--color-surface)',
+            color: histogramVisible ? 'var(--accent)' : 'var(--color-text-secondary)',
+            fontSize: 'var(--text-2xs)',
+            cursor: 'pointer',
+          }}
+        >
+          Histogram
+        </button>
+      </div>
+
       {/* Empty state */}
       {visibleRows.length === 0 && (
         <div style={{
@@ -332,6 +396,26 @@ export function Gantt({
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
             Add a task to see your schedule.
           </div>
+        </div>
+      )}
+
+      {histogramVisible && (
+        <div
+          ref={histogramRef}
+          onScroll={onHistogramScroll}
+          style={{ overflowX: 'auto', overflowY: 'hidden', borderTop: '1px solid var(--color-border)' }}
+        >
+          <ResourceHistogram
+            resources={resources}
+            assignments={assignments}
+            tasks={visibleTasks}
+            timeline={timeline}
+            dayPx={dayPx}
+            workweek={workweek}
+            holidays={holidays}
+            selectedResourceId={selectedResourceId}
+            onSelectResource={onSelectResource}
+          />
         </div>
       )}
     </div>

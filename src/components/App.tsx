@@ -1,11 +1,13 @@
 import { useState, useCallback, useMemo, useEffect, useRef, useTransition } from 'react'
-import type { PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline } from '../types'
+import type { PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline, ResourceAssignment } from '../types'
 import { loadState, saveState } from '../lib/storage'
 import { refreshAutoProgress } from '../lib/progress'
 import { computeCriticalPath } from '../lib/cpm'
 import { buildTimeline } from '../lib/timeline'
 import { generateCSV, triggerCSVDownload } from '../lib/csv'
 import { EXAMPLE_TASKS, EXAMPLE_GROUPS, EXAMPLE_PARTIES } from '../lib/exampleData'
+import { computeProjectTotalCost, computeTaskCosts } from '../lib/cost'
+import { computeResourceDemand } from '../lib/resourceDemand'
 import { useMidnightTicker } from '../hooks/useMidnightTicker'
 import { useScrollSync } from '../hooks/useScrollSync'
 import { useKeyboard } from '../hooks/useKeyboard'
@@ -44,7 +46,7 @@ export function App() {
   const [state, setState] = useState<PersistedState>(INITIAL_STATE)
   const { tasks, groups, parties, dependencies, notes, collapsedGroups,
           workweek, holidays, onboardingPhase,
-          projectName, baselines, ghostStyle } = state
+          projectName, baselines, ghostStyle, assignments } = state
   const resources = state.resources
 
   // ── Transient UI state ────────────────────────────────────────────────────
@@ -56,8 +58,11 @@ export function App() {
   const [isPending, startTransition] = useTransition()
   const [zoomIndex, setZoomIndex] = useState(DEFAULT_ZOOM_INDEX)
   const [showCriticalPath, setShowCriticalPath] = useState(false)
+  const [showCostColumn, setShowCostColumn] = useState(false)
   const [completionFlashId, setCompletionFlashId] = useState<string | null>(null)
   const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
+  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
+  const [histogramVisible, setHistogramVisible] = useState(false)
 
   // ── Modal state ───────────────────────────────────────────────────────────
   const [linkBuilderTaskId, setLinkBuilderTaskId] = useState<string | null>(null)
@@ -77,7 +82,7 @@ export function App() {
 
   // ── Hooks ─────────────────────────────────────────────────────────────────
   const today = useMidnightTicker()
-  const { listRef, ganttRef, handleListScroll, handleGanttScroll } = useScrollSync()
+  const { listRef, ganttRef, histogramRef, handleListScroll, handleGanttScroll, handleHistogramScroll } = useScrollSync()
 
   const dayPx = ZOOM_LEVELS[zoomIndex]?.dayPx ?? 16
 
@@ -153,6 +158,53 @@ export function App() {
     return computeCriticalPath(enrichedTasks, dependencies)
   }, [showCriticalPath, hasDeps, enrichedTasks, dependencies])
 
+  const taskCosts = useMemo(
+    () =>
+      computeTaskCosts(enrichedTasks, {
+        resources,
+        assignments,
+        workweek,
+        holidays,
+      }),
+    [enrichedTasks, resources, assignments, workweek, holidays],
+  )
+
+  const projectCost = useMemo(() => computeProjectTotalCost(taskCosts), [taskCosts])
+
+  const overAllocationByResource = useMemo(() => {
+    return resources.map((resource) => {
+      const demand = computeResourceDemand(resource.id, {
+        tasks: enrichedTasks,
+        assignments,
+        resources,
+        timeline,
+        workweek,
+        holidays,
+      })
+      const overCount = demand.filter((point) => point.overAllocation > 0).length
+      return { resourceId: resource.id, overCount }
+    })
+  }, [resources, enrichedTasks, assignments, timeline, workweek, holidays])
+
+  const overAllocationCount = useMemo(
+    () => overAllocationByResource.reduce((sum, item) => sum + item.overCount, 0),
+    [overAllocationByResource],
+  )
+
+  const firstOverAllocatedResourceId = useMemo(
+    () => overAllocationByResource.find((item) => item.overCount > 0)?.resourceId ?? null,
+    [overAllocationByResource],
+  )
+
+  useEffect(() => {
+    if (resources.length === 0) {
+      setSelectedResourceId(null)
+      return
+    }
+    if (selectedResourceId && resources.some((resource) => resource.id === selectedResourceId)) return
+    setSelectedResourceId(resources[0]?.id ?? null)
+  }, [resources, selectedResourceId])
+
   // ── Persistence ───────────────────────────────────────────────────────────
 
   const [storageFullBanner, setStorageFullBanner] = useState(false)
@@ -218,6 +270,7 @@ export function App() {
       tasks: prev.tasks.filter(t => t.id !== id),
       dependencies: prev.dependencies.filter(d => d.fromId !== id && d.toId !== id),
       notes: prev.notes.filter(n => n.taskId !== id),
+      assignments: prev.assignments.filter(a => a.taskId !== id),
     }))
     if (selectedTaskId === id) {
       setSelectedTaskId(null)
@@ -239,6 +292,37 @@ export function App() {
       when: new Date().toISOString(),
     }
     setState(prev => ({ ...prev, notes: [...prev.notes, note] }))
+  }, [])
+
+  const onAddAssignment = useCallback((taskId: string) => {
+    const defaultResourceId = resources[0]?.id
+    if (!defaultResourceId) return
+
+    const assignment: ResourceAssignment = {
+      id: Math.random().toString(36).slice(2) + Date.now().toString(36),
+      taskId,
+      resourceId: defaultResourceId,
+      quantity: 1,
+      notes: '',
+    }
+
+    setState(prev => ({ ...prev, assignments: [...prev.assignments, assignment] }))
+  }, [resources])
+
+  const onUpdateAssignment = useCallback((assignmentId: string, patch: Partial<ResourceAssignment>) => {
+    setState(prev => ({
+      ...prev,
+      assignments: prev.assignments.map((assignment) =>
+        assignment.id === assignmentId ? { ...assignment, ...patch } : assignment,
+      ),
+    }))
+  }, [])
+
+  const onRemoveAssignment = useCallback((assignmentId: string) => {
+    setState(prev => ({
+      ...prev,
+      assignments: prev.assignments.filter((assignment) => assignment.id !== assignmentId),
+    }))
   }, [])
 
   const onToggleGroup = useCallback((groupId: string) => {
@@ -551,7 +635,18 @@ export function App() {
             </div>
           )}
 
-          <StatBar tasks={enrichedTasks} today={today} criticalPath={criticalPath} />
+          <StatBar
+            tasks={enrichedTasks}
+            today={today}
+            criticalPath={criticalPath}
+            projectCost={projectCost}
+            overAllocationCount={overAllocationCount}
+            onOpenOverAllocations={() => {
+              if (!firstOverAllocatedResourceId) return
+              setSelectedResourceId(firstOverAllocatedResourceId)
+              setHistogramVisible(true)
+            }}
+          />
 
           <FilterBar
             groups={groups}
@@ -560,8 +655,10 @@ export function App() {
             visibleCount={visibleTaskIds.length}
             searchTerm={searchTerm}
             filterState={filterState}
+            showCostColumn={showCostColumn}
             onSearch={(q) => startTransition(() => setSearchTerm(q))}
             onFilter={(f) => startTransition(() => setFilterState(f))}
+            onToggleCostColumn={() => setShowCostColumn((value) => !value)}
           />
 
           {/* ── Main content area ── */}
@@ -578,6 +675,8 @@ export function App() {
               selectedTaskId={selectedTaskId}
               kbFocusId={kbFocusId}
               completionFlashId={completionFlashId}
+              showCostColumn={showCostColumn}
+              taskCosts={taskCosts}
               listRef={listRef}
               onScroll={handleListScroll}
               onSelectTask={handleSelectTask}
@@ -599,6 +698,11 @@ export function App() {
               kbFocusId={kbFocusId}
               completionFlashId={completionFlashId}
               dependencies={dependencies}
+              resources={resources}
+              assignments={assignments}
+              selectedResourceId={selectedResourceId}
+              histogramVisible={histogramVisible}
+              histogramRef={histogramRef}
               baselines={baselines}
               activeBaselineId={activeBaselineId}
               ghostStyle={ghostStyle}
@@ -614,6 +718,9 @@ export function App() {
               onZoomIn={onZoomIn}
               onZoomOut={onZoomOut}
               onSetGhostStyle={setGhostStyle}
+              onToggleHistogram={() => setHistogramVisible((value) => !value)}
+              onSelectResource={setSelectedResourceId}
+              onHistogramScroll={handleHistogramScroll}
               isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
             />
             </div>
@@ -627,12 +734,17 @@ export function App() {
                 parties={parties}
                 notes={notes}
                 dependencies={dependencies}
+                resources={resources}
+                assignments={assignments}
                 workweek={workweek}
                 holidays={holidays}
                 today={today}
                 onUpdateTask={onUpdateTask}
                 onDeleteTask={onDeleteTask}
                 onAddNote={onAddNote}
+                onAddAssignment={onAddAssignment}
+                onUpdateAssignment={onUpdateAssignment}
+                onRemoveAssignment={onRemoveAssignment}
                 onClose={handleClosePanel}
                 onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
               />
@@ -720,12 +832,17 @@ export function App() {
             parties={parties}
             notes={notes}
             dependencies={dependencies}
+            resources={resources}
+            assignments={assignments}
             workweek={workweek}
             holidays={holidays}
             today={today}
             onUpdateTask={onUpdateTask}
             onDeleteTask={onDeleteTask}
             onAddNote={onAddNote}
+            onAddAssignment={onAddAssignment}
+            onUpdateAssignment={onUpdateAssignment}
+            onRemoveAssignment={onRemoveAssignment}
             onClose={handleClosePanel}
             onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
             mode="mobile"

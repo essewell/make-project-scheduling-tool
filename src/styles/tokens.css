@@ -54,6 +54,9 @@
   --data-caution:       #EF9F27;
   --data-neutral:       #7894a6;
   --data-info:          #27aae1;
+  --histogram-bar-bg:   rgba(28, 48, 72, 0.24);
+  --histogram-capacity-line: #7894a6;
+  --histogram-over:     rgba(191, 59, 46, 0.72);
   --phase-1:            #7C5CBF;
   --phase-2:            #E0862A;
   --phase-3:            #2E8B57;
@@ -178,6 +181,9 @@
     --data-caution:       #f5af41;
     --data-neutral:       #88a8bc;
     --data-info:          #4db8e6;
+    --histogram-bar-bg:   rgba(216, 234, 244, 0.28);
+    --histogram-capacity-line: #88a8bc;
+    --histogram-over:     rgba(217, 107, 96, 0.72);
     --phase-1:            #8f74cb;
     --phase-2:            #ee9f4d;
     --phase-3:            #43a06d;

@@ -6,6 +6,7 @@ export {
   Camera,
   CaretDown,
   CaretRight,
+  ChartBar,
   Check,
   CircleHalf,
   Clock,
