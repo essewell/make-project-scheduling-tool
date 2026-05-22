@@ -142,7 +142,10 @@ export function ResourceAssignmentSection({
                       step="0.1"
                       value={assignment.quantity}
                       onChange={(event) => onUpdateAssignment(assignment.id, { quantity: Number(event.target.value) })}
-                      style={INPUT}
+                      style={{
+                        ...INPUT,
+                        borderColor: assignment.quantity <= 0 ? 'var(--color-danger)' : 'var(--color-border)',
+                      }}
                     />
                     <button
                       onClick={() => onRemoveAssignment(assignment.id)}
@@ -155,6 +158,11 @@ export function ResourceAssignmentSection({
                   <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)' }}>
                     Cost: <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-secondary)' }}>{formatMoney(costByAssignmentId.get(assignment.id) ?? 0)}</span>
                   </div>
+                  {assignment.quantity <= 0 && (
+                    <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-danger)' }}>
+                      Quantity must be greater than 0.
+                    </div>
+                  )}
                 </div>
               ))}
               <button

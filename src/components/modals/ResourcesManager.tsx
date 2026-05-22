@@ -98,6 +98,7 @@ export function ResourcesManager({
   const titleId = useId()
   const descId = useId()
   const [items, setItems] = useState<Resource[]>(resources.map((resource) => ({ ...resource })))
+  const [localAssignments, setLocalAssignments] = useState<ResourceAssignment[]>(assignments.map((assignment) => ({ ...assignment })))
   const [newName, setNewName] = useState('')
   const [newCategory, setNewCategory] = useState<ResourceCategory>('labor')
   const [newUnit, setNewUnit] = useState('hours')
@@ -116,6 +117,14 @@ export function ResourcesManager({
   }
 
   const removeResource = (id: string) => {
+    const assignmentCount = localAssignments.filter((assignment) => assignment.resourceId === id).length
+    if (assignmentCount > 0) {
+      const shouldDrop = window.confirm(
+        `This resource has ${assignmentCount} assignment${assignmentCount !== 1 ? 's' : ''}. Delete resource and drop those assignments?`,
+      )
+      if (!shouldDrop) return
+      setLocalAssignments((prev) => prev.filter((assignment) => assignment.resourceId !== id))
+    }
     setItems((prev) => prev.filter((resource) => resource.id !== id))
   }
 
@@ -159,7 +168,7 @@ export function ResourcesManager({
     const text = await file.text()
     const parsed = parseAssignmentsCsv(text)
     const pruned = pruneOrphanAssignments(parsed.assignments, tasks, items)
-    onSaveAssignments(pruned.assignments)
+    setLocalAssignments(pruned.assignments)
 
     const droppedText = pruned.droppedCount > 0 ? ` and dropped ${pruned.droppedCount} orphan assignment(s)` : ''
     if (parsed.errors.length > 0 || pruned.droppedCount > 0) {
@@ -403,7 +412,7 @@ export function ResourcesManager({
             </button>
             <button
               disabled={hasValidationErrors}
-              onClick={() => { onSave(items); onClose() }}
+              onClick={() => { onSave(items); onSaveAssignments(localAssignments); onClose() }}
               style={{
                 height: 30,
                 padding: '0 14px',
