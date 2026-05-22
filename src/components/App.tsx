@@ -87,8 +87,8 @@ export function App() {
     [tasks, workweek, holidays, today],
   )
 
-  const visibleRows = useMemo(() => {
-    const filtered = enrichedTasks.filter(t => {
+  const filteredTasks = useMemo(() => {
+    return enrichedTasks.filter(t => {
       if (searchTerm) {
         const q = searchTerm.toLowerCase()
         if (!t.name.toLowerCase().includes(q)) return false
@@ -98,6 +98,10 @@ export function App() {
       if (filterState.phases.length > 0 && !filterState.phases.includes(t.group)) return false
       return true
     })
+  }, [enrichedTasks, searchTerm, filterState])
+
+  const visibleRows = useMemo(() => {
+    const filtered = filteredTasks
 
     const rows: import('../types').VisibleRow[] = []
     const seenGroups = new Set<string>()
@@ -121,7 +125,7 @@ export function App() {
       }
     }
     return rows
-  }, [enrichedTasks, groups, collapsedGroups, searchTerm, filterState])
+  }, [filteredTasks, groups, collapsedGroups])
 
   const visibleTaskIds = useMemo(
     () => visibleRows.filter(r => r.kind === 'task').map(r => (r as { kind: 'task'; task: Task }).task.id),
@@ -531,6 +535,7 @@ export function App() {
             <div id="mobile-view-tasks" role="tabpanel" aria-labelledby="mobile-tab-tasks" hidden={isMobile && mobileTab !== 'tasks'}>
               <TaskList
               visibleRows={visibleRows}
+              filteredTasks={filteredTasks}
               groups={groups}
               parties={parties}
               today={today}

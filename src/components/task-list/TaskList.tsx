@@ -9,6 +9,7 @@ import { CaretDown, CaretRight } from '../../lib/icons'
 
 interface TaskListProps {
   visibleRows: VisibleRow[]
+  filteredTasks: Task[]
   groups: Group[]
   parties: Party[]
   selectedTaskId: string | null
@@ -59,6 +60,7 @@ interface GroupRowProps {
   count: number
   collapsed: boolean
   wbs: string
+  completionPct: number
   onToggle: () => void
 }
 
@@ -69,6 +71,7 @@ const GroupRow = memo(function GroupRow({
   count,
   collapsed,
   wbs,
+  completionPct,
   onToggle,
 }: GroupRowProps) {
   return (
@@ -129,8 +132,33 @@ const GroupRow = memo(function GroupRow({
           ({count})
         </span>
       </div>
-      {/* Party / Dates / Float columns — empty for group rows */}
-      <div /><div /><div />
+      {/* Party / Dates columns — empty for group rows */}
+      <div /><div />
+      {/* Group completion meter */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 10 }}>
+        <div
+          title={`Phase completion: ${completionPct}%`}
+          style={{
+            width: 4,
+            height: 20,
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--surface-sunken)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              bottom: 0,
+              width: '100%',
+              height: `${completionPct}%`,
+              background: completionPct >= 100 ? 'var(--data-positive)' : 'var(--accent)',
+            }}
+          />
+        </div>
+      </div>
     </div>
   )
 })
@@ -326,6 +354,7 @@ const TaskRow = memo(function TaskRow({
 
 export function TaskList({
   visibleRows,
+  filteredTasks,
   groups,
   parties,
   selectedTaskId,
@@ -342,6 +371,21 @@ export function TaskList({
   const wbsMap = computeWbs(visibleRows)
   const partyMap = new Map(parties.map(p => [p.id, p]))
   const groupColorMap = new Map(groups.map(g => [g.id, g.color]))
+  const groupStats = new Map<string, { totalPct: number; count: number }>()
+  for (const task of filteredTasks) {
+    const current = groupStats.get(task.group) ?? { totalPct: 0, count: 0 }
+    current.totalPct += task.pct
+    current.count += 1
+    groupStats.set(task.group, current)
+  }
+  const groupCompletionMap = new Map<string, number>(
+    groups.map(group => {
+      const stats = groupStats.get(group.id)
+      if (!stats || stats.count === 0) return [group.id, 0]
+      const avgPct = Math.round(stats.totalPct / stats.count)
+      return [group.id, Math.max(0, Math.min(100, avgPct))]
+    }),
+  )
 
   // Determine which groups belong to visible tasks (for coloring task rows)
   const taskGroupColor = (task: Task): string =>
@@ -405,6 +449,7 @@ export function TaskList({
                 count={row.count}
                 collapsed={row.collapsed}
                 wbs={wbsMap.get('group:' + row.groupId) ?? ''}
+                completionPct={groupCompletionMap.get(row.groupId) ?? 0}
                 onToggle={() => onToggleGroup(row.groupId)}
               />
             )
