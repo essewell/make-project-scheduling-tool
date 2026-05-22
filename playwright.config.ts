@@ -6,7 +6,7 @@ export default defineConfig({
   expect: { timeout: 5000 },
   reporter: [['list'], ['html', { outputFolder: 'playwright-report' }]],
   webServer: {
-    command: 'npm.cmd run preview -- --port 5174',
+    command: 'npm run preview -- --port 5174',
     url: 'http://localhost:5174',
     reuseExistingServer: true,
     timeout: 120 * 1000,

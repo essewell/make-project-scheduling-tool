@@ -21,7 +21,7 @@ jobs:
       - name: Type check
         run: npm run type-check
       - name: Unit tests
-        run: npm run test:unit -- --coverage
+        run: npm run test:unit
       - name: Build
         run: npm run build
 
@@ -36,11 +36,9 @@ jobs:
           node-version: '20'
       - name: Install
         run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
       - name: Build
         run: npm run build
-      - name: Start preview server
-        run: nohup npm run preview -- --port 5173 &
-      - name: Wait for server
-        run: npx wait-on http://127.0.0.1:5173
       - name: Run Playwright E2E
         run: npx playwright test --reporter=list
