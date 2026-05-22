@@ -1164,7 +1164,27 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - Changes: converted ghost-style toggle to icon-based segmented control and replaced zoom +/- glyphs with Phosphor icons plus explicit `Zoom · <mode>` label.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
 
+- **2026-05-22 — Phase G.1: WBS column width normalization**
+  - Files: `src/components/task-list/TaskList.tsx`
+  - Changes: standardized WBS column width to 24px for consistent alignment.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase G.2: float column signed/tabular formatting**
+  - Files: `src/components/task-list/TaskList.tsx`
+  - Changes: enforced explicit `+/-` formatting and tabular numeral alignment in float values.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase G.3: party tint token usage confirmed**
+  - Files: none (no source edit required)
+  - Changes: validated existing `color-mix` party tint implementation already matched v1.2 requirement.
+  - Verification: covered by subsequent full local gate run.
+
+- **2026-05-22 — Phase G.4: TaskList hover surface correction**
+  - Files: `src/components/task-list/TaskList.tsx`, `src/styles/app.css`
+  - Changes: non-selected task-row hover now uses `--surface-sunken` via scoped row class/data attribute.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase F complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 + F.1..F.8 landed locally)
+**Status:** Active — Phase G complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 + F.1..F.8 + G.1..G.4 landed locally)
