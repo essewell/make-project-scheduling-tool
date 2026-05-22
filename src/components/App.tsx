@@ -517,7 +517,7 @@ export function App() {
             onNewTask={handleNewTask}
           />
 
-          <StatBar tasks={enrichedTasks} today={today} />
+          <StatBar tasks={enrichedTasks} today={today} criticalPath={criticalPath} />
 
           <FilterBar
             groups={groups}
