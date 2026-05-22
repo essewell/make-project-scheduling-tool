@@ -3,6 +3,7 @@ import type { Task, Group, Party, Note, Dependency, WorkweekConfig } from '../..
 import { daysBetween } from '../../lib/dates'
 import { workdays } from '../../lib/workdays'
 import { ActualDatesSection } from './ActualDatesSection'
+import { X } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -206,7 +207,7 @@ export function SidePanel({
             fontSize: 18, lineHeight: 1, flexShrink: 0,
           }}
           title="Close"
-        >×</button>
+        ><X size={16} weight="regular" aria-hidden="true" /></button>
       </div>
 
       {/* ── Scrollable body ── */}

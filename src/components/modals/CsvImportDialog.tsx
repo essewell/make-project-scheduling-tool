@@ -3,6 +3,7 @@ import type { Task } from '../../types'
 import { parseCSVText, csvRowsToTasks } from '../../lib/csv'
 import type { CsvRow, CsvRowError } from '../../lib/csv'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
+import { ArrowLeft } from '../../lib/icons'
 
 const MAX_VISIBLE_ERRORS = 5
 
@@ -366,9 +367,10 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
             {step === 'map' && (
               <button
                 onClick={() => { setStep('upload'); setError(null) }}
-                style={{ height: 30, padding: '0 12px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
+                style={{ height: 30, padding: '0 12px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
               >
-                ← Back
+                <ArrowLeft size={14} weight="regular" aria-hidden="true" />
+                Back
               </button>
             )}
           </div>
