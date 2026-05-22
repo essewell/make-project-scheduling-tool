@@ -77,7 +77,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--surface-sunken);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -207,7 +207,7 @@ input[type="range"] {
   padding: 0;
   border: none;
   display: block;
-  background: var(--color-border);
+  background: var(--surface-sunken);
 }
 
 .progress-slider::-webkit-slider-runnable-track {
@@ -216,7 +216,7 @@ input[type="range"] {
   background: linear-gradient(
     to right,
     var(--accent) var(--fill-pct, 0%),
-    var(--color-border) var(--fill-pct, 0%)
+    var(--surface-sunken) var(--fill-pct, 0%)
   );
 }
 
@@ -242,7 +242,7 @@ input[type="range"] {
 .progress-slider::-moz-range-track {
   height: 4px;
   border-radius: var(--radius-sm);
-  background: var(--color-border);
+  background: var(--surface-sunken);
 }
 
 .progress-slider::-moz-range-progress {

@@ -134,7 +134,7 @@ export function GanttGrid({
             top: 0,
             width: band.width,
             height: '100%',
-            background: 'color-mix(in srgb, var(--color-text-primary) 5%, transparent)',
+            background: 'var(--surface-sunken)',
           }}
         />
       ))}
