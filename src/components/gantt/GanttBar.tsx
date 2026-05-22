@@ -41,8 +41,7 @@ function barFill(task: Task, groupColor: string): string {
   return groupColor
 }
 
-function barBorder(task: Task, isCritical: boolean): string | undefined {
-  if (isCritical) return '2px solid var(--color-danger)'
+function barBorder(task: Task): string | undefined {
   if (task.status === 'at_risk') return '2px solid color-mix(in srgb, var(--color-warning) 72%, transparent)'
   if (task.status === 'delayed') return '2px solid color-mix(in srgb, var(--color-danger) 80%, transparent)'
   return undefined
@@ -150,7 +149,7 @@ export const GanttBar = memo(function GanttBar({
           transform: 'rotate(45deg)',
           borderRadius: 2,
           cursor: 'pointer',
-          opacity: isDimmed ? 0.3 : 1,
+          opacity: isDimmed ? 0.6 : 1,
           outline: isSelected || isCritical
             ? `2px solid ${isCritical ? 'var(--color-danger)' : 'var(--accent)'}`
             : isKbFocused ? '2px solid var(--accent)' : undefined,
@@ -164,7 +163,7 @@ export const GanttBar = memo(function GanttBar({
 
   // ── Normal bar ────────────────────────────────────────────────────────────
 
-  const border = barBorder(task, isCritical)
+  const border = barBorder(task)
   const fill = barFill(task, groupColor)
 
   const HANDLE_W = Math.min(6, width / 3)
@@ -186,7 +185,7 @@ export const GanttBar = memo(function GanttBar({
         boxSizing: 'border-box',
         cursor: 'grab',
         userSelect: 'none',
-        opacity: task.status === 'not_started' ? 0.55 : isDimmed ? 0.3 : 1,
+        opacity: isDimmed ? 0.6 : task.status === 'not_started' ? 0.55 : 1,
         transition: 'left 0.12s, width 0.12s',
         zIndex: isSelected ? 3 : 2,
         outline: (isSelected || isKbFocused) && !isCritical
@@ -198,6 +197,21 @@ export const GanttBar = memo(function GanttBar({
       }}
       title={task.name}
     >
+      {isCritical && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 3,
+            height: '100%',
+            background: 'var(--data-negative)',
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+      )}
+
       {/* Progress fill */}
       {task.pct > 0 && task.pct < 100 && (
         <div style={{
