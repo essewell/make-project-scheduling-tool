@@ -229,6 +229,29 @@ input[type="range"] {
   background: var(--surface-sunken);
 }
 
+.progress-slider-wrap {
+  position: relative;
+}
+
+.progress-slider-tooltip {
+  position: absolute;
+  top: -22px;
+  min-width: 40px;
+  height: 18px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-2xs);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+  color: var(--brand-on-brand);
+  background: var(--brand);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+
 .progress-slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: var(--radius-sm);

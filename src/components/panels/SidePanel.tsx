@@ -3,7 +3,7 @@ import type { Task, Group, Party, Note, Dependency, WorkweekConfig } from '../..
 import { daysBetween } from '../../lib/dates'
 import { workdays } from '../../lib/workdays'
 import { ActualDatesSection } from './ActualDatesSection'
-import { X } from '../../lib/icons'
+import { CalendarBlank, X } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -61,6 +61,32 @@ const SECTION_TITLE: React.CSSProperties = {
   marginBottom: 6,
 }
 
+const SECTION_RULE: React.CSSProperties = {
+  width: 32,
+  height: 1,
+  background: 'var(--rule-soft)',
+  marginBottom: 8,
+}
+
+const DATE_INPUT_WRAP: React.CSSProperties = {
+  position: 'relative',
+}
+
+const DATE_ICON: React.CSSProperties = {
+  position: 'absolute',
+  left: 8,
+  top: '50%',
+  transform: 'translateY(-50%)',
+  color: 'var(--ink-quiet)',
+  pointerEvents: 'none',
+}
+
+const DATE_INPUT: React.CSSProperties = {
+  ...INPUT,
+  fontFamily: 'var(--font-mono)',
+  paddingLeft: 28,
+}
+
 const STATUS_OPTIONS: Array<{ value: Task['status']; label: string }> = [
   { value: 'not_started', label: 'Not Started' },
   { value: 'in_progress', label: 'In Progress' },
@@ -97,6 +123,7 @@ export function SidePanel({
 }: SidePanelProps) {
   const [newNoteText, setNewNoteText] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [isDraggingProgress, setIsDraggingProgress] = useState(false)
   const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const update = useCallback((patch: Partial<Task>) => {
@@ -215,6 +242,7 @@ export function SidePanel({
 
         {/* Status + Progress */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={SECTION_RULE} aria-hidden="true" />
           <div style={SECTION_TITLE}>Status & Progress</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px', gap: 8 }}>
             <div>
@@ -246,20 +274,35 @@ export function SidePanel({
             </div>
           </div>
           {/* Progress slider */}
-          <input
-            type="range"
-            className="progress-slider"
-            aria-label="Progress percent"
-            min={0}
-            max={100}
-            step={1}
-            value={task.pct}
-            onChange={e => {
-              const n = Math.min(100, Math.max(0, parseInt(e.target.value, 10) || 0))
-              update({ pct: n, manualPct: true })
-            }}
-            style={{ '--fill-pct': `${task.pct}%` } as React.CSSProperties}
-          />
+          <div className="progress-slider-wrap">
+            {isDraggingProgress && (
+              <div
+                className="progress-slider-tooltip"
+                style={{ left: `calc(${task.pct}% - 20px)` }}
+                aria-live="polite"
+              >
+                {task.pct}%
+              </div>
+            )}
+            <input
+              type="range"
+              className="progress-slider"
+              aria-label="Progress percent"
+              min={0}
+              max={100}
+              step={1}
+              value={task.pct}
+              onPointerDown={() => setIsDraggingProgress(true)}
+              onPointerUp={() => setIsDraggingProgress(false)}
+              onPointerCancel={() => setIsDraggingProgress(false)}
+              onBlur={() => setIsDraggingProgress(false)}
+              onChange={e => {
+                const n = Math.min(100, Math.max(0, parseInt(e.target.value, 10) || 0))
+                update({ pct: n, manualPct: true })
+              }}
+              style={{ '--fill-pct': `${task.pct}%` } as React.CSSProperties}
+            />
+          </div>
           {(task.manualStatus || task.manualPct) && (
             <button
               onClick={() => update({ manualStatus: false, manualPct: false })}
@@ -272,27 +315,34 @@ export function SidePanel({
 
         {/* Planned Dates */}
         <div>
+          <div style={SECTION_RULE} aria-hidden="true" />
           <div style={SECTION_TITLE}>Planned Dates</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <div>
               <label style={LABEL}>Start</label>
-              <input
-                type="date"
-                value={task.s}
-                aria-label="Planned start date"
-                onChange={e => { if (e.target.value) update({ s: e.target.value }) }}
-                style={{ ...INPUT, fontFamily: 'var(--font-mono)' }}
-              />
+              <div style={DATE_INPUT_WRAP}>
+                <CalendarBlank size={14} weight="regular" style={DATE_ICON} aria-hidden="true" />
+                <input
+                  type="date"
+                  value={task.s}
+                  aria-label="Planned start date"
+                  onChange={e => { if (e.target.value) update({ s: e.target.value }) }}
+                  style={DATE_INPUT}
+                />
+              </div>
             </div>
             <div>
               <label style={LABEL}>End</label>
-              <input
-                type="date"
-                value={task.e}
-                aria-label="Planned end date"
-                onChange={e => { if (e.target.value) update({ e: e.target.value }) }}
-                style={{ ...INPUT, fontFamily: 'var(--font-mono)' }}
-              />
+              <div style={DATE_INPUT_WRAP}>
+                <CalendarBlank size={14} weight="regular" style={DATE_ICON} aria-hidden="true" />
+                <input
+                  type="date"
+                  value={task.e}
+                  aria-label="Planned end date"
+                  onChange={e => { if (e.target.value) update({ e: e.target.value }) }}
+                  style={DATE_INPUT}
+                />
+              </div>
             </div>
           </div>
 
@@ -377,6 +427,8 @@ export function SidePanel({
 
         {/* Actual Dates */}
         <ActualDatesSection
+          plannedStart={task.s}
+          plannedFinish={task.e}
           actualStart={task.actualStart}
           actualFinish={task.actualFinish}
           onChange={patch => update(patch)}
@@ -384,6 +436,7 @@ export function SidePanel({
 
         {/* Dependencies preview */}
         <div>
+          <div style={SECTION_RULE} aria-hidden="true" />
           <div style={SECTION_TITLE}>Dependencies</div>
           {predecessors.length === 0 ? (
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>No predecessors set</div>
@@ -396,8 +449,9 @@ export function SidePanel({
                     key={dep.fromId + dep.type}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 6,
-                      fontSize: 'var(--text-xs)', padding: '4px 8px',
-                      background: 'var(--color-surface-2)', borderRadius: 'var(--radius-sm)',
+                      fontSize: 'var(--text-xs)', padding: '6px 10px',
+                      background: 'var(--surface-sunken)', borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--rule-soft)',
                     }}
                   >
                     <span style={{ color: 'var(--color-text-secondary)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -416,6 +470,7 @@ export function SidePanel({
 
         {/* Log */}
         <div>
+          <div style={SECTION_RULE} aria-hidden="true" />
           <div style={SECTION_TITLE}>Log</div>
           <textarea
             value={newNoteText}
