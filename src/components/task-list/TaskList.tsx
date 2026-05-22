@@ -204,6 +204,8 @@ const TaskRow = memo(function TaskRow({
 
   return (
     <div
+      className="task-row"
+      data-selected={isSelected}
       data-testid="task-row"
       onClick={onSelect}
       onDoubleClick={onOpen}
