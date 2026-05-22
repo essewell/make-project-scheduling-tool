@@ -1,16 +1,26 @@
-# Mobile QA Stub (v1.2)
+# Mobile QA Log (v1.3 Phase 0.2)
 
 Date: 2026-05-22  
-Status: Pending real-device verification
+Status: Partially complete (real-device execution pending)
 
-## Scope Owed Before v1.2 Phase 11.8 Ships
+## Scope
 
-- Real-device touch QA for mobile bottom-sheet interactions (iPhone + Android):
+Real-device touch QA for bottom-sheet interactions (iPhone + Android):
 - Start blank -> select task -> sheet opens at peek state.
 - Drag sheet peek <-> full; confirm smooth gesture thresholds.
 - Dismiss by velocity and by distance; confirm accidental taps do not dismiss.
 - Re-open/close cycle repeated across multiple tasks.
 
-## Note
+## Findings
 
-This is intentionally a stub and does not block Phase A. Full findings must be recorded before shipping Phase 11.8 mobile-sheet polish work.
+| Check | iPhone | Android | Notes |
+|---|---|---|---|
+| Start blank -> tap task -> sheet opens at peek | Pending | Pending | Physical device run required. |
+| Drag peek <-> full transition quality | Pending | Pending | Physical gesture and velocity threshold validation required. |
+| Dismiss by velocity and distance | Pending | Pending | Requires tactile interaction; cannot be validated from terminal environment. |
+| Re-open/close across multiple tasks | Pending | Pending | Requires touch cycle verification. |
+
+## Blocker
+
+This environment does not provide direct access to physical iPhone/Android devices.  
+Phase 0.2 documentation is prepared and awaiting human-executed device results to mark complete.
