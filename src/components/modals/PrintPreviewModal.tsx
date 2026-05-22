@@ -48,7 +48,6 @@ function readabilityScore(tasks: Task[], dayPx: number): { label: string; color:
 const OVERLAY: React.CSSProperties = {
   position: 'fixed', inset: 0,
   background: 'rgba(10,18,30,0.7)',
-  backdropFilter: 'blur(4px)',
   zIndex: 800,
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
@@ -57,6 +56,7 @@ const BOX: React.CSSProperties = {
   width: '92vw', maxWidth: 1140, height: '88vh',
   background: 'var(--color-surface)',
   borderRadius: 'var(--radius-lg)',
+  borderTop: '3px solid var(--accent)',
   boxShadow: 'var(--shadow-xl)',
   display: 'flex', flexDirection: 'column', overflow: 'hidden',
   animation: 'schedule-slide-in 0.16s ease-out both',
@@ -123,7 +123,7 @@ export function PrintPreviewModal({
       >
 
         {/* Header */}
-        <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
             <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Print Preview</div>
             <div id={descId} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>

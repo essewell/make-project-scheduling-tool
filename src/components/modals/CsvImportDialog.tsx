@@ -42,7 +42,6 @@ const FIELD_OPTIONS: Array<{ value: MappableField; label: string }> = [
 const OVERLAY: React.CSSProperties = {
   position: 'fixed', inset: 0,
   background: 'rgba(10,18,30,0.54)',
-  backdropFilter: 'blur(3px)',
   zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
 
@@ -50,6 +49,7 @@ const BOX: React.CSSProperties = {
   width: 560, maxWidth: '95vw', maxHeight: '86vh',
   background: 'var(--color-surface)',
   borderRadius: 'var(--radius-lg)',
+  borderTop: '3px solid var(--accent)',
   boxShadow: 'var(--shadow-xl)',
   display: 'flex', flexDirection: 'column', overflow: 'hidden',
   animation: 'schedule-slide-in 0.16s ease-out both',
@@ -175,7 +175,7 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
       >
 
         {/* Header */}
-        <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--color-border)' }}>
           <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>
             Import CSV
           </div>
