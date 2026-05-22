@@ -9,7 +9,7 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 
 - **When:** 2026-05-22
 - **Agent:** Codex
-- **Did:** Completed pre-v1.2 housekeeping HK-1..HK-3, then completed v1.2 Phase A tasks A.1..A.5 with full local gates after each task.
+- **Did:** Completed v1.2 Phase B (B.1–B.5) iconography swap after prior Phase A completion. Ran full local gates after each task commit.
 
 ---
 
@@ -17,33 +17,37 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 
 - **Active version:** v1.2 (visual refinement / de-vibecoded surface)
 - **Plan:** [.claude/plan-v1.2.md](./plan-v1.2.md)
-- **Phase in progress:** Ready for Phase B (iconography swap across components)
+- **Phase in progress:** Ready for Phase C (surface ladder & materiality)
 
 ---
 
 ## What Just Landed
 
-- **HK-1:** Removed orphan worktree/branch (`.worktrees/phases-3-6`, `feature/phases-3-6`) and verified only main checkout remains.
-- **HK-2:** Enabled tracking for `.github/` by removing `.github/` ignore and committing workflow/template files.
-- **HK-3:** Added `docs/mobile-qa.md` stub noting real-device bottom-sheet touch QA owed before Phase 11.8 ships.
-- **A.1:** Added v1.2 foundation semantic tokens in `src/styles/tokens.css` (light + dark).
-- **A.2:** Tightened radius scale to `2/4/6/8` and tokenized hardcoded radii in app/marketing CSS.
-- **A.3:** Installed `@phosphor-icons/react`; build bundle remains under acceptance ceiling (app gzip: 29.10kB).
-- **A.4:** Added centralized Phosphor export surface at `src/lib/icons.ts`; no other direct imports in `src/`.
-- **A.5:** Added `docs/design-system.md` with token and icon standards.
+- **Phase B.1** — TopBar glyph/emoji controls replaced with Phosphor icons in `src/components/topbar/TopBar.tsx`.
+- **Phase B.2** — SidePanel close + CSV modal back controls replaced with `X` and `ArrowLeft` icons.
+- **Phase B.3** — CSV drop zone emoji replaced with `FileArrowUp`.
+- **Phase B.4** — StatusBadge now uses status-specific icons (`CircleHalf`, `Warning`, `Clock`, `Check`) with dot retained for not-started.
+- **Phase B.5** — TaskList group carets replaced with `CaretRight` / `CaretDown`.
 - Build Changelog updated in `plan-v1.2.md §23`.
+
+All five gates passed after each landed task:
+- `npm run lint`
+- `npm run type-check`
+- `npm run test:unit`
+- `npm run build`
+- `npm run test:e2e`
 
 ---
 
 ## Next Action
 
-1. **Confirm push approval with the human.** HK-2 CI-on-origin verification still requires pushing; do not push without explicit user go-ahead.
-2. **Start Phase B, task B.1** in `plan-v1.2.md §16`: replace TopBar emoji/glyph controls with Phosphor icons from `src/lib/icons.ts`.
-3. Continue B.2–B.5, running full local gate after each task lands, and append each landing to `plan-v1.2.md §23`.
+1. **Start Phase C.1** (`plan-v1.2.md §16`): apply `--surface-sunken` to progress slider track, Gantt weekend bands, and scrollbar tracks.
+2. Continue C.2–C.5 with one task per commit, running full local gates after each landing.
+3. Keep appending `plan-v1.2.md §23` and refreshing this file at each stop.
 
 ---
 
 ## Blockers / Open Threads
 
-- **Push pending user approval:** origin CI trigger confirmation for HK-2 cannot be verified locally.
-- **Mobile real-device QA still owed:** tracked in `docs/mobile-qa.md`; not blocking Phase B, but required before Phase 11.8 ship.
+- **Push still pending human approval:** `.github` tracking is committed locally; origin CI-fire confirmation still requires approved push.
+- **Mobile real-device QA still owed:** tracked in `docs/mobile-qa.md`; required before Phase 11.8 ships.

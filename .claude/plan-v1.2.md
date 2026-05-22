@@ -1060,7 +1060,32 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - Changes: documented v1.2 token additions, radius scale, icon import policy, and canonical icon list.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
 
+- **2026-05-22 — Phase B.1: TopBar iconography swap**
+  - Files: `src/components/topbar/TopBar.tsx`
+  - Changes: replaced glyph/emoji controls with Phosphor icons (`Minus`, `Plus`, `Bookmarks`, `Camera`, `CalendarBlank`, `SquaresFour`, `UsersThree`, `UploadSimple`, `Download`, `Printer`, `Path`, `ArrowCounterClockwise`) and updated New Task button affordance.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase B.2: SidePanel close + modal back icon swap**
+  - Files: `src/components/panels/SidePanel.tsx`, `src/components/modals/CsvImportDialog.tsx`
+  - Changes: replaced `×` close with `X` icon; replaced `← Back` with `ArrowLeft` + text.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase B.3: CSV drop zone icon swap**
+  - Files: `src/components/modals/CsvImportDialog.tsx`
+  - Changes: replaced `📄` emoji with `FileArrowUp` icon (24px).
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase B.4: status badge icon semantics**
+  - Files: `src/components/task-list/StatusBadge.tsx`
+  - Changes: added per-status Phosphor icons (`CircleHalf`, `Warning`, `Clock`, `Check`) and kept not-started as a semantic dot.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase B.5: TaskList group caret swap**
+  - Files: `src/components/task-list/TaskList.tsx`
+  - Changes: replaced inline SVG triangle caret with Phosphor `CaretRight` / `CaretDown`.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase A complete (HK-1..HK-3 + A.1..A.5 landed locally)
+**Status:** Active — Phase B complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 landed locally)
