@@ -59,7 +59,14 @@ export function EditableTitle({ value, onChange }: EditableTitleProps) {
   return (
     <span
       onClick={() => setEditing(true)}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          setEditing(true)
+        }
+      }}
       title="Click to rename"
+      tabIndex={0}
       style={{
         fontWeight: 'var(--weight-semibold)',
         fontSize: 'var(--text-sm)',
@@ -68,6 +75,7 @@ export function EditableTitle({ value, onChange }: EditableTitleProps) {
         padding: '2px 4px',
         borderRadius: 'var(--radius-sm)',
         transition: 'background 0.1s',
+        borderBottom: '1px solid transparent',
         maxWidth: 240,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -76,6 +84,8 @@ export function EditableTitle({ value, onChange }: EditableTitleProps) {
       }}
       onMouseEnter={e => { (e.target as HTMLElement).style.background = 'rgba(255,255,255,0.1)' }}
       onMouseLeave={e => { (e.target as HTMLElement).style.background = 'transparent' }}
+      onFocus={e => { (e.target as HTMLElement).style.borderBottomColor = 'var(--accent-on-brand)' }}
+      onBlur={e => { (e.target as HTMLElement).style.borderBottomColor = 'transparent' }}
     >
       {value}
     </span>
