@@ -3,6 +3,7 @@ import type { Group, Party, VisibleRow, Task } from '../../types'
 import { daysBetween, shortDate } from '../../lib/dates'
 import { ROW_HEIGHT, GANTT_HEADER_HEIGHT } from '../../constants'
 import { StatusBadge } from './StatusBadge'
+import { CaretDown, CaretRight } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -93,19 +94,11 @@ const GroupRow = memo(function GroupRow({
         paddingLeft: 8,
         overflow: 'hidden',
       }}>
-        {/* Collapse caret */}
-        <svg
-          width="12" height="12"
-          viewBox="0 0 12 12"
-          style={{
-            flexShrink: 0,
-            transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
-            transition: 'transform var(--transition-fast)',
-            color: 'var(--color-text-tertiary)',
-          }}
-        >
-          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        {collapsed ? (
+          <CaretRight size={12} weight="regular" aria-hidden="true" color="var(--color-text-tertiary)" />
+        ) : (
+          <CaretDown size={12} weight="regular" aria-hidden="true" color="var(--color-text-tertiary)" />
+        )}
         {/* WBS */}
         <span style={{
           fontFamily: 'var(--font-mono)',
