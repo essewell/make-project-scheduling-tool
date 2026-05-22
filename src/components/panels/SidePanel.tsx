@@ -21,6 +21,7 @@ interface SidePanelProps {
   onAddNote: (taskId: string, text: string) => void
   onClose: () => void
   onOpenLinkBuilder: (taskId: string) => void
+  mode?: 'desktop' | 'mobile'
 }
 
 // ─── Shared input style ───────────────────────────────────────────────────────
@@ -91,6 +92,7 @@ export function SidePanel({
   onAddNote,
   onClose,
   onOpenLinkBuilder,
+  mode = 'desktop',
 }: SidePanelProps) {
   const [newNoteText, setNewNoteText] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -157,13 +159,14 @@ export function SidePanel({
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={{
-      width: 360,
+      width: mode === 'mobile' ? '100%' : 360,
       background: 'var(--color-surface)',
-      borderLeft: '1px solid var(--color-border)',
+      borderLeft: mode === 'desktop' ? '1px solid var(--color-border)' : 'none',
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
       flexShrink: 0,
+      height: '100%',
     }}>
       {/* ── Header ── */}
       <div style={{
@@ -176,6 +179,7 @@ export function SidePanel({
       }}>
         <input
           type="text"
+          aria-label="Task name"
           value={task.name}
           onChange={e => update({ name: e.target.value })}
           style={{
@@ -193,6 +197,7 @@ export function SidePanel({
         />
         <button
           onClick={onClose}
+          aria-label="Close task details"
           style={{
             width: 28, height: 28,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -215,6 +220,7 @@ export function SidePanel({
               <label style={LABEL}>Status</label>
               <select
                 value={task.status}
+                aria-label="Status"
                 onChange={e => update({ status: e.target.value as Task['status'], manualStatus: true })}
                 style={SELECT}
               >
@@ -229,6 +235,7 @@ export function SidePanel({
                 type="number"
                 min={0} max={100}
                 value={task.pct}
+                aria-label="Progress percent number"
                 onChange={e => {
                   const n = Math.min(100, Math.max(0, parseInt(e.target.value, 10) || 0))
                   update({ pct: n, manualPct: true })
@@ -271,6 +278,7 @@ export function SidePanel({
               <input
                 type="date"
                 value={task.s}
+                aria-label="Planned start date"
                 onChange={e => { if (e.target.value) update({ s: e.target.value }) }}
                 style={{ ...INPUT, fontFamily: 'var(--font-mono)' }}
               />
@@ -280,6 +288,7 @@ export function SidePanel({
               <input
                 type="date"
                 value={task.e}
+                aria-label="Planned end date"
                 onChange={e => { if (e.target.value) update({ e: e.target.value }) }}
                 style={{ ...INPUT, fontFamily: 'var(--font-mono)' }}
               />
@@ -305,6 +314,7 @@ export function SidePanel({
             <label style={LABEL}>Responsible Party</label>
             <select
               value={task.party ?? ''}
+              aria-label="Responsible party"
               onChange={e => update({ party: e.target.value || null })}
               style={SELECT}
             >
@@ -318,6 +328,7 @@ export function SidePanel({
             <label style={LABEL}>Phase</label>
             <select
               value={task.group}
+              aria-label="Phase"
               onChange={e => update({ group: e.target.value })}
               style={SELECT}
             >

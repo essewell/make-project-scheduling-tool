@@ -1,7 +1,8 @@
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useId, useState, useRef, useCallback, useMemo } from 'react'
 import type { Task } from '../../types'
 import { parseCSVText, csvRowsToTasks } from '../../lib/csv'
 import type { CsvRow, CsvRowError } from '../../lib/csv'
+import { useDialogA11y } from '../../hooks/useDialogA11y'
 
 const MAX_VISIBLE_ERRORS = 5
 
@@ -84,6 +85,7 @@ function guessField(header: string): MappableField {
 // ─── CsvImportDialog ──────────────────────────────────────────────────────────
 
 export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
   const [step, setStep] = useState<'upload' | 'map'>('upload')
   const [mode, setMode] = useState<ImportMode>('append')
   const [rawRows, setRawRows] = useState<CsvRow[]>([])
@@ -92,6 +94,10 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
   const [error, setError] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const titleId = useId()
+  const descId = useId()
+
+  useDialogA11y({ containerRef: dialogRef, onClose })
 
   const processText = useCallback((text: string) => {
     const rows = parseCSVText(text)
@@ -156,14 +162,23 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
 
   return (
     <div style={OVERLAY} onClick={onClose}>
-      <div style={BOX} onClick={e => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
+        tabIndex={-1}
+        style={BOX}
+        onClick={e => e.stopPropagation()}
+      >
 
         {/* Header */}
         <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
-          <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>
+          <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>
             Import CSV
           </div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
+          <div id={descId} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
             {step === 'upload' ? 'Upload a CSV file to import tasks' : `${importCount} row${importCount !== 1 ? 's' : ''} found — map your columns`}
           </div>
         </div>

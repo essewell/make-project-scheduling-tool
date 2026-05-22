@@ -21,6 +21,7 @@ import { UndoToast } from './overlays/UndoToast'
 import type { UndoEntry } from './overlays/UndoToast'
 import { MobileTabSwitcher } from './mobile/MobileTabSwitcher'
 import type { MobileTab } from './mobile/MobileTabSwitcher'
+import { MobileBottomSheet } from './mobile/MobileBottomSheet'
 import { LinkBuilderModal } from './modals/LinkBuilderModal'
 import { WorkweekModal } from './modals/WorkweekModal'
 import { GroupsManager } from './modals/GroupsManager'
@@ -68,6 +69,7 @@ export function App() {
 
   // ── Mobile tab ────────────────────────────────────────────────────────────────
   const [mobileTab, setMobileTab] = useState<MobileTab>('tasks')
+  const [isMobile, setIsMobile] = useState(false)
 
   // ── Hooks ─────────────────────────────────────────────────────────────────
   const today = useMidnightTicker()
@@ -148,6 +150,14 @@ export function App() {
   useEffect(() => {
     saveState(state)
   }, [state])
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 640px)')
+    const update = () => setIsMobile(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
 
   // ── State updaters ────────────────────────────────────────────────────────
 
@@ -241,7 +251,7 @@ export function App() {
 
   // ── Onboarding ────────────────────────────────────────────────────────────
 
-  const { onTaskAdded, onTaskCountChange, onExampleDataLoaded: advanceOnboarding } = useOnboarding(
+  const { onTaskAdded, onTaskCountChange, onBaselineLocked, onExampleDataLoaded: advanceOnboarding } = useOnboarding(
     onboardingPhase,
     tasks.length,
     setOnboardingPhase,
@@ -292,18 +302,28 @@ export function App() {
     setTasks([...tasks, newTask])
     setSelectedTaskId(id)
     setPanelOpen(true)
+    if (isMobile) {
+      setMobileTab('panel')
+    }
     onTaskAdded()
-  }, [tasks, groups, today, setTasks, onTaskAdded])
+  }, [tasks, groups, today, setTasks, onTaskAdded, isMobile])
 
   const handleSelectTask = useCallback((id: string) => {
     setSelectedTaskId(id)
     setKbFocusId(id)
-  }, [])
+    if (isMobile) {
+      setPanelOpen(true)
+      setMobileTab('panel')
+    }
+  }, [isMobile])
 
   const handleOpenPanel = useCallback((id: string) => {
     setSelectedTaskId(id)
     setPanelOpen(true)
-  }, [])
+    if (isMobile) {
+      setMobileTab('panel')
+    }
+  }, [isMobile])
 
   // ── CSV import ────────────────────────────────────────────────────────────
 
@@ -350,7 +370,8 @@ export function App() {
     }
     updateState({ baselines: [...baselines, newBaseline] })
     setActiveBaselineId(newBaseline.id)
-  }, [baselines, enrichedTasks, today, updateState])
+    onBaselineLocked()
+  }, [baselines, enrichedTasks, today, updateState, onBaselineLocked])
 
   const deleteBaseline = useCallback((id: string) => {
     updateState({ baselines: baselines.filter(b => b.id !== id) })
@@ -408,7 +429,10 @@ export function App() {
   const handleEscape = useCallback(() => {
     setPanelOpen(false)
     setKbFocusId(null)
-  }, [])
+    if (isMobile) {
+      setMobileTab('tasks')
+    }
+  }, [isMobile])
 
   const handleUndo = useCallback(() => {
     const [top, ...rest] = undoStack
@@ -432,6 +456,22 @@ export function App() {
   const showWizard = onboardingPhase === 'fresh' && tasks.length === 0
 
   const selectedTask = enrichedTasks.find(t => t.id === selectedTaskId) ?? null
+  const mobilePanelOpen = isMobile && panelOpen && mobileTab === 'panel' && selectedTask !== null
+  const desktopPanelOpen = !isMobile && panelOpen && selectedTask !== null
+
+  useEffect(() => {
+    if (!isMobile) return
+    if (!selectedTask && mobileTab === 'panel') {
+      setMobileTab('tasks')
+    }
+  }, [isMobile, selectedTask, mobileTab])
+
+  const handleClosePanel = useCallback(() => {
+    setPanelOpen(false)
+    if (isMobile) {
+      setMobileTab('tasks')
+    }
+  }, [isMobile])
 
   return (
     <div className="app" data-phase={onboardingPhase}>
@@ -487,8 +527,9 @@ export function App() {
           />
 
           {/* ── Main content area ── */}
-          <div className={`app-main${panelOpen ? ' panel-open' : ''}`} data-mobile-tab={mobileTab}>
-            <TaskList
+          <div className={`app-main${desktopPanelOpen ? ' panel-open' : ''}`} data-mobile-tab={mobileTab}>
+            <div id="mobile-view-tasks" role="tabpanel" aria-labelledby="mobile-tab-tasks" hidden={isMobile && mobileTab !== 'tasks'}>
+              <TaskList
               visibleRows={visibleRows}
               groups={groups}
               parties={parties}
@@ -503,8 +544,10 @@ export function App() {
               onToggleGroup={onToggleGroup}
               onNewTask={handleNewTask}
             />
+            </div>
 
-            <Gantt
+            <div id="mobile-view-gantt" role="tabpanel" aria-labelledby="mobile-tab-gantt" hidden={isMobile && mobileTab !== 'gantt'}>
+              <Gantt
               visibleRows={visibleRows}
               groups={groups}
               timeline={timeline}
@@ -531,9 +574,10 @@ export function App() {
               onZoomOut={onZoomOut}
               onSetGhostStyle={setGhostStyle}
             />
+            </div>
 
             {/* Side panel */}
-            {panelOpen && selectedTask && (
+            {desktopPanelOpen && (
               <SidePanel
                 task={selectedTask}
                 tasks={enrichedTasks}
@@ -547,7 +591,7 @@ export function App() {
                 onUpdateTask={onUpdateTask}
                 onDeleteTask={onDeleteTask}
                 onAddNote={onAddNote}
-                onClose={() => setPanelOpen(false)}
+                onClose={handleClosePanel}
                 onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
               />
             )}
@@ -613,9 +657,35 @@ export function App() {
         />
       )}
 
+      {mobilePanelOpen && (
+        <MobileBottomSheet
+          open={mobilePanelOpen}
+          title="Task details"
+          onClose={handleClosePanel}
+        >
+          <SidePanel
+            task={selectedTask}
+            tasks={enrichedTasks}
+            groups={groups}
+            parties={parties}
+            notes={notes}
+            dependencies={dependencies}
+            workweek={workweek}
+            holidays={holidays}
+            today={today}
+            onUpdateTask={onUpdateTask}
+            onDeleteTask={onDeleteTask}
+            onAddNote={onAddNote}
+            onClose={handleClosePanel}
+            onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
+            mode="mobile"
+          />
+        </MobileBottomSheet>
+      )}
+
       {/* ── Onboarding baseline tip ── */}
       {onboardingPhase === 'baseline_tip' && (
-        <div className="baseline-tip">
+        <div className="baseline-tip" role="status" aria-live="polite" aria-atomic="true">
           Save a baseline to track schedule variance
         </div>
       )}

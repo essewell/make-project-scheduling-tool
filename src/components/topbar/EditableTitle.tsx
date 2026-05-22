@@ -50,7 +50,6 @@ export function EditableTitle({ value, onChange }: EditableTitleProps) {
           fontSize: 'var(--text-sm)',
           padding: '0 8px',
           width: 200,
-          outline: 'none',
         }}
         autoFocus
       />

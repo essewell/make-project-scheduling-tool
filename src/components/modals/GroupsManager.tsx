@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import type { Group } from '../../types'
+import { useDialogA11y } from '../../hooks/useDialogA11y'
 
 interface GroupsManagerProps {
   groups: Group[]
@@ -37,9 +38,14 @@ const PRESET_COLORS = ['#378ADD','#27AAE1','#2ECC71','#F39C12','#E74C3C','#9B59B
 function genId() { return Math.random().toString(36).slice(2, 10) }
 
 export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  const descId = useId()
   const [items, setItems] = useState<Group[]>(groups.map(g => ({ ...g })))
   const [newName, setNewName] = useState('')
   const [newColor, setNewColor] = useState(PRESET_COLORS[0] ?? '#378ADD')
+
+  useDialogA11y({ containerRef: dialogRef, onClose })
 
   const update = (id: string, patch: Partial<Group>) => {
     setItems(prev => prev.map(g => g.id === id ? { ...g, ...patch } : g))
@@ -58,11 +64,20 @@ export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
 
   return (
     <div style={OVERLAY} onClick={onClose}>
-      <div style={BOX} onClick={e => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
+        tabIndex={-1}
+        style={BOX}
+        onClick={e => e.stopPropagation()}
+      >
 
         <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
-          <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Manage Phases</div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
+          <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Manage Phases</div>
+          <div id={descId} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
             {items.length} phase{items.length !== 1 ? 's' : ''}
           </div>
         </div>
@@ -75,6 +90,7 @@ export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
                 type="color"
                 value={g.color}
                 onChange={e => update(g.id, { color: e.target.value })}
+                aria-label={`Phase color for ${g.name || 'unnamed phase'}`}
                 style={{ width: 26, height: 26, padding: 2, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', background: 'none' }}
               />
               <input
@@ -85,6 +101,7 @@ export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
               />
               <button
                 onClick={() => remove(g.id)}
+                aria-label={`Remove ${g.name || 'phase'}`}
                 style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-dim)', fontSize: 16, flexShrink: 0 }}
               >×</button>
             </div>
@@ -101,6 +118,7 @@ export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
               type="color"
               value={newColor}
               onChange={e => setNewColor(e.target.value)}
+              aria-label="New phase color"
               style={{ width: 26, height: 26, padding: 2, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', background: 'none', flexShrink: 0 }}
             />
             <input
@@ -123,6 +141,7 @@ export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
               <button
                 key={c}
                 onClick={() => setNewColor(c)}
+                aria-label={`Use preset color ${c}`}
                 style={{
                   width: 18, height: 18, borderRadius: '50%',
                   background: c, border: newColor === c ? '2px solid var(--color-text-primary)' : '2px solid transparent',

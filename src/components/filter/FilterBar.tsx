@@ -82,7 +82,7 @@ export function FilterBar({
                   height: 22, padding: '0 8px',
                   borderRadius: 99,
                   border: `1.5px solid ${active ? g.color : 'var(--color-border)'}`,
-                  background: active ? g.color + '22' : 'transparent',
+                  background: active ? `color-mix(in srgb, ${g.color} 14%, transparent)` : 'transparent',
                   color: active ? g.color : 'var(--color-text-secondary)',
                   fontSize: 'var(--text-2xs)',
                   fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
@@ -107,12 +107,12 @@ export function FilterBar({
             <button
               key={s.value}
               onClick={() => onFilter({ ...filterState, statuses: toggle(filterState.statuses, s.value) })}
-              style={{
-                height: 22, padding: '0 8px',
-                borderRadius: 99,
-                border: `1.5px solid ${active ? 'var(--accent)' : 'var(--color-border)'}`,
-                background: active ? 'rgba(39,170,225,0.12)' : 'transparent',
-                color: active ? 'var(--accent)' : 'var(--color-text-secondary)',
+                style={{
+                  height: 22, padding: '0 8px',
+                  borderRadius: 99,
+                  border: `1.5px solid ${active ? 'var(--accent)' : 'var(--color-border)'}`,
+                  background: active ? 'var(--accent-dim)' : 'transparent',
+                  color: active ? 'var(--accent)' : 'var(--color-text-secondary)',
                 fontSize: 'var(--text-2xs)',
                 fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
                 cursor: 'pointer',
@@ -141,7 +141,7 @@ export function FilterBar({
                   height: 22, padding: '0 8px',
                   borderRadius: 99,
                   border: `1.5px solid ${active ? p.color : 'var(--color-border)'}`,
-                  background: active ? p.color + '22' : 'transparent',
+                  background: active ? `color-mix(in srgb, ${p.color} 14%, transparent)` : 'transparent',
                   color: active ? p.color : 'var(--color-text-secondary)',
                   fontSize: 'var(--text-2xs)',
                   fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',

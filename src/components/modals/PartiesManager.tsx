@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import type { Party } from '../../types'
+import { useDialogA11y } from '../../hooks/useDialogA11y'
 
 interface PartiesManagerProps {
   parties: Party[]
@@ -37,10 +38,15 @@ const PRESET_COLORS = ['#378ADD','#27AAE1','#2ECC71','#F39C12','#E74C3C','#9B59B
 function genId() { return Math.random().toString(36).slice(2, 10) }
 
 export function PartiesManager({ parties, onSave, onClose }: PartiesManagerProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  const descId = useId()
   const [items, setItems] = useState<Party[]>(parties.map(p => ({ ...p })))
   const [newName, setNewName] = useState('')
   const [newAbbr, setNewAbbr] = useState('')
   const [newColor, setNewColor] = useState(PRESET_COLORS[0] ?? '#378ADD')
+
+  useDialogA11y({ containerRef: dialogRef, onClose })
 
   const update = (id: string, patch: Partial<Party>) => {
     setItems(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p))
@@ -61,11 +67,20 @@ export function PartiesManager({ parties, onSave, onClose }: PartiesManagerProps
 
   return (
     <div style={OVERLAY} onClick={onClose}>
-      <div style={BOX} onClick={e => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
+        tabIndex={-1}
+        style={BOX}
+        onClick={e => e.stopPropagation()}
+      >
 
         <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
-          <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Manage Parties</div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
+          <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Manage Parties</div>
+          <div id={descId} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
             {items.length} part{items.length !== 1 ? 'ies' : 'y'}
           </div>
         </div>
@@ -78,6 +93,7 @@ export function PartiesManager({ parties, onSave, onClose }: PartiesManagerProps
                 type="color"
                 value={p.color}
                 onChange={e => update(p.id, { color: e.target.value })}
+                aria-label={`Party color for ${p.name || 'unnamed party'}`}
                 style={{ width: 26, height: 26, padding: 2, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', background: 'none', flexShrink: 0 }}
               />
               <input
@@ -90,6 +106,7 @@ export function PartiesManager({ parties, onSave, onClose }: PartiesManagerProps
               <input
                 type="text"
                 value={p.abbr}
+                aria-label={`Abbreviation for ${p.name || 'party'}`}
                 onChange={e => update(p.id, { abbr: e.target.value.slice(0, 5).toUpperCase() })}
                 placeholder="ABR"
                 title="Abbreviation (shown in task list)"
@@ -97,6 +114,7 @@ export function PartiesManager({ parties, onSave, onClose }: PartiesManagerProps
               />
               <button
                 onClick={() => remove(p.id)}
+                aria-label={`Remove ${p.name || 'party'}`}
                 style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-dim)', fontSize: 16, flexShrink: 0 }}
               >×</button>
             </div>
@@ -113,6 +131,7 @@ export function PartiesManager({ parties, onSave, onClose }: PartiesManagerProps
               type="color"
               value={newColor}
               onChange={e => setNewColor(e.target.value)}
+              aria-label="New party color"
               style={{ width: 26, height: 26, padding: 2, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', background: 'none', flexShrink: 0 }}
             />
             <input
@@ -126,6 +145,7 @@ export function PartiesManager({ parties, onSave, onClose }: PartiesManagerProps
             <input
               type="text"
               placeholder="ABR"
+              aria-label="New party abbreviation"
               value={newAbbr}
               onChange={e => setNewAbbr(e.target.value.slice(0, 5).toUpperCase())}
               onKeyDown={e => e.key === 'Enter' && add()}
@@ -144,6 +164,7 @@ export function PartiesManager({ parties, onSave, onClose }: PartiesManagerProps
               <button
                 key={c}
                 onClick={() => setNewColor(c)}
+                aria-label={`Use preset color ${c}`}
                 style={{
                   width: 18, height: 18, borderRadius: '50%',
                   background: c, border: newColor === c ? '2px solid var(--color-text-primary)' : '2px solid transparent',

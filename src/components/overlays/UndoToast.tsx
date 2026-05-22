@@ -27,6 +27,9 @@ export function UndoToast({ entry, onUndo, onDismiss }: UndoToastProps) {
 
   return (
     <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
       style={{
         position: 'fixed',
         bottom: 24,
@@ -64,6 +67,7 @@ export function UndoToast({ entry, onUndo, onDismiss }: UndoToastProps) {
       </button>
       <button
         onClick={onDismiss}
+        aria-label="Dismiss undo message"
         style={{
           width: 24, height: 24,
           display: 'flex', alignItems: 'center', justifyContent: 'center',

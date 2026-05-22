@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import type { WorkweekConfig } from '../../types'
+import { useDialogA11y } from '../../hooks/useDialogA11y'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -48,9 +49,14 @@ const BOX: React.CSSProperties = {
 // ─── WorkweekModal ────────────────────────────────────────────────────────────
 
 export function WorkweekModal({ workweek, holidays, onSave, onClose }: WorkweekModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  const descId = useId()
   const [ww, setWw] = useState<WorkweekConfig>({ ...workweek })
   const [hols, setHols] = useState<string[]>([...holidays])
   const [newDate, setNewDate] = useState('')
+
+  useDialogA11y({ containerRef: dialogRef, onClose })
 
   const toggleDay = (key: keyof WorkweekConfig) => {
     setWw(prev => ({ ...prev, [key]: !prev[key] }))
@@ -71,14 +77,23 @@ export function WorkweekModal({ workweek, holidays, onSave, onClose }: WorkweekM
 
   return (
     <div style={OVERLAY} onClick={onClose}>
-      <div style={BOX} onClick={e => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
+        tabIndex={-1}
+        style={BOX}
+        onClick={e => e.stopPropagation()}
+      >
 
         {/* Header */}
         <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
-          <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>
+          <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>
             Workweek & Holidays
           </div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
+          <div id={descId} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
             {workingDays} working day{workingDays !== 1 ? 's' : ''} per week
           </div>
         </div>
@@ -127,6 +142,7 @@ export function WorkweekModal({ workweek, holidays, onSave, onClose }: WorkweekM
               <input
                 type="date"
                 value={newDate}
+                aria-label="Add holiday date"
                 onChange={e => setNewDate(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addHoliday()}
                 style={{

@@ -7,9 +7,9 @@
 
   /* Brand */
   --brand:              #1c3048;
-  --accent:             #27aae1;
-  --accent-hover:       #1a96cc;
-  --accent-dim:         rgba(39, 170, 225, 0.11);
+  --accent:             #0b78ab;
+  --accent-hover:       #09638d;
+  --accent-dim:         rgba(13, 131, 184, 0.12);
 
   /* Surfaces */
   --color-bg:           #eff2f6;
@@ -21,14 +21,14 @@
   /* Text */
   --color-text-primary:   #1c3048;
   --color-text-secondary: #466070;
-  --color-text-tertiary:  #7894a6;
-  --color-text-dim:       #a6bcca;
+  --color-text-tertiary:  #5b7384;
+  --color-text-dim:       #5b7384;
 
   /* Functional */
   --color-danger:       #bf3b2e;
   --color-danger-dim:   rgba(191, 59, 46, 0.09);
-  --color-success:      #1D9E75;
-  --color-warning:      #EF9F27;
+  --color-success:      #176d53;
+  --color-warning:      #995800;
   --color-today:        #27aae1;
   --color-selected-bg:  #e2f2fb;
   --color-toast-bg:     #1c2d3f;
@@ -106,9 +106,9 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --brand:              #0e1c2c;
-    --accent:             #27aae1;
-    --accent-hover:       #3db8ee;
-    --accent-dim:         rgba(39, 170, 225, 0.15);
+    --accent:             #4db8e6;
+    --accent-hover:       #7cccef;
+    --accent-dim:         rgba(77, 184, 230, 0.16);
 
     --color-bg:           #111d29;
     --color-surface:      #192a3c;
@@ -118,8 +118,8 @@
 
     --color-text-primary:   #d8eaf4;
     --color-text-secondary: #8dafc4;
-    --color-text-tertiary:  #5c7f97;
-    --color-text-dim:       #3a5870;
+    --color-text-tertiary:  #9eb9ca;
+    --color-text-dim:       #7f9db0;
 
     --color-selected-bg:  rgba(39, 170, 225, 0.14);
     --color-toast-bg:     #0e1c2c;

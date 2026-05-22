@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useId, useRef, useState, useMemo } from 'react'
 import type { Task, Dependency, DepType } from '../../types'
+import { useDialogA11y } from '../../hooks/useDialogA11y'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -79,8 +80,14 @@ const INPUT: React.CSSProperties = {
 // ─── LinkBuilderModal ─────────────────────────────────────────────────────────
 
 export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose }: LinkBuilderModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const titleId = useId()
+  const descId = useId()
   const [search, setSearch] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  useDialogA11y({ containerRef: dialogRef, initialFocusRef: searchInputRef, onClose })
 
   // Build initial rows from existing predecessors of this task
   const [rows, setRows] = useState<Row[]>(() => {
@@ -142,17 +149,27 @@ export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose 
 
   return (
     <div style={OVERLAY} onClick={onClose}>
-      <div style={BOX} onClick={e => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
+        tabIndex={-1}
+        style={BOX}
+        onClick={e => e.stopPropagation()}
+      >
 
         {/* Header */}
         <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
-          <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', marginBottom: 8 }}>
+          <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', marginBottom: 8 }}>
             Edit Dependencies
           </div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginBottom: 10 }}>
+          <div id={descId} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginBottom: 10 }}>
             Select predecessor tasks for: <strong>{taskMap.get(taskId)?.name}</strong>
           </div>
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="Search tasks..."
             value={search}

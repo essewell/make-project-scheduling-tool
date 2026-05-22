@@ -57,6 +57,7 @@ export function ActualDatesSection({ actualStart, actualFinish, onChange }: Actu
           <input
             type="date"
             value={actualStart ?? ''}
+            aria-label="Actual start date"
             onChange={e => onChange({ actualStart: e.target.value || null })}
             style={INPUT}
           />
@@ -68,6 +69,7 @@ export function ActualDatesSection({ actualStart, actualFinish, onChange }: Actu
           <input
             type="date"
             value={actualFinish ?? ''}
+            aria-label="Actual finish date"
             onChange={e => handleFinishChange(e.target.value)}
             style={INPUT}
           />

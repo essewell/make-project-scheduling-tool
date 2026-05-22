@@ -177,6 +177,7 @@ const TaskRow = memo(function TaskRow({
 
   return (
     <div
+      data-testid="task-row"
       onClick={onSelect}
       onDoubleClick={onOpen}
       style={{
@@ -267,7 +268,7 @@ const TaskRow = memo(function TaskRow({
             borderRadius: 'var(--radius-sm)',
             fontSize: 'var(--text-2xs)',
             fontWeight: 'var(--weight-medium)',
-            background: party.color + '22',
+            background: `color-mix(in srgb, ${party.color} 14%, transparent)`,
             color: party.color,
             whiteSpace: 'nowrap',
             maxWidth: 44,
