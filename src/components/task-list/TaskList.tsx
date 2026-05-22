@@ -53,6 +53,10 @@ function floatDays(task: Task, today: string): number | null {
   return daysBetween(today, task.e)
 }
 
+function formatFloat(floatValue: number): string {
+  return floatValue < 0 ? `${floatValue}` : `+${floatValue}`
+}
+
 // ─── Group row ────────────────────────────────────────────────────────────────
 
 interface GroupRowProps {
@@ -343,8 +347,12 @@ const TaskRow = memo(function TaskRow({
             fontSize: 'var(--text-3xs)',
             color: float < 0 ? 'var(--color-danger)' : 'var(--color-text-dim)',
             fontWeight: float < 0 ? 'var(--weight-medium)' : undefined,
+            fontVariantNumeric: 'tabular-nums',
+            minWidth: 24,
+            textAlign: 'right',
+            display: 'inline-block',
           }}>
-            {float < 0 ? float : `+${float}`}
+            {formatFloat(float)}
           </span>
         )}
       </div>
