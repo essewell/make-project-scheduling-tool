@@ -63,6 +63,8 @@ describe('makeDefaultState', () => {
     expect(s.collapsedGroups).toHaveLength(0)
     expect(s.baselines).toHaveLength(0)
     expect(s.holidays).toHaveLength(0)
+    expect(s.resources).toHaveLength(0)
+    expect(s.assignments).toHaveLength(0)
   })
 
   it('starts with onboardingPhase "fresh"', () => {
@@ -175,7 +177,7 @@ describe('loadState — v0 migration', () => {
     expect(loaded.dependencies[0]).toMatchObject({ fromId: 't2', toId: 't1', type: 'FS', lag: 0 })
   })
 
-  it('stamps persistedSchemaVersion=1 after migration', () => {
+  it('stamps persistedSchemaVersion=2 after migration', () => {
     const v0 = {
       projectName: 'Legacy',
       tasks: [], groups: [], parties: [], notes: [], collapsedGroups: [],
@@ -183,7 +185,31 @@ describe('loadState — v0 migration', () => {
       onboardingPhase: 'complete',
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(v0))
-    expect(loadState().persistedSchemaVersion).toBe(1)
+    expect(loadState().persistedSchemaVersion).toBe(2)
+  })
+
+  it('adds empty resources and assignments arrays on migration', () => {
+    const v1 = {
+      persistedSchemaVersion: 1,
+      projectName: 'v1 payload',
+      tasks: [],
+      groups: [],
+      parties: [],
+      notes: [],
+      dependencies: [],
+      collapsedGroups: [],
+      baselines: [],
+      workweek: DEFAULT_WORKWEEK,
+      holidays: [],
+      onboardingPhase: 'complete',
+      ghostStyle: 'stripe',
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v1))
+
+    const loaded = loadState()
+    expect(loaded.resources).toEqual([])
+    expect(loaded.assignments).toEqual([])
+    expect(loaded.persistedSchemaVersion).toBe(2)
   })
 
   it('sets ghostStyle to "stripe" when missing', () => {

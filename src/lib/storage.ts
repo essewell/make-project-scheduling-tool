@@ -21,6 +21,8 @@ export function makeDefaultState(projectName = 'My Project'): PersistedState {
     holidays: [],
     onboardingPhase: 'fresh',
     ghostStyle: 'stripe',
+    resources: [],
+    assignments: [],
   }
 }
 
@@ -57,6 +59,11 @@ function migrateState(parsed: Record<string, unknown>): PersistedState {
 
     // Ensure ghostStyle exists
     if (!base.ghostStyle) base.ghostStyle = 'stripe'
+  }
+
+  if (version === 1) {
+    if (!Array.isArray(base.resources)) base.resources = []
+    if (!Array.isArray(base.assignments)) base.assignments = []
   }
 
   // Stamp the current schema version so downstream code can rely on the field.

@@ -111,7 +111,7 @@ export type GhostStyle = 'stripe' | 'solid' | 'outline'
 // ─── Persisted state (localStorage) ─────────────────────────────────────────
 
 /** Current persisted-state schema version. Bump in lockstep with `migrateState` in storage.ts. */
-export const PERSISTED_SCHEMA_VERSION = 1
+export const PERSISTED_SCHEMA_VERSION = 2
 
 export interface PersistedState {
   /** Stamped on save by storage.ts. Absent on legacy (v0) payloads. */
@@ -128,6 +128,8 @@ export interface PersistedState {
   holidays: string[]           // YYYY-MM-DD strings
   onboardingPhase: OnboardingPhase
   ghostStyle: GhostStyle       // C2 — persisted
+  resources: Resource[]
+  assignments: ResourceAssignment[]
 }
 
 // ─── Visible rows (task list rendering) ──────────────────────────────────────
