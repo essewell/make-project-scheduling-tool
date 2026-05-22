@@ -169,8 +169,12 @@
 
     --color-selected-bg:  rgba(39, 170, 225, 0.14);
     --color-toast-bg:     #0a1421;
-    --data-positive:      #20ad81;
-    --data-negative:      #cf5449;
+    --color-danger:       #c95147;
+    --color-danger-dim:   rgba(201, 81, 71, 0.12);
+    --color-success:      #1fa37a;
+    --color-warning:      #d08800;
+    --data-positive:      #26c492;
+    --data-negative:      #d96b60;
     --data-caution:       #f5af41;
     --data-neutral:       #88a8bc;
     --data-info:          #4db8e6;
