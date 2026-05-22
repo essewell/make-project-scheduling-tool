@@ -27,7 +27,7 @@ handoff
 .env.local
 
 
-# Claude Code internals (prompts, plans, memory)
+# Claude Code internals (prompts, plans, memory) and other .md files associated with agents and Claude Code
 .claude/
 CLAUDE.md
 AGENTS.md

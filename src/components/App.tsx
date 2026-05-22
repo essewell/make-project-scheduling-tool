@@ -26,6 +26,7 @@ import { LinkBuilderModal } from './modals/LinkBuilderModal'
 import { WorkweekModal } from './modals/WorkweekModal'
 import { GroupsManager } from './modals/GroupsManager'
 import { PartiesManager } from './modals/PartiesManager'
+import { ResourcesManager } from './modals/ResourcesManager'
 import { CsvImportDialog } from './modals/CsvImportDialog'
 import { PrintPreviewModal } from './modals/PrintPreviewModal'
 import { StatBar } from './StatBar'
@@ -44,6 +45,7 @@ export function App() {
   const { tasks, groups, parties, dependencies, notes, collapsedGroups,
           workweek, holidays, onboardingPhase,
           projectName, baselines, ghostStyle } = state
+  const resources = state.resources
 
   // ── Transient UI state ────────────────────────────────────────────────────
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
@@ -62,6 +64,7 @@ export function App() {
   const [workweekModalOpen, setWorkweekModalOpen] = useState(false)
   const [groupsManagerOpen, setGroupsManagerOpen] = useState(false)
   const [partiesManagerOpen, setPartiesManagerOpen] = useState(false)
+  const [resourcesManagerOpen, setResourcesManagerOpen] = useState(false)
   const [csvImportOpen, setCsvImportOpen] = useState(false)
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false)
 
@@ -511,6 +514,7 @@ export function App() {
             onOpenWorkweek={() => setWorkweekModalOpen(true)}
             onOpenGroups={() => setGroupsManagerOpen(true)}
             onOpenParties={() => setPartiesManagerOpen(true)}
+            onOpenResources={() => setResourcesManagerOpen(true)}
             onOpenCsvImport={() => setCsvImportOpen(true)}
             onOpenPrint={() => setPrintPreviewOpen(true)}
             onExportCsv={handleExportCsv}
@@ -671,6 +675,14 @@ export function App() {
           parties={parties}
           onSave={newParties => updateState({ parties: newParties })}
           onClose={() => setPartiesManagerOpen(false)}
+        />
+      )}
+
+      {resourcesManagerOpen && (
+        <ResourcesManager
+          resources={resources}
+          onSave={(newResources) => updateState({ resources: newResources })}
+          onClose={() => setResourcesManagerOpen(false)}
         />
       )}
 
