@@ -197,17 +197,17 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 style={{
-                  border: `2px dashed ${dragging ? 'var(--accent)' : 'var(--color-border)'}`,
+                  border: dragging ? '2px solid var(--accent)' : '2px dashed var(--color-border)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '32px 20px',
                   textAlign: 'center',
                   cursor: 'pointer',
-                  background: dragging ? 'var(--color-selected-bg)' : 'var(--color-surface-2)',
+                  background: dragging ? 'var(--accent-dim)' : 'var(--color-surface-2)',
                   transition: 'border-color 0.12s, background 0.12s',
                 }}
               >
                 <div style={{ marginBottom: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <FileArrowUp size={24} weight="regular" aria-hidden="true" color="var(--color-text-tertiary)" />
+                  <FileArrowUp size={32} weight="regular" aria-hidden="true" color={dragging ? 'var(--accent)' : 'var(--color-text-tertiary)'} />
                 </div>
                 <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-primary)', marginBottom: 4 }}>
                   Drop your CSV here
