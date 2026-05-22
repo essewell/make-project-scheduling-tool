@@ -5,6 +5,8 @@ import { ROW_HEIGHT, GANTT_HEADER_HEIGHT } from '../../constants'
 import { StatusBadge } from './StatusBadge'
 import { CaretDown, CaretRight } from '../../lib/icons'
 
+const WBS_COL_WIDTH = 24
+
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface TaskListProps {
@@ -108,7 +110,7 @@ const GroupRow = memo(function GroupRow({
           fontSize: 'var(--text-2xs)',
           color: 'var(--color-text-dim)',
           flexShrink: 0,
-          minWidth: 24,
+          width: WBS_COL_WIDTH,
         }}>
           {wbs}
         </span>
@@ -233,7 +235,7 @@ const TaskRow = memo(function TaskRow({
           fontSize: 'var(--text-2xs)',
           color: 'var(--color-text-dim)',
           flexShrink: 0,
-          minWidth: 24,
+          width: WBS_COL_WIDTH,
         }}>
           {wbs}
         </span>
