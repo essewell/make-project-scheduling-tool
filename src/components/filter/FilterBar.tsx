@@ -10,8 +10,10 @@ interface FilterBarProps {
   visibleCount: number
   searchTerm: string
   filterState: FilterState
+  showCostColumn: boolean
   onSearch: (q: string) => void
   onFilter: (f: FilterState) => void
+  onToggleCostColumn: () => void
 }
 
 // ─── Status chip data ─────────────────────────────────────────────────────────
@@ -34,7 +36,7 @@ function toggle<T>(arr: T[], val: T): T[] {
 
 export function FilterBar({
   groups, parties, taskCount, visibleCount,
-  searchTerm, filterState, onSearch, onFilter,
+  searchTerm, filterState, showCostColumn, onSearch, onFilter, onToggleCostColumn,
 }: FilterBarProps) {
   const isFiltered = filterState.phases.length > 0 || filterState.statuses.length > 0 || filterState.parties.length > 0
 
@@ -169,6 +171,22 @@ export function FilterBar({
       )}
 
       <div style={{ flex: 1 }} />
+
+      <button
+        onClick={onToggleCostColumn}
+        style={{
+          height: 24, padding: '0 10px',
+          borderRadius: 99,
+          border: '1px solid var(--color-border)',
+          background: showCostColumn ? 'var(--accent-dim)' : 'none',
+          color: showCostColumn ? 'var(--accent)' : 'var(--color-text-tertiary)',
+          fontSize: 'var(--text-2xs)',
+          cursor: 'pointer',
+          flexShrink: 0,
+        }}
+      >
+        View Cost: {showCostColumn ? 'On' : 'Off'}
+      </button>
 
       {/* Clear + count */}
       {isFiltered && (

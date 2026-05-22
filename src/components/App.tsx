@@ -58,6 +58,7 @@ export function App() {
   const [isPending, startTransition] = useTransition()
   const [zoomIndex, setZoomIndex] = useState(DEFAULT_ZOOM_INDEX)
   const [showCriticalPath, setShowCriticalPath] = useState(false)
+  const [showCostColumn, setShowCostColumn] = useState(false)
   const [completionFlashId, setCompletionFlashId] = useState<string | null>(null)
   const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
   const [_selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
@@ -645,8 +646,10 @@ export function App() {
             visibleCount={visibleTaskIds.length}
             searchTerm={searchTerm}
             filterState={filterState}
+            showCostColumn={showCostColumn}
             onSearch={(q) => startTransition(() => setSearchTerm(q))}
             onFilter={(f) => startTransition(() => setFilterState(f))}
+            onToggleCostColumn={() => setShowCostColumn((value) => !value)}
           />
 
           {/* ── Main content area ── */}
@@ -663,6 +666,8 @@ export function App() {
               selectedTaskId={selectedTaskId}
               kbFocusId={kbFocusId}
               completionFlashId={completionFlashId}
+              showCostColumn={showCostColumn}
+              taskCosts={taskCosts}
               listRef={listRef}
               onScroll={handleListScroll}
               onSelectTask={handleSelectTask}

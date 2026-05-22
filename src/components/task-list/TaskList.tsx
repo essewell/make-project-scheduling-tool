@@ -19,6 +19,8 @@ interface TaskListProps {
   selectedTaskId: string | null
   kbFocusId: string | null
   completionFlashId: string | null
+  showCostColumn?: boolean
+  taskCosts?: Map<string, number>
   today: string
   onSelectTask: (id: string) => void
   onOpenPanel: (id: string) => void
@@ -69,6 +71,7 @@ interface GroupRowProps {
   collapsed: boolean
   wbs: string
   completionPct: number
+  showCostColumn: boolean
   onToggle: () => void
 }
 
@@ -80,15 +83,17 @@ const GroupRow = memo(function GroupRow({
   collapsed,
   wbs,
   completionPct,
+  showCostColumn,
   onToggle,
 }: GroupRowProps) {
+  const columns = showCostColumn ? '1fr 52px 80px 48px 90px' : '1fr 52px 80px 48px'
   return (
     <div
       onClick={onToggle}
       style={{
         height: ROW_HEIGHT,
         display: 'grid',
-        gridTemplateColumns: '1fr 52px 80px 48px',
+        gridTemplateColumns: columns,
         alignItems: 'center',
         background: 'var(--color-surface-2)',
         borderBottom: '1px solid var(--color-border-light)',
@@ -167,6 +172,7 @@ const GroupRow = memo(function GroupRow({
           />
         </div>
       </div>
+      {showCostColumn && <div />}
     </div>
   )
 })
@@ -181,6 +187,8 @@ interface TaskRowProps {
   isSelected: boolean
   isKbFocused: boolean
   isFlashing: boolean
+  showCostColumn: boolean
+  cost: number
   today: string
   onSelect: () => void
   onOpen: () => void
@@ -194,11 +202,14 @@ const TaskRow = memo(function TaskRow({
   isSelected,
   isKbFocused,
   isFlashing,
+  showCostColumn,
+  cost,
   today,
   onSelect,
   onOpen,
 }: TaskRowProps) {
   const float = floatDays(task, today)
+  const columns = showCostColumn ? '1fr 52px 80px 48px 90px' : '1fr 52px 80px 48px'
 
   let bg = 'var(--color-surface)'
   if (isFlashing) bg = 'var(--color-selected-bg)'
@@ -214,7 +225,7 @@ const TaskRow = memo(function TaskRow({
       style={{
         height: ROW_HEIGHT,
         display: 'grid',
-        gridTemplateColumns: '1fr 52px 80px 48px',
+        gridTemplateColumns: columns,
         alignItems: 'center',
         background: bg,
         borderBottom: isSelected ? 'none' : '1px solid var(--color-border-light)',
@@ -360,6 +371,14 @@ const TaskRow = memo(function TaskRow({
           </span>
         )}
       </div>
+
+      {showCostColumn && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 10 }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-3xs)', color: 'var(--color-text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(cost)}
+          </span>
+        </div>
+      )}
     </div>
   )
 })
@@ -376,6 +395,8 @@ export function TaskList({
   selectedTaskId,
   kbFocusId,
   completionFlashId,
+  showCostColumn = false,
+  taskCosts = new Map<string, number>(),
   today,
   onSelectTask,
   onOpenPanel,
@@ -384,6 +405,7 @@ export function TaskList({
   listRef,
   onScroll,
 }: TaskListProps) {
+  const columns = showCostColumn ? '1fr 52px 80px 48px 90px' : '1fr 52px 80px 48px'
   const wbsMap = computeWbs(visibleRows)
   const partyMap = new Map(parties.map(p => [p.id, p]))
   const groupColorMap = new Map(groups.map(g => [g.id, g.color]))
@@ -419,7 +441,7 @@ export function TaskList({
         background: 'var(--color-surface)',
         borderBottom: '1px solid var(--color-border)',
         display: 'grid',
-        gridTemplateColumns: '1fr 52px 80px 48px',
+        gridTemplateColumns: columns,
         alignItems: 'flex-end',
         paddingBottom: 8,
         flexShrink: 0,
@@ -436,6 +458,11 @@ export function TaskList({
         <span style={{ textAlign: 'right', paddingRight: 10, fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Float
         </span>
+        {showCostColumn && (
+          <span style={{ textAlign: 'right', paddingRight: 10, fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Cost
+          </span>
+        )}
       </div>
 
       {/* ── Scrollable row area ── */}
@@ -468,6 +495,7 @@ export function TaskList({
                 collapsed={row.collapsed}
                 wbs={wbsMap.get('group:' + row.groupId) ?? ''}
                 completionPct={groupCompletionMap.get(row.groupId) ?? 0}
+                showCostColumn={showCostColumn}
                 onToggle={() => onToggleGroup(row.groupId)}
               />
             )
@@ -485,6 +513,8 @@ export function TaskList({
               isSelected={task.id === selectedTaskId}
               isKbFocused={task.id === kbFocusId}
               isFlashing={task.id === completionFlashId}
+              showCostColumn={showCostColumn}
+              cost={taskCosts.get(task.id) ?? 0}
               today={today}
               onSelect={() => onSelectTask(task.id)}
               onOpen={() => onOpenPanel(task.id)}
