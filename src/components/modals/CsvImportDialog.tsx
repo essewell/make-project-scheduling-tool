@@ -3,7 +3,7 @@ import type { Task } from '../../types'
 import { parseCSVText, csvRowsToTasks } from '../../lib/csv'
 import type { CsvRow, CsvRowError } from '../../lib/csv'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
-import { ArrowLeft, FileArrowUp } from '../../lib/icons'
+import { ArrowLeft, FileArrowUp, Warning } from '../../lib/icons'
 
 const MAX_VISIBLE_ERRORS = 5
 
@@ -300,10 +300,13 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
               {/* Row validation errors */}
               {errorCount > 0 && (
                 <div>
-                  <div style={{ fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-semibold)', color: blocked ? 'var(--color-danger)' : 'var(--color-warning)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                    {blocked
-                      ? `Cannot import — ${errorCount} row error${errorCount !== 1 ? 's' : ''}`
-                      : `${errorCount} row warning${errorCount !== 1 ? 's' : ''} (${importableCount} of ${importCount} importable)`}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+                    <Warning size={13} weight="fill" color={blocked ? 'var(--color-danger)' : 'var(--color-warning)'} aria-hidden="true" />
+                    <span style={{ fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-semibold)', color: blocked ? 'var(--color-danger)' : 'var(--color-warning)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      {blocked
+                        ? `Cannot import — ${errorCount} row error${errorCount !== 1 ? 's' : ''}`
+                        : `${errorCount} row warning${errorCount !== 1 ? 's' : ''} (${importableCount} of ${importCount} importable)`}
+                    </span>
                   </div>
                   <div style={{ borderRadius: 'var(--radius)', border: `1px solid ${blocked ? 'var(--color-danger)' : 'var(--color-border)'}`, background: blocked ? 'var(--color-danger-dim)' : 'var(--color-surface-2)', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {visibleErrors.map((err, i) => (

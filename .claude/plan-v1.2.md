@@ -1201,12 +1201,79 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - Standardized modal header padding to `20px 24px 16px`.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
 
-- **2026-05-22 — Phase I.4: footer alignment pass started (WIP, not landed)**
-  - Files (modified, uncommitted): `src/components/modals/CsvImportDialog.tsx`, `src/components/modals/LinkBuilderModal.tsx`, `src/components/modals/WorkweekModal.tsx`, `src/components/modals/PrintPreviewModal.tsx`, `src/components/modals/GroupsManager.tsx`, `src/components/modals/PartiesManager.tsx`
-  - Changes in progress: moving secondary actions to left side and primary actions to right side in modal footers.
-  - Verification: full local gate run was started and intentionally interrupted before completion (session budget pause). Must rerun before landing.
+- **2026-05-22 — Phase I.4: modal footer alignment (secondary left, primary right)**
+  - Files: `src/components/modals/CsvImportDialog.tsx`, `src/components/modals/LinkBuilderModal.tsx`, `src/components/modals/WorkweekModal.tsx`, `src/components/modals/PrintPreviewModal.tsx`, `src/components/modals/GroupsManager.tsx`, `src/components/modals/PartiesManager.tsx`
+  - Changes: normalized modal footer layout across all six modals — secondary actions (Cancel / Close / Back) anchored left, primary actions (Save / Import / Print) anchored right via `flex space-between`.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9 e2e, 149/149 unit). Commit: `42bfc78`.
+
+- **2026-05-22 — Phase J.1: StatBar conditional stats + Today pill**
+  - Files: `src/components/StatBar.tsx`, `src/components/App.tsx`
+  - Changes: added `criticalPath?: CpmResult | null` prop; conditional Critical count (data-negative mono) when CP active + >0 ids; Variance count (data-caution mono) when at_risk+delayed > 0; right-aligned Today chip (surface-sunken, uppercase `TODAY` + mono date); wired `criticalPath` prop in App.tsx.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149). Commit: `fc8f1f2`.
+
+- **2026-05-22 — Phase J.2: FilterBar search icon prefix + chip hover polish**
+  - Files: `src/lib/icons.ts`, `src/components/filter/FilterBar.tsx`, `src/styles/app.css`
+  - Changes: added `MagnifyingGlass` export to icons module; search input wrapped in relative container with absolute 12px icon prefix; input left padding increased to 26px; `className="filter-chip"` added to all phase, status, and party chip buttons; `.filter-chip:hover` rule in app.css (`surface-sunken` bg + `border-mid` border). View segmented control skipped (no viewMode state exists; adding it would be new product surface — deferred).
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149). Commit: `249d6a0`.
+
+- **2026-05-22 — Phase J.3: LinkBuilderModal row hover + dep type segmented control**
+  - Files: `src/components/modals/LinkBuilderModal.tsx`, `src/styles/app.css`
+  - Changes: `.link-row` CSS class + `data-checked` attr for hover-without-checked-conflict; dep type `<select>` replaced with 4-button segmented control (`.dep-type-btn`) — joined borders, radius on ends, active uses accent-dim, disabled dims whole group to 35%; grid column widened 90→130px.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149). Commit: `5136749`.
+
+- **2026-05-22 — Phase J.4: CsvImportDialog drop zone polish**
+  - Files: `src/components/modals/CsvImportDialog.tsx`
+  - Changes: icon 24→32px; drag-active: dashed→solid 2px accent border, color-selected-bg→accent-dim, icon color shifts to accent.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149). Commit: `429ca5b`.
+
+- **2026-05-22 — Phase J.5–J.6: PrintPreviewModal thumbnail strip + canvas title bar**
+  - Files: `src/components/modals/PrintPreviewModal.tsx`
+  - Changes: mode tabs replaced with thumbnail strip (schematic SVG + label); Gantt canvas title row becomes navy header strip with white project name + eyebrow label + Printed date; Summary canvas gets matching eyebrow treatment.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149). Commit: `860fd8a`.
+
+- **2026-05-22 — Phase K.1: Gantt empty state icon + copy**
+  - Files: `src/components/gantt/Gantt.tsx`
+  - Changes: replaced plain text empty with `CalendarBlank` (28px) + "No tasks yet" headline + sub-copy "Add a task to see your schedule."
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
+- **2026-05-22 — Phase K.2: TaskList filter-empty state icon + copy**
+  - Files: `src/components/App.tsx`, `src/components/task-list/TaskList.tsx`
+  - Changes: added `taskCount: number` prop; `Funnel` 22px icon + "No results" headline + sub-copy. Condition `visibleRows.length === 0 && taskCount > 0` correctly distinguishes filter-empty from blank-slate. App.tsx wired with `taskCount={enrichedTasks.length}`.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
+- **2026-05-22 — Phase K.3: SidePanel empty-deps + empty-log helper text**
+  - Files: `src/components/panels/SidePanel.tsx`
+  - Changes: deps empty: "No predecessors set." + inline "Use the link icon above to add dependencies."; log empty: icon + "No entries yet." + Ctrl+Enter kbd hint.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
+- **2026-05-22 — Phase K.4: CsvImportDialog error row icon**
+  - Files: `src/components/modals/CsvImportDialog.tsx`
+  - Changes: `Warning` icon (13px fill, danger color) prefixed to error message header inside a flex row.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
+- **2026-05-22 — Phase K.5: localStorage quota detection banner**
+  - Files: `src/lib/storage.ts`, `src/components/App.tsx`
+  - Changes: `saveState` return type changed `void→boolean`; App.tsx tracks `storageFullBanner` state; persistence useEffect checks return value and shows a dismissible danger banner above StatBar when localStorage quota exceeded.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
+- **2026-05-22 — Phase K.6: deferred filter computation indicator**
+  - Files: `src/constants.ts`, `src/components/App.tsx`, `src/components/task-list/TaskList.tsx`, `src/components/gantt/Gantt.tsx`, `src/styles/app.css`
+  - Changes: `LARGE_TASK_THRESHOLD = 500`; `useTransition` wraps `setSearchTerm`/`setFilterState` in FilterBar handlers; `isComputing?: boolean` prop added to TaskList and Gantt; 2px animated shimmer bar (`.computing-bar`, `computing-sweep` keyframe) shown at container top when `isPending && taskCount > threshold`.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149). Commit: `87edfe0`.
+
+- **2026-05-22 — Phase L.1–L.8: marketing page full visual treatment** (commit `4c8d66b`)
+  - Files: `src/marketing/MarketingPage.tsx`, `src/marketing/marketing.css`
+  - L.1: Hero off-white background (`#f4f3ef` light / surface dark); GanttMock in 3° tilted shadow frame with hover easing.
+  - L.2: Capabilities poster-grid already asymmetric (7+5 / 6+6); copy tightened.
+  - L.3: Interface dark band gains 3 SVG crop panels (bars, critical path, baseline ghost) above the GanttMock full mock.
+  - L.4: Process expanded 4→5 steps; added "Export and share." as step 05; section title updated.
+  - L.5: Closing CTA becomes navy band with `ClosingDiagram` SVG visual on the right column.
+  - L.6: Footer rebuilt as 4-column grid (brand / product / built-with / storage) with rule + bottom meta line.
+  - L.7: SVG crop panels and ClosingDiagram created inline; DiagramPrint updated with navy title row.
+  - L.8: Copy pass — all CTAs name the outcome; no AI-tell language anywhere.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
 
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase I in progress (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 + F.1..F.8 + G.1..G.4 + H.1..H.4 + I.1..I.3 landed locally; I.4 WIP uncommitted)
+**Status:** Active — Phase L complete (L.1–L.8 all landed; Phase M next)

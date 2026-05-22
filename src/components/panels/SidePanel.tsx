@@ -439,7 +439,10 @@ export function SidePanel({
           <div style={SECTION_RULE} aria-hidden="true" />
           <div style={SECTION_TITLE}>Dependencies</div>
           {predecessors.length === 0 ? (
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>No predecessors set</div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)', lineHeight: 1.5 }}>
+              No predecessors set.{' '}
+              <span style={{ color: 'var(--color-text-tertiary)' }}>Use the link icon above to add dependencies.</span>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {predecessors.map(dep => {
@@ -493,6 +496,11 @@ export function SidePanel({
               marginBottom: 8,
             }}
           />
+          {taskNotes.length === 0 && (
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)', marginBottom: 4 }}>
+              No entries yet. Press <kbd style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-2xs)', padding: '1px 4px', background: 'var(--surface-sunken)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}>Ctrl+Enter</kbd> to save a note.
+            </div>
+          )}
           {taskNotes.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {taskNotes.map(note => (

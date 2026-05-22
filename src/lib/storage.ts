@@ -80,13 +80,14 @@ export function loadState(): PersistedState {
 
 // ─── Save ─────────────────────────────────────────────────────────────────────
 
-export function saveState(state: PersistedState): void {
+export function saveState(state: PersistedState): boolean {
   try {
     // Always stamp the current schema version on save, regardless of caller.
     const out: PersistedState = { ...state, persistedSchemaVersion: PERSISTED_SCHEMA_VERSION }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(out))
+    return true
   } catch {
-    // localStorage full or unavailable — fail silently
+    return false
   }
 }
 
