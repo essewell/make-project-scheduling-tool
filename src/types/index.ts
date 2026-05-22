@@ -33,6 +33,28 @@ export interface Dependency {
   lag: number   // calendar days; negative = lead
 }
 
+// ─── Resources ───────────────────────────────────────────────────────────────
+
+export type ResourceCategory = 'labor' | 'equipment' | 'material'
+
+export interface Resource {
+  id: string
+  name: string
+  category: ResourceCategory
+  unit: string
+  capacity: number
+  costRate: number
+  color: string
+}
+
+export interface ResourceAssignment {
+  id: string
+  taskId: string
+  resourceId: string
+  quantity: number
+  notes: string
+}
+
 // ─── Groups / Parties ────────────────────────────────────────────────────────
 
 export interface Group {
