@@ -193,6 +193,7 @@ export const GanttBar = memo(function GanttBar({
           ? '2px solid var(--accent)'
           : undefined,
         outlineOffset: -1,
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)',
         overflow: 'hidden',
       }}
       title={task.name}
