@@ -31,5 +31,5 @@ handoff
 .claude/
 CLAUDE.md
 AGENTS.md
-.gitignore
+.github/
 .worktrees/
