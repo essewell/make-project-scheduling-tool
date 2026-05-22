@@ -392,3 +392,48 @@ input[type="range"] {
   background: var(--surface-sunken) !important;
   border-color: var(--color-border-mid) !important;
 }
+
+/* ─── LinkBuilderModal rows ───────────────────────────────────────────────── */
+
+.link-row:not([data-checked="true"]):hover {
+  background: var(--surface-sunken);
+}
+
+/* ─── Dep type segmented control ─────────────────────────────────────────── */
+
+.dep-type-btn {
+  height: 24px;
+  padding: 0 7px;
+  font-size: var(--text-2xs);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-regular);
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.1s, color 0.1s;
+}
+.dep-type-btn + .dep-type-btn {
+  margin-left: -1px;
+}
+.dep-type-btn:first-child {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+.dep-type-btn:last-child {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.dep-type-btn--active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+  z-index: 1;
+}
+.dep-type-btn:not(:disabled):not(.dep-type-btn--active):hover {
+  background: var(--surface-sunken);
+}
+.dep-type-btn:disabled {
+  cursor: default;
+}

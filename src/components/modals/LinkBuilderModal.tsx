@@ -192,9 +192,11 @@ export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose 
             return (
               <div
                 key={task.id}
+                className="link-row"
+                data-checked={row.checked}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '24px 1fr 90px 70px',
+                  gridTemplateColumns: '24px 1fr 130px 70px',
                   alignItems: 'center',
                   gap: 10,
                   padding: '8px 20px',
@@ -211,16 +213,19 @@ export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose 
                 <span style={{ fontSize: 'var(--text-xs)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {task.name}
                 </span>
-                <select
-                  value={row.type}
-                  disabled={!row.checked}
-                  onChange={e => setRow(task.id, { type: e.target.value as DepType })}
-                  style={{ ...INPUT, width: '100%', opacity: row.checked ? 1 : 0.4, cursor: row.checked ? 'pointer' : 'default' }}
-                >
+                {/* Type segmented control */}
+                <div style={{ display: 'flex', opacity: row.checked ? 1 : 0.35 }}>
                   {DEP_TYPES.map(t => (
-                    <option key={t} value={t}>{t}</option>
+                    <button
+                      key={t}
+                      disabled={!row.checked}
+                      onClick={() => setRow(task.id, { type: t })}
+                      className={`dep-type-btn${row.type === t ? ' dep-type-btn--active' : ''}`}
+                    >
+                      {t}
+                    </button>
                   ))}
-                </select>
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <input
                     type="number"
