@@ -38,6 +38,7 @@ interface GanttProps {
   selectedResourceId: string | null
   histogramVisible: boolean
   ganttRef: RefObject<HTMLDivElement>
+  histogramRef: RefObject<HTMLDivElement>
   onScroll: () => void
   onUpdateTask: (id: string, patch: Partial<Task>) => void
   onSelectTask: (id: string) => void
@@ -47,6 +48,7 @@ interface GanttProps {
   onSetGhostStyle: (style: GhostStyle) => void
   onToggleHistogram: () => void
   onSelectResource: (resourceId: string) => void
+  onHistogramScroll: () => void
   isComputing?: boolean
 }
 
@@ -75,6 +77,7 @@ export function Gantt({
   selectedResourceId,
   histogramVisible,
   ganttRef,
+  histogramRef,
   onScroll,
   onUpdateTask,
   onSelectTask,
@@ -84,6 +87,7 @@ export function Gantt({
   onSetGhostStyle,
   onToggleHistogram,
   onSelectResource,
+  onHistogramScroll,
   isComputing = false,
 }: GanttProps) {
   // ── Derived ────────────────────────────────────────────────────────────────
@@ -376,17 +380,23 @@ export function Gantt({
       )}
 
       {histogramVisible && (
-        <ResourceHistogram
-          resources={resources}
-          assignments={assignments}
-          tasks={visibleTasks}
-          timeline={timeline}
-          dayPx={dayPx}
-          workweek={workweek}
-          holidays={holidays}
-          selectedResourceId={selectedResourceId}
-          onSelectResource={onSelectResource}
-        />
+        <div
+          ref={histogramRef}
+          onScroll={onHistogramScroll}
+          style={{ overflowX: 'auto', overflowY: 'hidden', borderTop: '1px solid var(--color-border)' }}
+        >
+          <ResourceHistogram
+            resources={resources}
+            assignments={assignments}
+            tasks={visibleTasks}
+            timeline={timeline}
+            dayPx={dayPx}
+            workweek={workweek}
+            holidays={holidays}
+            selectedResourceId={selectedResourceId}
+            onSelectResource={onSelectResource}
+          />
+        </div>
       )}
     </div>
   )

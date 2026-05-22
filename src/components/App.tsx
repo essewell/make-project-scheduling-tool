@@ -82,7 +82,7 @@ export function App() {
 
   // ── Hooks ─────────────────────────────────────────────────────────────────
   const today = useMidnightTicker()
-  const { listRef, ganttRef, handleListScroll, handleGanttScroll } = useScrollSync()
+  const { listRef, ganttRef, histogramRef, handleListScroll, handleGanttScroll, handleHistogramScroll } = useScrollSync()
 
   const dayPx = ZOOM_LEVELS[zoomIndex]?.dayPx ?? 16
 
@@ -702,6 +702,7 @@ export function App() {
               assignments={assignments}
               selectedResourceId={selectedResourceId}
               histogramVisible={histogramVisible}
+              histogramRef={histogramRef}
               baselines={baselines}
               activeBaselineId={activeBaselineId}
               ghostStyle={ghostStyle}
@@ -719,6 +720,7 @@ export function App() {
               onSetGhostStyle={setGhostStyle}
               onToggleHistogram={() => setHistogramVisible((value) => !value)}
               onSelectResource={setSelectedResourceId}
+              onHistogramScroll={handleHistogramScroll}
               isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
             />
             </div>
