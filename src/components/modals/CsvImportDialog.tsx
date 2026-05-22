@@ -3,7 +3,7 @@ import type { Task } from '../../types'
 import { parseCSVText, csvRowsToTasks } from '../../lib/csv'
 import type { CsvRow, CsvRowError } from '../../lib/csv'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
-import { ArrowLeft } from '../../lib/icons'
+import { ArrowLeft, FileArrowUp } from '../../lib/icons'
 
 const MAX_VISIBLE_ERRORS = 5
 
@@ -206,7 +206,9 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
                   transition: 'border-color 0.12s, background 0.12s',
                 }}
               >
-                <div style={{ fontSize: 28, marginBottom: 8 }}>📄</div>
+                <div style={{ marginBottom: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FileArrowUp size={24} weight="regular" aria-hidden="true" color="var(--color-text-tertiary)" />
+                </div>
                 <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-primary)', marginBottom: 4 }}>
                   Drop your CSV here
                 </div>
