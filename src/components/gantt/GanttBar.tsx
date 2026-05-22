@@ -211,7 +211,10 @@ export const GanttBar = memo(function GanttBar({
         cursor: 'grab',
         userSelect: 'none',
         opacity: isDimmed ? 0.6 : task.status === 'not_started' ? 0.55 : 1,
-        transition: 'left 0.12s, width 0.12s',
+        transition: 'left 120ms ease, width 120ms ease, opacity 240ms ease, background 240ms ease, border 240ms ease, outline 240ms ease, box-shadow 240ms ease',
+        animation: isCritical ? 'schedule-critical-path-shake 240ms ease' : undefined,
+        animationFillMode: 'forwards',
+        transformOrigin: 'center center',
         zIndex: isSelected ? 3 : 2,
         outline: (isSelected || isKbFocused) && !isCritical
           ? '2px solid var(--accent)'

@@ -32,20 +32,24 @@ const ICON: Partial<Record<TaskStatus, ReactNode>> = {
 export function StatusBadge({ status }: StatusBadgeProps) {
   const { background, color } = STYLE[status]
   return (
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      padding: '1px 5px',
-      borderRadius: 'var(--radius-sm)',
-      fontSize: 'var(--text-2xs)',
-      fontWeight: 'var(--weight-medium)',
-      lineHeight: '15px',
-      whiteSpace: 'nowrap',
-      flexShrink: 0,
-      background,
-      color,
-      gap: 4,
-    }}>
+    <span
+      className="status-badge"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '1px 5px',
+        borderRadius: 'var(--radius-sm)',
+        fontSize: 'var(--text-2xs)',
+        fontWeight: 'var(--weight-medium)',
+        lineHeight: '15px',
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
+        background,
+        color,
+        gap: 4,
+        transition: 'background-color 200ms ease, color 200ms ease, opacity 200ms ease, border-color 200ms ease',
+      }}
+    >
       {status === 'not_started' ? (
         <span
           aria-hidden="true"

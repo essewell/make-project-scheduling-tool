@@ -46,6 +46,14 @@
   40%, 60% { box-shadow: inset 0 0 0 2px var(--accent); }
 }
 
+@keyframes schedule-critical-path-shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+  75% { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}
+
 /* Spinner */
 @keyframes schedule-spin {
   to { transform: rotate(360deg); }
@@ -375,7 +383,15 @@ input[type="range"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wizard-rise {
+  *, *::before, *::after {
+    animation-duration: 0ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .wizard-rise,
+  .filter-chip--active {
     animation: none !important;
   }
 }
@@ -415,9 +431,28 @@ input[type="range"] {
 
 /* ─── Filter chips ────────────────────────────────────────────────────────── */
 
+.filter-chip {
+  transform-origin: center center;
+}
+
 .filter-chip:hover {
   background: var(--surface-sunken) !important;
   border-color: var(--color-border-mid) !important;
+}
+
+.filter-chip--active {
+  animation: filter-chip-entry 160ms ease-out both;
+}
+
+@keyframes filter-chip-entry {
+  from {
+    transform: scale(0.95);
+    opacity: 0.92;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ─── LinkBuilderModal rows ───────────────────────────────────────────────── */

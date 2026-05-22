@@ -81,7 +81,7 @@ export function FilterBar({
             return (
               <button
                 key={g.id}
-                className="filter-chip"
+                className={`filter-chip${active ? ' filter-chip--active' : ''}`}
                 onClick={() => onFilter({ ...filterState, phases: toggle(filterState.phases, g.id) })}
                 title={g.name}
                 style={{
@@ -94,7 +94,8 @@ export function FilterBar({
                   fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  transition: 'all 0.1s',
+                  transformOrigin: 'center center',
+                  transition: 'transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease',
                 }}
               >
                 {g.name}
@@ -112,7 +113,7 @@ export function FilterBar({
           return (
             <button
               key={s.value}
-              className="filter-chip"
+              className={`filter-chip${active ? ' filter-chip--active' : ''}`}
               onClick={() => onFilter({ ...filterState, statuses: toggle(filterState.statuses, s.value) })}
               style={{
                 height: 22, padding: '0 8px',
@@ -124,7 +125,8 @@ export function FilterBar({
                 fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                transition: 'all 0.1s',
+                transformOrigin: 'center center',
+                transition: 'transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease',
               }}
             >
               {s.label}
@@ -142,7 +144,7 @@ export function FilterBar({
             return (
               <button
                 key={p.id}
-                className="filter-chip"
+                className={`filter-chip${active ? ' filter-chip--active' : ''}`}
                 onClick={() => onFilter({ ...filterState, parties: toggle(filterState.parties, p.id) })}
                 title={p.name}
                 style={{
@@ -155,7 +157,8 @@ export function FilterBar({
                   fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  transition: 'all 0.1s',
+                  transformOrigin: 'center center',
+                  transition: 'transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease',
                 }}
               >
                 {p.abbr}
