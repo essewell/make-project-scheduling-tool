@@ -17,7 +17,8 @@ export interface Task {
   milestone: boolean
   manualStatus: boolean
   manualPct: boolean
-  /** derived — IDs of predecessor tasks (for backward compat display) */
+  /** @derived — read-only display value populated from Dependency[] edges during render.
+   *  Never write to this field from new code. Mutations belong in `dependencies`. */
   deps: string[]
 }
 
@@ -30,6 +31,28 @@ export interface Dependency {
   toId: string
   type: DepType
   lag: number   // calendar days; negative = lead
+}
+
+// ─── Resources ───────────────────────────────────────────────────────────────
+
+export type ResourceCategory = 'labor' | 'equipment' | 'material'
+
+export interface Resource {
+  id: string
+  name: string
+  category: ResourceCategory
+  unit: string
+  capacity: number
+  costRate: number
+  color: string
+}
+
+export interface ResourceAssignment {
+  id: string
+  taskId: string
+  resourceId: string
+  quantity: number
+  notes: string
 }
 
 // ─── Groups / Parties ────────────────────────────────────────────────────────
@@ -88,7 +111,7 @@ export type GhostStyle = 'stripe' | 'solid' | 'outline'
 // ─── Persisted state (localStorage) ─────────────────────────────────────────
 
 /** Current persisted-state schema version. Bump in lockstep with `migrateState` in storage.ts. */
-export const PERSISTED_SCHEMA_VERSION = 1
+export const PERSISTED_SCHEMA_VERSION = 2
 
 export interface PersistedState {
   /** Stamped on save by storage.ts. Absent on legacy (v0) payloads. */
@@ -105,6 +128,8 @@ export interface PersistedState {
   holidays: string[]           // YYYY-MM-DD strings
   onboardingPhase: OnboardingPhase
   ghostStyle: GhostStyle       // C2 — persisted
+  resources: Resource[]
+  assignments: ResourceAssignment[]
 }
 
 // ─── Visible rows (task list rendering) ──────────────────────────────────────
