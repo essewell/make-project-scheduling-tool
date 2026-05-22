@@ -71,11 +71,17 @@ export function ResourceHistogram({
       />
 
       {resources.length === 0 && (
-        <EmptyState message="No resources defined yet." />
+        <EmptyState
+          message="No resources defined yet."
+          hint="Add resources from the top bar to render a demand histogram."
+        />
       )}
 
       {resources.length > 0 && !selectedResource && (
-        <EmptyState message="Select a resource above to see demand." />
+        <EmptyState
+          message="No resource selected."
+          hint="Choose a resource pill above to render its day-by-day demand."
+        />
       )}
 
       {selectedResource && (
@@ -135,7 +141,7 @@ export function ResourceHistogram({
   )
 }
 
-function EmptyState({ message }: { message: string }) {
+function EmptyState({ message, hint }: { message: string; hint?: string }) {
   return (
     <div
       style={{
@@ -152,6 +158,7 @@ function EmptyState({ message }: { message: string }) {
     >
       <ChartBar size={14} weight="regular" aria-hidden="true" />
       <span>{message}</span>
+      {hint && <span style={{ color: 'var(--color-text-tertiary)' }}>{hint}</span>}
     </div>
   )
 }
