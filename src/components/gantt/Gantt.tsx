@@ -10,6 +10,7 @@ import { GanttGrid } from './GanttGrid'
 import { GanttBar } from './GanttBar'
 import { DependencyArrows } from './DependencyArrows'
 import { BaselineGhostBars } from './BaselineGhostBars'
+import { CircleHalf, Minus, Path, Plus, SquaresFour } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -230,7 +231,7 @@ export function Gantt({
           }}
           title="Zoom out"
         >
-          −
+          <Minus size={14} weight="regular" aria-hidden="true" />
         </button>
         <span style={{
           padding: '0 8px',
@@ -242,7 +243,7 @@ export function Gantt({
           lineHeight: '28px',
           whiteSpace: 'nowrap',
         }}>
-          {zoomLabel}
+          {`Zoom · ${zoomLabel}`}
         </span>
         <button
           onClick={onZoomIn}
@@ -256,7 +257,7 @@ export function Gantt({
           }}
           title="Zoom in"
         >
-          +
+          <Plus size={14} weight="regular" aria-hidden="true" />
         </button>
       </div>
 
@@ -276,13 +277,19 @@ export function Gantt({
           zIndex: 10,
           overflow: 'hidden',
         }}>
-          {(['stripe', 'solid', 'outline'] as GhostStyle[]).map(style => (
+          {(['stripe', 'solid', 'outline'] as GhostStyle[]).map(style => {
+            const icon = style === 'stripe'
+              ? <Path size={12} weight="regular" aria-hidden="true" />
+              : style === 'solid'
+                ? <CircleHalf size={12} weight="regular" aria-hidden="true" />
+                : <SquaresFour size={12} weight="regular" aria-hidden="true" />
+            return (
             <button
               key={style}
               onClick={() => onSetGhostStyle(style)}
               style={{
                 height: 24,
-                padding: '0 8px',
+                padding: '0 7px',
                 background: ghostStyle === style ? 'var(--accent-dim)' : 'none',
                 border: 'none',
                 color: ghostStyle === style ? 'var(--accent)' : 'var(--color-text-tertiary)',
@@ -290,12 +297,16 @@ export function Gantt({
                 fontWeight: 'var(--weight-medium)',
                 cursor: 'pointer',
                 borderRight: style !== 'outline' ? '1px solid var(--color-border)' : undefined,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
               title={`Ghost style: ${style}`}
             >
-              {style[0]?.toUpperCase()}
+              {icon}
             </button>
-          ))}
+            )
+          })}
         </div>
       )}
 
