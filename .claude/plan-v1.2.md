@@ -1110,7 +1110,26 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - Changes: converted progress meter to status-distribution segments (positive/caution/negative) and added diagonal stripe treatment for at-risk segment.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
 
+- **2026-05-22 — Phase D.1–D.6: SetupWizard visual milestone**
+  - Files: `src/components/overlays/SetupWizard.tsx`, `src/styles/app.css`, `public/setup-wizard.svg`, `public/wizard-bg.svg`
+  - Changes:
+  - Replaced centered-card wizard with split-canvas asymmetric layout.
+  - Added display/eyebrow/lead copy and refined wordmark treatment with rule detail.
+  - Added right-panel reference visual (`setup-wizard.svg`) and top-right craft artwork overlay (`wizard-bg.svg`, 12% opacity).
+  - Added staggered entry motion (`wizard-rise`, 60ms increments) with `prefers-reduced-motion` collapse.
+  - Added footer micro-text and retained keyboard-first Enter-to-start behavior.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
+- **2026-05-22 — Phase E.1–E.4: TopBar polish**
+  - Files: `src/components/topbar/TopBar.tsx`, `src/components/topbar/EditableTitle.tsx`
+  - Changes:
+  - Consolidated separator treatment from many small dividers down to two structural dividers and increased control-group spacing.
+  - Demoted Print to ghost-level treatment to reduce visual competition.
+  - Refined wordmark tracking and added keyboard-focus underline affordance for editable project title.
+  - Added inner-top highlight to New Task button and tightened mono keycap badge styling.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase C complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 landed locally)
+**Status:** Active — Phase E complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 landed locally)
