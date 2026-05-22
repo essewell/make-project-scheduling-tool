@@ -24,12 +24,13 @@ export function MobileTabSwitcher({ activeTab, panelAvailable, onChange }: Mobil
   return (
     <div
       className="mobile-tab-switcher"
+      role="tablist"
+      aria-label="Mobile view switcher"
       style={{
         position: 'fixed', bottom: 0, left: 0, right: 0,
         height: 56,
         background: 'var(--color-surface)',
         borderTop: '1px solid var(--color-border)',
-        display: 'flex',
         zIndex: 100,
         boxShadow: '0 -2px 12px rgba(0,0,0,0.08)',
       }}
@@ -41,6 +42,10 @@ export function MobileTabSwitcher({ activeTab, panelAvailable, onChange }: Mobil
           <button
             key={tab.value}
             onClick={() => onChange(tab.value)}
+            role="tab"
+            aria-selected={active}
+            aria-controls={tab.value === 'panel' ? undefined : `mobile-view-${tab.value}`}
+            id={`mobile-tab-${tab.value}`}
             style={{
               flex: 1, display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: 3,
@@ -49,7 +54,7 @@ export function MobileTabSwitcher({ activeTab, panelAvailable, onChange }: Mobil
               transition: 'color 0.12s',
             }}
           >
-            <span style={{ fontSize: 18, lineHeight: 1 }}>{tab.icon}</span>
+            <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>{tab.icon}</span>
             <span style={{
               fontSize: 'var(--text-2xs)',
               fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',

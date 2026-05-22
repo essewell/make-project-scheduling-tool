@@ -102,7 +102,7 @@ export function GanttGrid({
             top: band.startRow * ROW_HEIGHT,
             width: totalPx,
             height: band.rowCount * ROW_HEIGHT,
-            background: i % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.015)',
+            background: i % 2 === 0 ? 'transparent' : 'color-mix(in srgb, var(--color-text-primary) 3%, transparent)',
             borderTop: '1px solid var(--color-border-light)',
             boxSizing: 'border-box',
           }}
@@ -134,7 +134,7 @@ export function GanttGrid({
             top: 0,
             width: band.width,
             height: '100%',
-            background: 'rgba(0,0,0,0.025)',
+            background: 'color-mix(in srgb, var(--color-text-primary) 5%, transparent)',
           }}
         />
       ))}

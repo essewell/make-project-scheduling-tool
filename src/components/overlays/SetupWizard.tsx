@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useId, useRef } from 'react'
+import { useDialogA11y } from '../../hooks/useDialogA11y'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -13,6 +14,11 @@ interface SetupWizardProps {
 
 export function SetupWizard({ projectName, onRenameProject, onStartBlank, onLoadExample }: SetupWizardProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  const descId = useId()
+
+  useDialogA11y({ containerRef: dialogRef, initialFocusRef: inputRef })
 
   return (
     <div
@@ -26,6 +32,12 @@ export function SetupWizard({ projectName, onRenameProject, onStartBlank, onLoad
       }}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
+        tabIndex={-1}
         style={{
           background: 'white',
           color: 'var(--color-text-primary)',
@@ -41,8 +53,8 @@ export function SetupWizard({ projectName, onRenameProject, onStartBlank, onLoad
         <div style={{ fontWeight: 700, fontSize: 32, letterSpacing: '0.4em', color: 'var(--brand)', marginBottom: 8 }}>
           MAKE
         </div>
-        <div style={{ fontSize: 19, fontWeight: 600, marginBottom: 8 }}>Project Schedule</div>
-        <div style={{ color: 'var(--color-text-secondary)', marginBottom: 24, fontSize: 13 }}>
+        <div id={titleId} style={{ fontSize: 19, fontWeight: 600, marginBottom: 8 }}>Project Schedule</div>
+        <div id={descId} style={{ color: 'var(--color-text-secondary)', marginBottom: 24, fontSize: 13 }}>
           Track tasks, phases, and milestones
         </div>
 
@@ -59,7 +71,7 @@ export function SetupWizard({ projectName, onRenameProject, onStartBlank, onLoad
             borderRadius: 'var(--radius-lg)',
             border: '1.5px solid var(--color-border)',
             padding: '0 16px',
-            fontSize: 16, marginBottom: 16, outline: 'none',
+            fontSize: 16, marginBottom: 16,
             fontFamily: 'var(--font-sans)',
             boxSizing: 'border-box',
           }}

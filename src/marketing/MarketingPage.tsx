@@ -56,9 +56,8 @@ function Hero() {
               Schedules that hold<br />up under scrutiny.
             </h1>
             <p className="m-lead m-rise" data-delay="3">
-              MAKE is a Gantt-grade scheduling tool for construction project managers,
-              schedulers, and field teams. Built for accuracy under real-world variance —
-              not for demos.
+              MAKE is a browser-based scheduler for construction PMs and field teams.
+              It combines CPM logic, baseline ghosting, and A3 print output in one local-first tool.
             </p>
             <div className="m-hero-actions m-rise" data-delay="4">
               <a href="/" className="m-btn m-btn--primary">
@@ -86,7 +85,7 @@ function StatStrip() {
   const items: Array<{ value: string; label: string }> = [
     { value: '5', label: 'Zoom levels — day to year' },
     { value: 'A3', label: 'Print-ready output' },
-    { value: 'CPM', label: 'Critical-path computation' },
+    { value: '4', label: 'Dependency types — FS, SS, FF, SF' },
     { value: '20', label: 'Step undo stack' },
   ]
   return (
@@ -110,35 +109,35 @@ function Capabilities() {
         <SectionHead
           eyebrow="01 — Capabilities"
           title="What you get."
-          body="Four systems that decide whether a scheduling tool is a real tool or a slide deck."
+          body="Four systems used in day-to-day schedule control."
         />
 
         <div className="m-cap-grid" style={{ marginTop: 48 }}>
           <Capability
             index="01"
             title="Critical path, auto-computed."
-            body="Kahn topological sort, forward and backward pass, total float. Zero-float tasks light up. Toggleable when dependencies exist; silent when they don't."
+            body="Kahn topological sort plus forward/backward pass and total float. Zero-float tasks highlight when dependency data exists."
             colSpan="wide"
             figure={<DiagramCPM />}
           />
           <Capability
             index="02"
             title="Baselines and variance."
-            body="Capture the current schedule as a baseline. The original bars persist as ghosts. Variance reads at a glance — no spreadsheet pivot required."
+            body="Capture the live schedule as a baseline. Baseline bars stay visible as ghosts while active bars move, with day-slip labels on changed tasks."
             colSpan="narrow"
             figure={<DiagramBaseline />}
           />
           <Capability
             index="03"
             title="Print at A3, 55% scale."
-            body="Paginated, scale-locked output. Hand it to a superintendent in the field. The print pane mirrors the on-screen schedule down to row heights and tick marks."
+            body="Scale-locked A3 output from the same schedule model used on screen. Supports both Gantt and summary print layouts."
             colSpan="half"
             figure={<DiagramPrint />}
           />
           <Capability
             index="04"
             title="CSV round-trip without loss."
-            body="Import a schedule from a spreadsheet, edit in MAKE, export back. Dates normalise. Status auto-derives from planned dates unless you lock it manually."
+            body="Import from CSV, edit in app, export back to CSV. Date parsing, row validation, append/replace modes, and undo are built in."
             colSpan="half"
             figure={<DiagramCsv />}
           />
@@ -193,9 +192,8 @@ function InterfaceSection() {
             <h2 className="m-h2">The Gantt is the product.</h2>
           </div>
           <p className="m-body" style={{ color: 'rgba(255,255,255,0.72)' }}>
-            Five zoom levels, from a day-by-day view at construction pace down to a year overview.
-            Dependency arrows route around tasks. The today line tracks midnight in your local time.
-            Print-mirror at A3.
+            Five zoom levels from day to year. Dependency arrows route around bars.
+            A local-midnight ticker updates status calculations daily. Baseline ghosts and variance labels stay on the same timeline.
           </p>
         </div>
 
@@ -221,22 +219,22 @@ function Process() {
     {
       num: '01',
       title: 'Frame the project.',
-      body: 'Set the workweek, define phases, list the parties. The setup wizard lets you load example data or start blank.',
+      body: 'Set workweek days, holidays, phases, and parties. Start blank or load a built-in example schedule.',
     },
     {
       num: '02',
       title: 'Add tasks and dependencies.',
-      body: 'Type N for a new task. The Link Builder accepts SS, FS, FF, SF relationships. Status and progress auto-derive from planned dates unless you override.',
+      body: 'Use N to add tasks. Link Builder supports FS/SS/FF/SF edges with lag. Status and progress auto-calculate unless manually overridden.',
     },
     {
       num: '03',
       title: 'Lock a baseline.',
-      body: 'Capture the schedule before kickoff. Ghost bars persist as the bars move, so variance is visible without a separate comparison view.',
+      body: 'Capture a baseline before execution. Baseline ghosts persist on the chart so slip and recovery are visible in context.',
     },
     {
       num: '04',
       title: 'Track variance daily.',
-      body: 'The midnight ticker re-runs auto-progress when the date changes. Set actual start and actual finish as they happen — manual overrides survive.',
+      body: 'Log actual start/finish dates as work happens. Daily recalculation runs at local midnight while respecting manual status/progress locks.',
     },
   ]
 
@@ -269,8 +267,8 @@ function ClosingCta() {
             <span className="m-eyebrow">Try it now</span>
             <h2 className="m-display" style={{ fontSize: 'clamp(36px, 5vw, 64px)' }}>
               Open in a browser.<br />
-              No install. Local-first.<br />
-              Yours.
+              No account required.<br />
+              Start scheduling.
             </h2>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' }}>
@@ -278,7 +276,7 @@ function ClosingCta() {
               Open the app
               <span className="m-btn-arrow" aria-hidden="true">→</span>
             </a>
-            <span className="m-mono">Schedule data lives in your browser — localStorage, not a server.</span>
+            <span className="m-mono">Data is stored locally in your browser (`schedule-tool-v1`).</span>
           </div>
         </div>
       </div>
@@ -295,7 +293,7 @@ function Footer() {
         <div className="m-footer-row">
           <span className="m-wordmark">MAKE</span>
           <span className="m-footer-meta">
-            v1.0  ·  Built with Vite, React 18, TypeScript  ·  No telemetry
+            v1.0  ·  Vite + React 18 + TypeScript  ·  Local-first storage
           </span>
           <span className="m-footer-meta">2026</span>
         </div>

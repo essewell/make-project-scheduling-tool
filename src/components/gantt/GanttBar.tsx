@@ -42,9 +42,9 @@ function barFill(task: Task, groupColor: string): string {
 }
 
 function barBorder(task: Task, isCritical: boolean): string | undefined {
-  if (isCritical) return '2px solid #E24B4A'
-  if (task.status === 'at_risk') return '2px solid rgba(239,159,39,0.7)'
-  if (task.status === 'delayed') return '2px solid rgba(191,59,46,0.8)'
+  if (isCritical) return '2px solid var(--color-danger)'
+  if (task.status === 'at_risk') return '2px solid color-mix(in srgb, var(--color-warning) 72%, transparent)'
+  if (task.status === 'delayed') return '2px solid color-mix(in srgb, var(--color-danger) 80%, transparent)'
   return undefined
 }
 
@@ -152,7 +152,7 @@ export const GanttBar = memo(function GanttBar({
           cursor: 'pointer',
           opacity: isDimmed ? 0.3 : 1,
           outline: isSelected || isCritical
-            ? `2px solid ${isCritical ? '#E24B4A' : 'var(--accent)'}`
+            ? `2px solid ${isCritical ? 'var(--color-danger)' : 'var(--accent)'}`
             : isKbFocused ? '2px solid var(--accent)' : undefined,
           outlineOffset: 2,
           zIndex: 2,
@@ -217,7 +217,7 @@ export const GanttBar = memo(function GanttBar({
           position: 'absolute',
           inset: 0,
           borderRadius: 'inherit',
-          background: 'rgba(29,158,117,0.5)',
+          background: 'color-mix(in srgb, var(--color-success) 46%, transparent)',
           animation: 'schedule-completion-pulse 0.9s ease-out both',
           pointerEvents: 'none',
         }} />
@@ -269,4 +269,3 @@ export const GanttBar = memo(function GanttBar({
     prev.isDimmed === next.isDimmed
   )
 })
-

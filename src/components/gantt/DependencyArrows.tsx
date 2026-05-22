@@ -153,7 +153,7 @@ export function DependencyArrows({
           <polyline
             points="0,0 5,3.5 0,7"
             fill="none"
-            stroke="#E24B4A"
+            stroke="var(--color-danger)"
             strokeWidth="1.2"
           />
         </marker>
@@ -164,7 +164,7 @@ export function DependencyArrows({
           key={key}
           d={path}
           fill="none"
-          stroke={isCritical ? '#E24B4A' : 'var(--color-text-dim)'}
+          stroke={isCritical ? 'var(--color-danger)' : 'var(--color-text-dim)'}
           strokeWidth={isCritical ? 1.5 : 1}
           markerEnd={isCritical ? 'url(#arrow-critical)' : 'url(#arrow-normal)'}
           strokeDasharray={isCritical ? undefined : '4 2'}

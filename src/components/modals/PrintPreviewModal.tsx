@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useId, useRef, useState, useMemo } from 'react'
 import type { Task, Group, Party, WorkweekConfig } from '../../types'
 import { prettyDate } from '../../lib/dates'
 import { workdays } from '../../lib/workdays'
+import { useDialogA11y } from '../../hooks/useDialogA11y'
 import {
   PRINT_SCALE, A3_W, A3_H,
   PRINT_TL_W, PRINT_ROW_H, PRINT_HDR_H,
@@ -66,7 +67,12 @@ const BOX: React.CSSProperties = {
 export function PrintPreviewModal({
   tasks, groups, parties, projectName, workweek, holidays, today, onClose,
 }: PrintPreviewModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  const descId = useId()
   const [mode, setMode] = useState<PrintMode>('gantt')
+
+  useDialogA11y({ containerRef: dialogRef, onClose })
 
   // Compute date range across all tasks
   const { minDate, totalDays } = useMemo(() => {
@@ -105,13 +111,22 @@ export function PrintPreviewModal({
 
   return (
     <div style={OVERLAY} onClick={onClose}>
-      <div style={BOX} onClick={e => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
+        tabIndex={-1}
+        style={BOX}
+        onClick={e => e.stopPropagation()}
+      >
 
         {/* Header */}
         <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
-            <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Print Preview</div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
+            <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Print Preview</div>
+            <div id={descId} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
               A3 landscape · {tasks.length} task{tasks.length !== 1 ? 's' : ''} · {(PRINT_SCALE * 100).toFixed(0)}% scale
             </div>
           </div>

@@ -284,26 +284,19 @@ input[type="range"] {
     padding-bottom: 56px;
   }
 
-  /* Default: hide gantt and panel, show task list */
-  .app-main > *:nth-child(2),
-  .app-main > *:nth-child(3) {
-    display: none;
+  .app-main {
+    grid-template-columns: 1fr;
   }
 
-  /* tasks tab: show task list only (nth-child(1)) */
-  .app-main[data-mobile-tab="tasks"] > *:nth-child(1) { display: flex; }
-  .app-main[data-mobile-tab="tasks"] > *:nth-child(2) { display: none; }
-  .app-main[data-mobile-tab="tasks"] > *:nth-child(3) { display: none; }
+  .app-main > div[role="tabpanel"] {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+  }
 
-  /* gantt tab */
-  .app-main[data-mobile-tab="gantt"] > *:nth-child(1) { display: none; }
-  .app-main[data-mobile-tab="gantt"] > *:nth-child(2) { display: flex; }
-  .app-main[data-mobile-tab="gantt"] > *:nth-child(3) { display: none; }
-
-  /* panel tab */
-  .app-main[data-mobile-tab="panel"] > *:nth-child(1) { display: none; }
-  .app-main[data-mobile-tab="panel"] > *:nth-child(2) { display: none; }
-  .app-main[data-mobile-tab="panel"] > *:nth-child(3) { display: flex; }
+  .app-main > div[hidden] {
+    display: none;
+  }
 }
 
 /* ─── Print ─────────────────────────────────────────────────────────────────── */
