@@ -47,6 +47,28 @@ function barBorder(task: Task): string | undefined {
   return undefined
 }
 
+function milestoneStyle(task: Task, groupColor: string): { fill: string; outline: string } {
+  if (task.status === 'complete') {
+    return {
+      fill: `color-mix(in srgb, ${groupColor} 55%, var(--surface-overlay))`,
+      outline: 'var(--data-positive)',
+    }
+  }
+  if (task.status === 'delayed') {
+    return {
+      fill: `color-mix(in srgb, ${groupColor} 78%, var(--data-negative))`,
+      outline: 'var(--data-negative)',
+    }
+  }
+  if (task.status === 'at_risk') {
+    return {
+      fill: `color-mix(in srgb, ${groupColor} 78%, var(--data-caution))`,
+      outline: 'var(--data-caution)',
+    }
+  }
+  return { fill: groupColor, outline: `color-mix(in srgb, ${groupColor} 78%, var(--ink-strong))` }
+}
+
 // ─── GanttBar ────────────────────────────────────────────────────────────────
 
 export const GanttBar = memo(function GanttBar({
@@ -135,6 +157,8 @@ export const GanttBar = memo(function GanttBar({
     const cx = left + dayPx / 2
     const cy = GANTT_HEADER_HEIGHT + rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
 
+    const milestoneVisual = milestoneStyle(task, groupColor)
+
     return (
       <div
         onClick={(e) => { e.stopPropagation(); onSelectTask(task.id) }}
@@ -145,7 +169,8 @@ export const GanttBar = memo(function GanttBar({
           top: cy - MILESTONE_SIZE / 2,
           width: MILESTONE_SIZE,
           height: MILESTONE_SIZE,
-          background: groupColor,
+          background: milestoneVisual.fill,
+          border: `1px solid ${milestoneVisual.outline}`,
           transform: 'rotate(45deg)',
           borderRadius: 2,
           cursor: 'pointer',
