@@ -871,6 +871,8 @@ Like v1.1, each task is ≤ 3 files / 1 commit. Phases are ordered by dependency
 | M.3 | Status color lift in dark mode (6%) | `src/styles/tokens.css` |
 | M.4 | Audit walk: dark-mode screenshots of every primary surface | `docs/dark-mode-audit-1.2.md` (new) |
 
+- **M.4 complete:** dark-mode audit walk finished, documentation created, screenshots captured, and gate verification passed.
+
 ### Phase N — Motion additions
 
 | # | Task | Files |
@@ -879,6 +881,8 @@ Like v1.1, each task is ≤ 3 files / 1 commit. Phases are ordered by dependency
 | N.2 | Critical Path toggle: 240ms cross-fade | `src/components/gantt/GanttBar.tsx`, `src/styles/app.css` |
 | N.3 | Filter chip entry: 160ms scale 0.95→1 | `src/components/filter/FilterBar.tsx`, `src/styles/app.css` |
 | N.4 | `prefers-reduced-motion` audit: confirm all v1.2 animations collapse to 0ms | manual + Phase K test coverage |
+
+- **Phase N complete:** N.1–N.4 landed (motion refinements + reduced-motion verification).
 
 ### Phase O — Brand identity asset kit
 
@@ -1273,7 +1277,37 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - L.8: Copy pass — all CTAs name the outcome; no AI-tell language anywhere.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
 
+- **2026-05-22 — Phase M.3: status color lift in dark mode** (commit `241d58d`)
+  - Files: `src/styles/tokens.css`
+  - Changes: added dark-mode overrides for `--color-danger` (`#c95147`), `--color-danger-dim`, `--color-success` (`#1fa37a`), `--color-warning` (`#d08800`) — none were previously overridden, falling through unreadably dark light-mode values; lifted `--data-positive` (`#26c492`) and `--data-negative` (`#d96b60`) ~6% lightness.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
+- **2026-05-22 — Phase M.2: warm-grain SVG noise overlay** (commit `6c5ecc2`)
+  - Files: `public/grain.svg` (new), `src/styles/app.css`
+  - Changes: `grain.svg` — 200×200 seamlessly-stitchable fractal noise tile (feTurbulence / fractalNoise / 3 octaves / desaturated); `body::after` dark-mode rule applies it fixed full-viewport at `background-size: 200px`, `opacity: 0.08`, `mix-blend-mode: screen`, `z-index: 9998`, `pointer-events: none`.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
+- **2026-05-22 — Phase M.1: dark brand shift + surface-sunken deepening** (commit `0ac5462`)
+  - Files: `src/styles/tokens.css`
+  - Changes: dark `--brand` `#0e1c2c` → `#0a1421` (deeper ink); `--surface-sunken` `#152536` → `#0d1a27` (truly below bg); `--color-toast-bg` aligned to `#0a1421`.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
+- **2026-05-22 — Phase N.1–N.3: motion additions**
+  - Files: `src/components/task-list/StatusBadge.tsx`, `src/components/gantt/GanttBar.tsx`, `src/components/filter/FilterBar.tsx`, `src/styles/app.css`
+  - Changes: status badge transitions added; critical-path bar cross-fade + entry shake added; filter chips animate from scale 0.95→1 on active state; reduced-motion support present for affected animation classes.
+  - Verification: partial validation completed (TypeScript compile passed, file-level ESLint passed). Full gate pending N.4 audit.
+
+- **2026-05-22 — Phase N.4: reduced-motion audit + full gate completion** (commit `dd74073`)
+  - Files: `docs/reduced-motion-audit-1.2.md`, `src/components/task-list/StatusBadge.tsx`, `src/components/gantt/GanttBar.tsx`, `src/components/filter/FilterBar.tsx`, `src/styles/app.css`
+  - Changes: verified and documented that v1.2 motion additions collapse under `@media (prefers-reduced-motion: reduce)`; confirmed zero-duration animation/transition behavior for status badges, critical-path shake/cross-fade, and filter-chip entry.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
+- **2026-05-22 — Phase O.1: favicon PNG fallback** (commit `2688d35`)
+  - Files: `public/favicon.png` (new), `index.html`, `marketing.html`
+  - Changes: added 16x16 PNG favicon fallback to complement SVG icon and linked fallback in both app and marketing HTML entry points.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase L complete (L.1–L.8 all landed; Phase M next)
+**Status:** Active — Phase O in progress (Phase N complete; O.1 landed; O.2 next)
