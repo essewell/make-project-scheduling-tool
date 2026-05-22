@@ -190,6 +190,22 @@ export function ResourcesManager({
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {items.length === 0 && (
+            <div
+              style={{
+                border: '1px dashed var(--color-border)',
+                borderRadius: 'var(--radius)',
+                padding: '18px 14px',
+                textAlign: 'center',
+                color: 'var(--color-text-dim)',
+                fontSize: 'var(--text-xs)',
+                lineHeight: 1.5,
+              }}
+            >
+              No resources yet. Add one below or import a `resources.csv` file.
+            </div>
+          )}
+
           {items.map((resource) => {
             const resourceErrors = validationState[resource.id] ?? {}
             const isMaterial = resource.category === 'material'
