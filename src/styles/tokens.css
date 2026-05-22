@@ -134,7 +134,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --brand:              #0e1c2c;
+    --brand:              #0a1421;
     --accent:             #4db8e6;
     --accent-hover:       #7cccef;
     --accent-pressed:     #399cc7;
@@ -148,7 +148,7 @@
     --color-bg:           #111d29;
     --color-surface:      #192a3c;
     --color-surface-2:    #1f3245;
-    --surface-sunken:     #152536;
+    --surface-sunken:     #0d1a27;
     --surface-raised:     #192a3c;
     --surface-overlay:    #1f3245;
     --color-border:       #25364a;
@@ -168,7 +168,7 @@
     --ink-quiet:            #7391a4;
 
     --color-selected-bg:  rgba(39, 170, 225, 0.14);
-    --color-toast-bg:     #0e1c2c;
+    --color-toast-bg:     #0a1421;
     --data-positive:      #20ad81;
     --data-negative:      #cf5449;
     --data-caution:       #f5af41;
