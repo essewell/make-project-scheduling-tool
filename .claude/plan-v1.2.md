@@ -1184,7 +1184,16 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - Changes: non-selected task-row hover now uses `--surface-sunken` via scoped row class/data attribute.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
 
+- **2026-05-22 — Phase H.1–H.4: SidePanel & ActualDates polish milestone**
+  - Files: `src/components/panels/SidePanel.tsx`, `src/components/panels/ActualDatesSection.tsx`, `src/styles/app.css`
+  - Changes:
+  - Added 32px `--rule-soft` section rules ahead of SidePanel section headers.
+  - Added progress slider drag tooltip chip (`%`) with mono styling.
+  - Added `CalendarBlank` date-input prefixes for planned and actual dates; added start/finish variance display in Actual Dates.
+  - Tightened dependency preview chips with recessed surface + subtle rule border/padding tuning.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase G complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 + F.1..F.8 + G.1..G.4 landed locally)
+**Status:** Active — Phase H complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 + F.1..F.8 + G.1..G.4 + H.1..H.4 landed locally)
