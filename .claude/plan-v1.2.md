@@ -1201,7 +1201,12 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - Standardized modal header padding to `20px 24px 16px`.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
 
+- **2026-05-22 — Phase I.4: footer alignment pass started (WIP, not landed)**
+  - Files (modified, uncommitted): `src/components/modals/CsvImportDialog.tsx`, `src/components/modals/LinkBuilderModal.tsx`, `src/components/modals/WorkweekModal.tsx`, `src/components/modals/PrintPreviewModal.tsx`, `src/components/modals/GroupsManager.tsx`, `src/components/modals/PartiesManager.tsx`
+  - Changes in progress: moving secondary actions to left side and primary actions to right side in modal footers.
+  - Verification: full local gate run was started and intentionally interrupted before completion (session budget pause). Must rerun before landing.
+
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase I in progress (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 + F.1..F.8 + G.1..G.4 + H.1..H.4 + I.1..I.3 landed locally)
+**Status:** Active — Phase I in progress (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 + F.1..F.8 + G.1..G.4 + H.1..H.4 + I.1..I.3 landed locally; I.4 WIP uncommitted)
