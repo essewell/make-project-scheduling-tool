@@ -10,6 +10,11 @@ interface SetupWizardProps {
   onLoadExample: () => void
 }
 
+const WORDMARK_K: React.CSSProperties = {
+  display: 'inline-block',
+  transform: 'translateY(0.03em)',
+}
+
 // ─── SetupWizard ──────────────────────────────────────────────────────────────
 
 export function SetupWizard({ projectName, onRenameProject, onStartBlank, onLoadExample }: SetupWizardProps) {
@@ -90,7 +95,7 @@ export function SetupWizard({ projectName, onRenameProject, onStartBlank, onLoad
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 14 }}>
                 <div style={{ fontWeight: 700, fontSize: 'clamp(28px, 4.5vw, 48px)', letterSpacing: '0.32em', color: 'var(--brand)' }}>
-                  MAKE
+                  MA<span style={WORDMARK_K}>K</span>E
                 </div>
                 <div style={{ width: 64, borderTop: '1px solid var(--rule-strong)' }} />
               </div>

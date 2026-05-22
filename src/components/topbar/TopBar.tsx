@@ -73,6 +73,11 @@ const GROUP: React.CSSProperties = {
   flexShrink: 0,
 }
 
+const WORDMARK_K: React.CSSProperties = {
+  display: 'inline-block',
+  transform: 'translateY(0.03em)',
+}
+
 // ─── TopBar ───────────────────────────────────────────────────────────────────
 
 export function TopBar({
@@ -101,7 +106,7 @@ export function TopBar({
     }}>
       {/* Logo */}
       <div style={{ fontWeight: 700, fontSize: 18, letterSpacing: '0.22em', flexShrink: 0, marginRight: 2 }}>
-        MAKE
+        MA<span style={WORDMARK_K}>K</span>E
       </div>
 
       <div style={DIVIDER} />
