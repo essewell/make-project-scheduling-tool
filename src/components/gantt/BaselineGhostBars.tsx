@@ -119,11 +119,12 @@ export function BaselineGhostBars({
         >
           <svg width={width} height={GHOST_BAR_HEIGHT} style={{ display: 'block' }}>
             <defs>
-              <pattern id={`stripe-${baseTask.id}`} x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <pattern id={`stripe-${baseTask.id}`} x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
                 <rect width="3" height="6" fill="var(--color-text-tertiary)" opacity="0.6" />
               </pattern>
             </defs>
             <rect width={width} height={GHOST_BAR_HEIGHT} fill={`url(#stripe-${baseTask.id})`} rx="2" />
+            <rect width={width} height={GHOST_BAR_HEIGHT} rx="2" fill="none" stroke="var(--color-text-dim)" strokeWidth="1" opacity="0.6" />
           </svg>
         </div>
       )

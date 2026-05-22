@@ -73,9 +73,11 @@ export function GanttGrid({
   // ── Today line ────────────────────────────────────────────────────────────
   const todayVisible = todayOffset >= 0 && todayOffset <= totalPx
 
-  // Today pill label: short day-of-week + date
+  // Today pill label: TODAY · TUE 21 MAY
   const todayDate = new Date(today + 'T00:00:00')
-  const dayLabel = todayDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  const dayLabel = todayDate
+    .toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short' })
+    .toUpperCase()
 
   // Days between first/last task for row-band height
   const _firstTaskDate = fmtDate(timeline.min)
@@ -134,7 +136,7 @@ export function GanttGrid({
             top: 0,
             width: band.width,
             height: '100%',
-            background: 'color-mix(in srgb, var(--color-text-primary) 5%, transparent)',
+            background: 'var(--surface-sunken)',
           }}
         />
       ))}
@@ -199,7 +201,7 @@ export function GanttGrid({
             boxShadow: 'var(--shadow-sm)',
             pointerEvents: 'none',
           }}>
-            {dayLabel}
+            {`TODAY · ${dayLabel}`}
           </div>
         </>
       )}

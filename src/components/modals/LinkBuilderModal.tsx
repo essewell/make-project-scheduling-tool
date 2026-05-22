@@ -45,7 +45,6 @@ const OVERLAY: React.CSSProperties = {
   position: 'fixed',
   inset: 0,
   background: 'rgba(10,18,30,0.54)',
-  backdropFilter: 'blur(3px)',
   zIndex: 200,
   display: 'flex',
   alignItems: 'center',
@@ -58,6 +57,7 @@ const BOX: React.CSSProperties = {
   maxHeight: '80vh',
   background: 'var(--color-surface)',
   borderRadius: 'var(--radius-lg)',
+  borderTop: '3px solid var(--accent)',
   boxShadow: 'var(--shadow-xl)',
   display: 'flex',
   flexDirection: 'column',
@@ -161,7 +161,7 @@ export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose 
       >
 
         {/* Header */}
-        <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--color-border)' }}>
           <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', marginBottom: 8 }}>
             Edit Dependencies
           </div>
@@ -192,9 +192,11 @@ export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose 
             return (
               <div
                 key={task.id}
+                className="link-row"
+                data-checked={row.checked}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '24px 1fr 90px 70px',
+                  gridTemplateColumns: '24px 1fr 130px 70px',
                   alignItems: 'center',
                   gap: 10,
                   padding: '8px 20px',
@@ -211,16 +213,19 @@ export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose 
                 <span style={{ fontSize: 'var(--text-xs)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {task.name}
                 </span>
-                <select
-                  value={row.type}
-                  disabled={!row.checked}
-                  onChange={e => setRow(task.id, { type: e.target.value as DepType })}
-                  style={{ ...INPUT, width: '100%', opacity: row.checked ? 1 : 0.4, cursor: row.checked ? 'pointer' : 'default' }}
-                >
+                {/* Type segmented control */}
+                <div style={{ display: 'flex', opacity: row.checked ? 1 : 0.35 }}>
                   {DEP_TYPES.map(t => (
-                    <option key={t} value={t}>{t}</option>
+                    <button
+                      key={t}
+                      disabled={!row.checked}
+                      onClick={() => setRow(task.id, { type: t })}
+                      className={`dep-type-btn${row.type === t ? ' dep-type-btn--active' : ''}`}
+                    >
+                      {t}
+                    </button>
                   ))}
-                </select>
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <input
                     type="number"
@@ -257,16 +262,18 @@ export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose 
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
-            {checkedCount} predecessor{checkedCount !== 1 ? 's' : ''} selected
-          </span>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+              {checkedCount} predecessor{checkedCount !== 1 ? 's' : ''} selected
+            </span>
             <button
               onClick={onClose}
               style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
             >
               Cancel
             </button>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleSave}
               style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', cursor: 'pointer' }}

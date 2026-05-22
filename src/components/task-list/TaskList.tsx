@@ -3,11 +3,17 @@ import type { Group, Party, VisibleRow, Task } from '../../types'
 import { daysBetween, shortDate } from '../../lib/dates'
 import { ROW_HEIGHT, GANTT_HEADER_HEIGHT } from '../../constants'
 import { StatusBadge } from './StatusBadge'
+import { CaretDown, CaretRight, Funnel } from '../../lib/icons'
+
+const WBS_COL_WIDTH = 24
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface TaskListProps {
   visibleRows: VisibleRow[]
+  filteredTasks: Task[]
+  taskCount: number
+  isComputing?: boolean
   groups: Group[]
   parties: Party[]
   selectedTaskId: string | null
@@ -49,6 +55,10 @@ function floatDays(task: Task, today: string): number | null {
   return daysBetween(today, task.e)
 }
 
+function formatFloat(floatValue: number): string {
+  return floatValue < 0 ? `${floatValue}` : `+${floatValue}`
+}
+
 // ─── Group row ────────────────────────────────────────────────────────────────
 
 interface GroupRowProps {
@@ -58,6 +68,7 @@ interface GroupRowProps {
   count: number
   collapsed: boolean
   wbs: string
+  completionPct: number
   onToggle: () => void
 }
 
@@ -68,6 +79,7 @@ const GroupRow = memo(function GroupRow({
   count,
   collapsed,
   wbs,
+  completionPct,
   onToggle,
 }: GroupRowProps) {
   return (
@@ -93,26 +105,18 @@ const GroupRow = memo(function GroupRow({
         paddingLeft: 8,
         overflow: 'hidden',
       }}>
-        {/* Collapse caret */}
-        <svg
-          width="12" height="12"
-          viewBox="0 0 12 12"
-          style={{
-            flexShrink: 0,
-            transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
-            transition: 'transform var(--transition-fast)',
-            color: 'var(--color-text-tertiary)',
-          }}
-        >
-          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        {collapsed ? (
+          <CaretRight size={12} weight="regular" aria-hidden="true" color="var(--color-text-tertiary)" />
+        ) : (
+          <CaretDown size={12} weight="regular" aria-hidden="true" color="var(--color-text-tertiary)" />
+        )}
         {/* WBS */}
         <span style={{
           fontFamily: 'var(--font-mono)',
           fontSize: 'var(--text-2xs)',
           color: 'var(--color-text-dim)',
           flexShrink: 0,
-          minWidth: 24,
+          width: WBS_COL_WIDTH,
         }}>
           {wbs}
         </span>
@@ -136,8 +140,33 @@ const GroupRow = memo(function GroupRow({
           ({count})
         </span>
       </div>
-      {/* Party / Dates / Float columns — empty for group rows */}
-      <div /><div /><div />
+      {/* Party / Dates columns — empty for group rows */}
+      <div /><div />
+      {/* Group completion meter */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 10 }}>
+        <div
+          title={`Phase completion: ${completionPct}%`}
+          style={{
+            width: 4,
+            height: 20,
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--surface-sunken)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              bottom: 0,
+              width: '100%',
+              height: `${completionPct}%`,
+              background: completionPct >= 100 ? 'var(--data-positive)' : 'var(--accent)',
+            }}
+          />
+        </div>
+      </div>
     </div>
   )
 })
@@ -177,6 +206,8 @@ const TaskRow = memo(function TaskRow({
 
   return (
     <div
+      className="task-row"
+      data-selected={isSelected}
       data-testid="task-row"
       onClick={onSelect}
       onDoubleClick={onOpen}
@@ -186,8 +217,8 @@ const TaskRow = memo(function TaskRow({
         gridTemplateColumns: '1fr 52px 80px 48px',
         alignItems: 'center',
         background: bg,
-        borderBottom: '1px solid var(--color-border-light)',
-        borderLeft: isKbFocused ? '2px solid var(--accent)' : '3px solid ' + groupColor,
+        borderBottom: isSelected ? 'none' : '1px solid var(--color-border-light)',
+        borderLeft: isSelected || isKbFocused ? '2px solid var(--accent)' : '3px solid ' + groupColor,
         cursor: 'pointer',
         outline: isKbFocused ? '2px solid var(--accent)' : undefined,
         outlineOffset: isKbFocused ? '-2px' : undefined,
@@ -212,7 +243,7 @@ const TaskRow = memo(function TaskRow({
           fontSize: 'var(--text-2xs)',
           color: 'var(--color-text-dim)',
           flexShrink: 0,
-          minWidth: 24,
+          width: WBS_COL_WIDTH,
         }}>
           {wbs}
         </span>
@@ -320,8 +351,12 @@ const TaskRow = memo(function TaskRow({
             fontSize: 'var(--text-3xs)',
             color: float < 0 ? 'var(--color-danger)' : 'var(--color-text-dim)',
             fontWeight: float < 0 ? 'var(--weight-medium)' : undefined,
+            fontVariantNumeric: 'tabular-nums',
+            minWidth: 24,
+            textAlign: 'right',
+            display: 'inline-block',
           }}>
-            {float < 0 ? float : `+${float}`}
+            {formatFloat(float)}
           </span>
         )}
       </div>
@@ -333,6 +368,9 @@ const TaskRow = memo(function TaskRow({
 
 export function TaskList({
   visibleRows,
+  filteredTasks,
+  taskCount,
+  isComputing = false,
   groups,
   parties,
   selectedTaskId,
@@ -349,13 +387,29 @@ export function TaskList({
   const wbsMap = computeWbs(visibleRows)
   const partyMap = new Map(parties.map(p => [p.id, p]))
   const groupColorMap = new Map(groups.map(g => [g.id, g.color]))
+  const groupStats = new Map<string, { totalPct: number; count: number }>()
+  for (const task of filteredTasks) {
+    const current = groupStats.get(task.group) ?? { totalPct: 0, count: 0 }
+    current.totalPct += task.pct
+    current.count += 1
+    groupStats.set(task.group, current)
+  }
+  const groupCompletionMap = new Map<string, number>(
+    groups.map(group => {
+      const stats = groupStats.get(group.id)
+      if (!stats || stats.count === 0) return [group.id, 0]
+      const avgPct = Math.round(stats.totalPct / stats.count)
+      return [group.id, Math.max(0, Math.min(100, avgPct))]
+    }),
+  )
 
   // Determine which groups belong to visible tasks (for coloring task rows)
   const taskGroupColor = (task: Task): string =>
     groupColorMap.get(task.group) ?? '#378ADD'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--color-surface)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--color-surface)', position: 'relative' }}>
+      {isComputing && <div className="computing-bar" aria-hidden="true" />}
       {/* ── Sticky header ── */}
       <div style={{
         position: 'sticky',
@@ -390,14 +444,15 @@ export function TaskList({
         onScroll={onScroll}
         style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}
       >
-        {visibleRows.length === 0 && (
-          <div style={{
-            padding: '32px 24px',
-            textAlign: 'center',
-            color: 'var(--color-text-tertiary)',
-            fontSize: 'var(--text-sm)',
-          }}>
-            No tasks match the current filters.
+        {visibleRows.length === 0 && taskCount > 0 && (
+          <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, textAlign: 'center' }}>
+            <Funnel size={22} weight="regular" color="var(--color-text-dim)" aria-hidden="true" />
+            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-tertiary)' }}>
+              No results
+            </div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
+              No tasks match the current filters.
+            </div>
           </div>
         )}
 
@@ -412,6 +467,7 @@ export function TaskList({
                 count={row.count}
                 collapsed={row.collapsed}
                 wbs={wbsMap.get('group:' + row.groupId) ?? ''}
+                completionPct={groupCompletionMap.get(row.groupId) ?? 0}
                 onToggle={() => onToggleGroup(row.groupId)}
               />
             )

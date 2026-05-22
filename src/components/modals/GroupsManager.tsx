@@ -11,7 +11,6 @@ interface GroupsManagerProps {
 const OVERLAY: React.CSSProperties = {
   position: 'fixed', inset: 0,
   background: 'rgba(10,18,30,0.54)',
-  backdropFilter: 'blur(3px)',
   zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
 
@@ -19,6 +18,7 @@ const BOX: React.CSSProperties = {
   width: 460, maxWidth: '95vw', maxHeight: '80vh',
   background: 'var(--color-surface)',
   borderRadius: 'var(--radius-lg)',
+  borderTop: '3px solid var(--accent)',
   boxShadow: 'var(--shadow-xl)',
   display: 'flex', flexDirection: 'column', overflow: 'hidden',
   animation: 'schedule-slide-in 0.16s ease-out both',
@@ -75,7 +75,7 @@ export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
         onClick={e => e.stopPropagation()}
       >
 
-        <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--color-border)' }}>
           <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Manage Phases</div>
           <div id={descId} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
             {items.length} phase{items.length !== 1 ? 's' : ''}
@@ -153,7 +153,7 @@ export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', gap: 8 }}>
           <button onClick={onClose} style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
             Cancel
           </button>

@@ -10,6 +10,7 @@ import { GanttGrid } from './GanttGrid'
 import { GanttBar } from './GanttBar'
 import { DependencyArrows } from './DependencyArrows'
 import { BaselineGhostBars } from './BaselineGhostBars'
+import { CalendarBlank, CircleHalf, Minus, Path, Plus, SquaresFour } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -39,6 +40,7 @@ interface GanttProps {
   onZoomIn: () => void
   onZoomOut: () => void
   onSetGhostStyle: (style: GhostStyle) => void
+  isComputing?: boolean
 }
 
 // ─── Gantt ────────────────────────────────────────────────────────────────────
@@ -69,6 +71,7 @@ export function Gantt({
   onZoomIn,
   onZoomOut,
   onSetGhostStyle,
+  isComputing = false,
 }: GanttProps) {
   // ── Derived ────────────────────────────────────────────────────────────────
 
@@ -111,6 +114,7 @@ export function Gantt({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', background: 'var(--color-surface-2)' }}>
+      {isComputing && <div className="computing-bar" aria-hidden="true" />}
       {/* ── Scrollable gantt area ── */}
       <div
         ref={ganttRef}
@@ -230,7 +234,7 @@ export function Gantt({
           }}
           title="Zoom out"
         >
-          −
+          <Minus size={14} weight="regular" aria-hidden="true" />
         </button>
         <span style={{
           padding: '0 8px',
@@ -242,7 +246,7 @@ export function Gantt({
           lineHeight: '28px',
           whiteSpace: 'nowrap',
         }}>
-          {zoomLabel}
+          {`Zoom · ${zoomLabel}`}
         </span>
         <button
           onClick={onZoomIn}
@@ -256,7 +260,7 @@ export function Gantt({
           }}
           title="Zoom in"
         >
-          +
+          <Plus size={14} weight="regular" aria-hidden="true" />
         </button>
       </div>
 
@@ -276,13 +280,19 @@ export function Gantt({
           zIndex: 10,
           overflow: 'hidden',
         }}>
-          {(['stripe', 'solid', 'outline'] as GhostStyle[]).map(style => (
+          {(['stripe', 'solid', 'outline'] as GhostStyle[]).map(style => {
+            const icon = style === 'stripe'
+              ? <Path size={12} weight="regular" aria-hidden="true" />
+              : style === 'solid'
+                ? <CircleHalf size={12} weight="regular" aria-hidden="true" />
+                : <SquaresFour size={12} weight="regular" aria-hidden="true" />
+            return (
             <button
               key={style}
               onClick={() => onSetGhostStyle(style)}
               style={{
                 height: 24,
-                padding: '0 8px',
+                padding: '0 7px',
                 background: ghostStyle === style ? 'var(--accent-dim)' : 'none',
                 border: 'none',
                 color: ghostStyle === style ? 'var(--accent)' : 'var(--color-text-tertiary)',
@@ -290,12 +300,16 @@ export function Gantt({
                 fontWeight: 'var(--weight-medium)',
                 cursor: 'pointer',
                 borderRight: style !== 'outline' ? '1px solid var(--color-border)' : undefined,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
               title={`Ghost style: ${style}`}
             >
-              {style[0]?.toUpperCase()}
+              {icon}
             </button>
-          ))}
+            )
+          })}
         </div>
       )}
 
@@ -305,13 +319,19 @@ export function Gantt({
           position: 'absolute',
           inset: 0,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'var(--color-text-tertiary)',
-          fontSize: 'var(--text-sm)',
+          gap: 8,
           pointerEvents: 'none',
         }}>
-          Add tasks to see the Gantt chart.
+          <CalendarBlank size={28} weight="regular" color="var(--color-text-dim)" aria-hidden="true" />
+          <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-tertiary)' }}>
+            No tasks yet
+          </div>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
+            Add a task to see your schedule.
+          </div>
         </div>
       )}
     </div>

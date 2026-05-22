@@ -1,4 +1,5 @@
 import type { Group, Party, FilterState, TaskStatus } from '../../types'
+import { MagnifyingGlass } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -50,22 +51,26 @@ export function FilterBar({
       padding: '0 16px', height: '100%',
       gap: 8, flexShrink: 0, overflowX: 'auto',
     }}>
-      {/* Search */}
-      <input
-        type="text"
-        placeholder="Search tasks…"
-        value={searchTerm}
-        onChange={e => onSearch(e.target.value)}
-        style={{
-          height: 26, borderRadius: 'var(--radius)',
-          border: '1px solid var(--color-border)',
-          padding: '0 10px', fontSize: 'var(--text-xs)', width: 160,
-          flexShrink: 0,
-          fontFamily: 'var(--font-sans)',
-          background: 'var(--color-surface)',
-          color: 'var(--color-text-primary)',
-        }}
-      />
+      {/* Search with icon prefix */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex' }}>
+          <MagnifyingGlass size={12} weight="regular" color="var(--color-text-dim)" aria-hidden="true" />
+        </span>
+        <input
+          type="text"
+          placeholder="Search tasks…"
+          value={searchTerm}
+          onChange={e => onSearch(e.target.value)}
+          style={{
+            height: 26, borderRadius: 'var(--radius)',
+            border: '1px solid var(--color-border)',
+            padding: '0 10px 0 26px', fontSize: 'var(--text-xs)', width: 160,
+            fontFamily: 'var(--font-sans)',
+            background: 'var(--color-surface)',
+            color: 'var(--color-text-primary)',
+          }}
+        />
+      </div>
 
       {/* Phase chips */}
       {groups.length > 0 && (
@@ -76,6 +81,7 @@ export function FilterBar({
             return (
               <button
                 key={g.id}
+                className={`filter-chip${active ? ' filter-chip--active' : ''}`}
                 onClick={() => onFilter({ ...filterState, phases: toggle(filterState.phases, g.id) })}
                 title={g.name}
                 style={{
@@ -88,7 +94,8 @@ export function FilterBar({
                   fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  transition: 'all 0.1s',
+                  transformOrigin: 'center center',
+                  transition: 'transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease',
                 }}
               >
                 {g.name}
@@ -106,18 +113,20 @@ export function FilterBar({
           return (
             <button
               key={s.value}
+              className={`filter-chip${active ? ' filter-chip--active' : ''}`}
               onClick={() => onFilter({ ...filterState, statuses: toggle(filterState.statuses, s.value) })}
-                style={{
-                  height: 22, padding: '0 8px',
-                  borderRadius: 99,
-                  border: `1.5px solid ${active ? 'var(--accent)' : 'var(--color-border)'}`,
-                  background: active ? 'var(--accent-dim)' : 'transparent',
-                  color: active ? 'var(--accent)' : 'var(--color-text-secondary)',
+              style={{
+                height: 22, padding: '0 8px',
+                borderRadius: 99,
+                border: `1.5px solid ${active ? 'var(--accent)' : 'var(--color-border)'}`,
+                background: active ? 'var(--accent-dim)' : 'transparent',
+                color: active ? 'var(--accent)' : 'var(--color-text-secondary)',
                 fontSize: 'var(--text-2xs)',
                 fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                transition: 'all 0.1s',
+                transformOrigin: 'center center',
+                transition: 'transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease',
               }}
             >
               {s.label}
@@ -135,6 +144,7 @@ export function FilterBar({
             return (
               <button
                 key={p.id}
+                className={`filter-chip${active ? ' filter-chip--active' : ''}`}
                 onClick={() => onFilter({ ...filterState, parties: toggle(filterState.parties, p.id) })}
                 title={p.name}
                 style={{
@@ -147,7 +157,8 @@ export function FilterBar({
                   fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  transition: 'all 0.1s',
+                  transformOrigin: 'center center',
+                  transition: 'transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease',
                 }}
               >
                 {p.abbr}

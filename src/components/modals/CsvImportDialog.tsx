@@ -3,6 +3,7 @@ import type { Task } from '../../types'
 import { parseCSVText, csvRowsToTasks } from '../../lib/csv'
 import type { CsvRow, CsvRowError } from '../../lib/csv'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
+import { ArrowLeft, FileArrowUp, Warning } from '../../lib/icons'
 
 const MAX_VISIBLE_ERRORS = 5
 
@@ -41,7 +42,6 @@ const FIELD_OPTIONS: Array<{ value: MappableField; label: string }> = [
 const OVERLAY: React.CSSProperties = {
   position: 'fixed', inset: 0,
   background: 'rgba(10,18,30,0.54)',
-  backdropFilter: 'blur(3px)',
   zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
 
@@ -49,6 +49,7 @@ const BOX: React.CSSProperties = {
   width: 560, maxWidth: '95vw', maxHeight: '86vh',
   background: 'var(--color-surface)',
   borderRadius: 'var(--radius-lg)',
+  borderTop: '3px solid var(--accent)',
   boxShadow: 'var(--shadow-xl)',
   display: 'flex', flexDirection: 'column', overflow: 'hidden',
   animation: 'schedule-slide-in 0.16s ease-out both',
@@ -174,7 +175,7 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
       >
 
         {/* Header */}
-        <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--color-border)' }}>
           <div id={titleId} style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>
             Import CSV
           </div>
@@ -196,16 +197,18 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 style={{
-                  border: `2px dashed ${dragging ? 'var(--accent)' : 'var(--color-border)'}`,
+                  border: dragging ? '2px solid var(--accent)' : '2px dashed var(--color-border)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '32px 20px',
                   textAlign: 'center',
                   cursor: 'pointer',
-                  background: dragging ? 'var(--color-selected-bg)' : 'var(--color-surface-2)',
+                  background: dragging ? 'var(--accent-dim)' : 'var(--color-surface-2)',
                   transition: 'border-color 0.12s, background 0.12s',
                 }}
               >
-                <div style={{ fontSize: 28, marginBottom: 8 }}>📄</div>
+                <div style={{ marginBottom: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FileArrowUp size={32} weight="regular" aria-hidden="true" color={dragging ? 'var(--accent)' : 'var(--color-text-tertiary)'} />
+                </div>
                 <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-primary)', marginBottom: 4 }}>
                   Drop your CSV here
                 </div>
@@ -297,10 +300,13 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
               {/* Row validation errors */}
               {errorCount > 0 && (
                 <div>
-                  <div style={{ fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-semibold)', color: blocked ? 'var(--color-danger)' : 'var(--color-warning)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                    {blocked
-                      ? `Cannot import — ${errorCount} row error${errorCount !== 1 ? 's' : ''}`
-                      : `${errorCount} row warning${errorCount !== 1 ? 's' : ''} (${importableCount} of ${importCount} importable)`}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+                    <Warning size={13} weight="fill" color={blocked ? 'var(--color-danger)' : 'var(--color-warning)'} aria-hidden="true" />
+                    <span style={{ fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-semibold)', color: blocked ? 'var(--color-danger)' : 'var(--color-warning)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      {blocked
+                        ? `Cannot import — ${errorCount} row error${errorCount !== 1 ? 's' : ''}`
+                        : `${errorCount} row warning${errorCount !== 1 ? 's' : ''} (${importableCount} of ${importCount} importable)`}
+                    </span>
                   </div>
                   <div style={{ borderRadius: 'var(--radius)', border: `1px solid ${blocked ? 'var(--color-danger)' : 'var(--color-border)'}`, background: blocked ? 'var(--color-danger-dim)' : 'var(--color-surface-2)', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {visibleErrors.map((err, i) => (
@@ -361,24 +367,25 @@ export function CsvImportDialog({ existingTasks, onImport, onClose }: CsvImportD
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
+        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             {step === 'map' && (
               <button
                 onClick={() => { setStep('upload'); setError(null) }}
-                style={{ height: 30, padding: '0 12px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
+                style={{ height: 30, padding: '0 12px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
               >
-                ← Back
+                <ArrowLeft size={14} weight="regular" aria-hidden="true" />
+                Back
               </button>
             )}
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={onClose}
               style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
             >
               Cancel
             </button>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
             {step === 'map' && (
               <button
                 onClick={handleImport}
