@@ -9,7 +9,7 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 
 - **When:** 2026-05-22
 - **Agent:** Codex
-- **Did:** Completed v1.2 Phase H (H.1–H.4) SidePanel & ActualDates polish with full local gates.
+- **Did:** Landed v1.2 Phase I.1–I.3 modal universal polish (overlay blur removal, top accent rule, standardized header padding) with full local gates.
 
 ---
 
@@ -18,17 +18,16 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 - **Active version:** v1.2 (visual refinement / de-vibecoded surface)
 - **Plan:** [.claude/plan-v1.2.md](./plan-v1.2.md)
 - **Phase in progress:** Ready for Phase G (TaskList refinement)
-- **Phase in progress:** Ready for Phase I (modal universal polish)
+- **Phase in progress:** Phase I in progress — I.4 remaining (footer alignment)
 
 ---
 
 ## What Just Landed
 
-- **H.1–H.4** `src/components/panels/SidePanel.tsx`, `src/components/panels/ActualDatesSection.tsx`, `src/styles/app.css`
-  - Added section-header top rules (`--rule-soft`, 32px) through SidePanel sections.
-  - Added progress-slider drag tooltip chip (mono `%` value).
-  - Added `CalendarBlank` input prefixes and start/finish variance chips in Actual Dates.
-  - Tightened dependency preview chips using recessed surface and softer rule borders.
+- **I.1–I.3** `src/components/modals/CsvImportDialog.tsx`, `src/components/modals/LinkBuilderModal.tsx`, `src/components/modals/WorkweekModal.tsx`, `src/components/modals/PrintPreviewModal.tsx`, `src/components/modals/GroupsManager.tsx`, `src/components/modals/PartiesManager.tsx`
+  - Removed modal overlay blur (`backdrop-filter`) from all modal overlays.
+  - Added 3px top accent rule to modal containers.
+  - Standardized modal header padding to `20px 24px 16px`.
 - Build Changelog updated in `plan-v1.2.md §23`.
 
 All gates passed after each landed task:
@@ -42,8 +41,8 @@ All gates passed after each landed task:
 
 ## Next Action
 
-1. Start **Phase I.1** in `plan-v1.2.md §16`: remove `backdrop-filter` from modal overlays.
-2. Continue I.2–I.4 (top accent rule, header spacing, footer alignment) with full gates per landing.
+1. Complete **Phase I.4** in `plan-v1.2.md §16`: normalize modal footer action alignment (secondary left, primary right).
+2. Continue into **Phase J** after I.4 with full gates per landing and changelog updates.
 3. Keep appending `plan-v1.2.md §23` and refreshing this handoff at each stop.
 
 ---

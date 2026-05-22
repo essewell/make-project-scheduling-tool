@@ -1193,7 +1193,15 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - Tightened dependency preview chips with recessed surface + subtle rule border/padding tuning.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
 
+- **2026-05-22 — Phase I.1–I.3: modal universal polish sweep (part 1)**
+  - Files: `src/components/modals/CsvImportDialog.tsx`, `src/components/modals/LinkBuilderModal.tsx`, `src/components/modals/WorkweekModal.tsx`, `src/components/modals/PrintPreviewModal.tsx`, `src/components/modals/GroupsManager.tsx`, `src/components/modals/PartiesManager.tsx`
+  - Changes:
+  - Removed overlay `backdrop-filter` blur across modal implementations.
+  - Added 3px top accent rule to modal boxes.
+  - Standardized modal header padding to `20px 24px 16px`.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e).
+
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase H complete (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 + F.1..F.8 + G.1..G.4 + H.1..H.4 landed locally)
+**Status:** Active — Phase I in progress (HK-1..HK-3 + A.1..A.5 + B.1..B.5 + C.1..C.5 + D.1..D.6 + E.1..E.4 + F.1..F.8 + G.1..G.4 + H.1..H.4 + I.1..I.3 landed locally)
