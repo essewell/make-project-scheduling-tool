@@ -26,6 +26,15 @@ export function StatBar({ tasks, today }: StatBarProps) {
   const avgPct = workTasks.length > 0
     ? Math.round(workTasks.reduce((sum, t) => sum + t.pct, 0) / workTasks.length)
     : 0
+  const completePct = workTasks.length > 0
+    ? (workTasks.filter(t => t.status === 'complete').length / workTasks.length) * 100
+    : 0
+  const atRiskPct = workTasks.length > 0
+    ? (workTasks.filter(t => t.status === 'at_risk').length / workTasks.length) * 100
+    : 0
+  const delayedPct = workTasks.length > 0
+    ? (workTasks.filter(t => t.status === 'delayed').length / workTasks.length) * 100
+    : 0
 
   return (
     <div
@@ -73,21 +82,57 @@ export function StatBar({ tasks, today }: StatBarProps) {
           style={{
             width: 60,
             height: 4,
-            borderRadius: 2,
-            background: 'var(--color-border)',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--surface-sunken)',
             overflow: 'hidden',
             display: 'inline-block',
             verticalAlign: 'middle',
+            position: 'relative',
           }}
         >
           <span
             style={{
-              display: 'block',
+              position: 'absolute',
+              left: 0,
+              top: 0,
               height: '100%',
-              width: `${avgPct}%`,
-              background: avgPct >= 80 ? 'var(--color-success)' : 'var(--accent)',
-              borderRadius: 2,
+              width: `${completePct}%`,
+              background: 'var(--data-positive)',
               transition: 'width 0.3s ease',
+            }}
+          />
+          <span
+            style={{
+              position: 'absolute',
+              left: `${completePct}%`,
+              top: 0,
+              height: '100%',
+              width: `${atRiskPct}%`,
+              background: 'var(--data-caution)',
+              transition: 'left 0.3s ease, width 0.3s ease',
+            }}
+          />
+          <span
+            style={{
+              position: 'absolute',
+              left: `${completePct}%`,
+              top: 0,
+              height: '100%',
+              width: `${atRiskPct}%`,
+              backgroundImage: 'repeating-linear-gradient(135deg, rgba(255,255,255,0.32) 0 2px, transparent 2px 4px)',
+              pointerEvents: 'none',
+              transition: 'left 0.3s ease, width 0.3s ease',
+            }}
+          />
+          <span
+            style={{
+              position: 'absolute',
+              left: `${completePct + atRiskPct}%`,
+              top: 0,
+              height: '100%',
+              width: `${delayedPct}%`,
+              background: 'var(--data-negative)',
+              transition: 'left 0.3s ease, width 0.3s ease',
             }}
           />
         </span>
