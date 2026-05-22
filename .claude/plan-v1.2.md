@@ -1307,7 +1307,22 @@ Running log of work executed against this plan. Each entry: date, scope, files t
   - Changes: added 16x16 PNG favicon fallback to complement SVG icon and linked fallback in both app and marketing HTML entry points.
   - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
 
+- **2026-05-22 — Phase O.2: apple-touch-icon spec update** (commit `ada9067`)
+  - Files: `public/apple-touch-icon.png`
+  - Changes: replaced icon with a 180×180 rounded-square framed MAKE wordmark mark per plan spec.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
+- **2026-05-22 — Phase O.3 and O.4 verification: already satisfied**
+  - Files: none
+  - Findings: `public/og.png` already matches 1200×630 OG requirement; print canvas title-bar pattern already implemented in `src/components/modals/PrintPreviewModal.tsx`.
+  - Verification: confirmed during Phase O continuation; no corrective code changes required.
+
+- **2026-05-22 — Phase O.5: app wordmark baseline refinement** (commit `9d748a7`)
+  - Files: `src/components/topbar/TopBar.tsx`, `src/components/overlays/SetupWizard.tsx`
+  - Changes: refined MAKE wordmark by optically lowering the `K` glyph for better baseline alignment in app wordmark surfaces.
+  - Verification: full local gate run passed (lint, type-check, unit, build, e2e — 9/9, 149/149).
+
 ---
 
 **Last updated:** 2026-05-22
-**Status:** Active — Phase O in progress (Phase N complete; O.1 landed; O.2 next)
+**Status:** Active — Phase O complete (O.1–O.5 complete; O.3/O.4 confirmed already satisfied)

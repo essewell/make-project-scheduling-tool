@@ -9,7 +9,7 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 
 - **When:** 2026-05-22
 - **Agent:** Codex
-- **Did:** Completed Phase N by landing N.4 reduced-motion audit + full verification gate, then began Phase O and landed O.1 favicon PNG fallback wiring.
+- **Did:** Completed Phase O (O.1–O.5): landed O.2 and O.5, and verified O.3/O.4 already satisfied; all landed steps passed full local gates.
 
 ---
 
@@ -17,7 +17,7 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
 
 - **Active version:** v1.2 (visual refinement / de-vibecoded surface)
 - **Plan:** [.claude/plan-v1.2.md](./plan-v1.2.md)
-- **Phase in progress:** Phase O (brand identity asset kit) — O.1 landed, O.2 next
+- **Phase in progress:** Post-Phase O closeout / v1.2 ship-readiness review
 
 ---
 
@@ -28,6 +28,13 @@ Read this AFTER `START-HERE.md` and BEFORE the active plan.
   - Added audit doc and finalized motion behaviors for N.1–N.3 surfaces.
 - **O.1** (commit `2688d35`) — `public/favicon.png`, `index.html`, `marketing.html`
   - Added 16x16 PNG favicon fallback and linked it in both app and marketing entry points.
+- **O.2** (commit `ada9067`) — `public/apple-touch-icon.png`
+  - Replaced icon with 180×180 rounded-square framed MAKE wordmark mark.
+- **O.3/O.4** — already satisfied on inspection
+  - `public/og.png` already at 1200×630 with intended composition.
+  - Print canvas title-bar pattern already present in `PrintPreviewModal` A3 output.
+- **O.5** (commit `9d748a7`) — `src/components/topbar/TopBar.tsx`, `src/components/overlays/SetupWizard.tsx`
+  - Refined MAKE wordmark with optical `K` baseline alignment tweak.
 - Build Changelog updated in `plan-v1.2.md §23`.
 
 All gates passed:
@@ -39,16 +46,15 @@ All gates passed:
 
 ## In Progress (Not Landed Yet)
 
-- Phase O.2 next: apple-touch-icon spec conformance pass.
+None in tracked source. Remaining local generated/untracked artifacts are non-product docs/reports.
 
 ---
 
 ## Next Action
 
-1. Continue Phase O with **O.2** (apple-touch-icon 180x180 framed mark/wordmark).
-2. Then complete **O.3** (OG image review/update), **O.4** (print title-bar pattern), **O.5** (wordmark K baseline refine).
-3. Run full gate after each landed O.x task and append `plan-v1.2.md §23`.
-4. Do NOT push to origin without explicit user approval.
+1. Run v1.2 acceptance sweep against `.claude/plan-v1.2.md §19`.
+2. If accepted, prepare ship handoff updates (`version-status.md` + final handoff note) and request push approval.
+3. Do NOT push to origin without explicit user approval.
 
 ---
 
