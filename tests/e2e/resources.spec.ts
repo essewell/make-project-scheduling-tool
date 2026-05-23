@@ -29,6 +29,29 @@ test.describe('resources histogram', () => {
     await expect(page.getByText(/no resources defined yet/i)).toBeVisible()
   })
 
+  test('imports resources.csv + assignments.csv and populates histogram', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: /load example data/i }).click()
+    await expect(page.locator('.app')).toHaveAttribute('data-phase', 'complete')
+
+    await importResourceFixtures(page)
+
+    // Resource "Crew A" should appear in the manager list after import
+    await page.getByRole('button', { name: /resources/i }).first().click()
+    const dialog = page.getByRole('dialog', { name: /manage resources/i })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.locator('input[value="Crew A"]')).toBeVisible()
+    await dialog.getByRole('button', { name: /^save$/i }).click()
+
+    // Toggle histogram on; Crew A selector pill should appear
+    await page.getByRole('button', { name: /histogram/i }).click()
+    await expect(page.getByRole('button', { name: /crew a/i })).toBeVisible()
+
+    // Selecting Crew A should show demand (over-alloc stat visible)
+    await page.getByRole('button', { name: /crew a/i }).click()
+    await expect(page.getByRole('button', { name: /over-alloc/i })).toBeVisible()
+  })
+
   test('updates over-allocation count after dragging an assigned overlapping task', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('button', { name: /load example data/i }).click()
