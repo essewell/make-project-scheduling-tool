@@ -1,13 +1,15 @@
-# Design System — v1.2 Foundation
+# Design System — v1.3 Foundation
 
 Date: 2026-05-22
 
 ## Scope
 
-This document tracks v1.2 Phase A foundation work:
+This document tracks foundation token and icon conventions through v1.3:
 - token additions in `src/styles/tokens.css`
 - radius scale tightening
 - Phosphor icon canonical usage surface
+- resource histogram tokenization
+- resource color-cycle policy
 
 ## Token Additions
 
@@ -20,6 +22,14 @@ Added in light + dark mode:
 - Rule hierarchy: `--rule`, `--rule-soft`, `--rule-strong`
 - Phase rails: `--phase-1`, `--phase-2`, `--phase-3`, `--phase-4`, `--phase-5`
 - Focus ring tokens: `--ring`, `--ring-offset`
+- Histogram tokens: `--histogram-bar-bg`, `--histogram-capacity-line`, `--histogram-over`
+
+## Resource Color Cycle Policy
+
+Resources inherit color assignments from the existing `GROUP_PALETTE` sequence to keep visual semantics stable across the app:
+- default assignment follows palette order when creating resources
+- explicit resource color edits are allowed and persisted
+- CSV imports without a valid `Color` value auto-assign from the same palette
 
 ## Radius Scale
 

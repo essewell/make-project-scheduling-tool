@@ -15,6 +15,8 @@ interface PrintPreviewModalProps {
   tasks: Task[]
   groups: Group[]
   parties: Party[]
+  taskCosts: Map<string, number>
+  projectCost: number
   projectName: string
   workweek: WorkweekConfig
   holidays: string[]
@@ -43,6 +45,14 @@ function readabilityScore(tasks: Task[], dayPx: number): { label: string; color:
   return { label: 'Tight', color: '#E74C3C' }
 }
 
+function formatMoney(value: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const OVERLAY: React.CSSProperties = {
@@ -65,7 +75,7 @@ const BOX: React.CSSProperties = {
 // ─── PrintPreviewModal ────────────────────────────────────────────────────────
 
 export function PrintPreviewModal({
-  tasks, groups, parties, projectName, workweek, holidays, today, onClose,
+  tasks, groups, parties, taskCosts, projectCost, projectName, workweek, holidays, today, onClose,
 }: PrintPreviewModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
@@ -216,6 +226,8 @@ export function PrintPreviewModal({
                   tasks={tasks}
                   groupMap={groupMap}
                   partyMap={partyMap}
+                  taskCosts={taskCosts}
+                  projectCost={projectCost}
                   projectName={projectName}
                   workweek={workweek}
                   holidays={holidays}
@@ -375,6 +387,8 @@ interface SummaryPrintLayoutProps {
   tasks: Task[]
   groupMap: Map<string, Group>
   partyMap: Map<string, Party>
+  taskCosts: Map<string, number>
+  projectCost: number
   projectName: string
   workweek: WorkweekConfig
   holidays: string[]
@@ -389,7 +403,17 @@ const STATUS_LABELS: Record<string, string> = {
   complete: 'Complete',
 }
 
-function SummaryPrintLayout({ tasks, groupMap, partyMap, projectName, workweek, holidays, today }: SummaryPrintLayoutProps) {
+function SummaryPrintLayout({
+  tasks,
+  groupMap,
+  partyMap,
+  taskCosts,
+  projectCost,
+  projectName,
+  workweek,
+  holidays,
+  today,
+}: SummaryPrintLayoutProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '10px 14px' }}>
       {/* Title */}
@@ -408,7 +432,7 @@ function SummaryPrintLayout({ tasks, groupMap, partyMap, projectName, workweek, 
       <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 8 }}>
         <thead>
           <tr style={{ background: '#f0f2f5' }}>
-            {['Task Name', 'Phase', 'Party', 'Start', 'End', 'Duration', 'Progress', 'Status'].map(h => (
+            {['Task Name', 'Phase', 'Party', 'Start', 'End', 'Duration', 'Progress', 'Status', 'Cost'].map(h => (
               <th key={h} style={{ padding: '4px 6px', textAlign: 'left', fontWeight: 600, color: '#444', borderBottom: '1.5px solid #ccc', whiteSpace: 'nowrap' }}>
                 {h}
               </th>
@@ -459,10 +483,23 @@ function SummaryPrintLayout({ tasks, groupMap, partyMap, projectName, workweek, 
                 <td style={{ padding: '3px 6px', borderBottom: '1px solid #eee', whiteSpace: 'nowrap' }}>
                   {STATUS_LABELS[task.status] ?? task.status}
                 </td>
+                <td style={{ padding: '3px 6px', borderBottom: '1px solid #eee', whiteSpace: 'nowrap', textAlign: 'right', fontFamily: 'monospace' }}>
+                  {formatMoney(taskCosts.get(task.id) ?? 0)}
+                </td>
               </tr>
             )
           })}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={8} style={{ padding: '6px', borderTop: '1.5px solid #ccc', textAlign: 'right', fontWeight: 600 }}>
+              Project Total
+            </td>
+            <td style={{ padding: '6px', borderTop: '1.5px solid #ccc', whiteSpace: 'nowrap', textAlign: 'right', fontWeight: 700, fontFamily: 'monospace', color: '#1c3048' }}>
+              {formatMoney(projectCost)}
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   )
