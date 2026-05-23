@@ -1,4 +1,5 @@
-import type { Task } from '../types'
+import type { Resource, ResourceAssignment, Task } from '../types'
+import { GROUP_PALETTE } from '../constants'
 import { normalizeDate, addDays, todayStr } from './dates'
 
 // ─── CSV import ───────────────────────────────────────────────────────────────
@@ -17,6 +18,16 @@ export interface CsvRowError {
 /** Result of converting CSV rows to tasks: importable tasks + non-fatal errors. */
 export interface CsvImportResult {
   tasks: Task[]
+  errors: CsvRowError[]
+}
+
+export interface ResourcesCsvImportResult {
+  resources: Resource[]
+  errors: CsvRowError[]
+}
+
+export interface AssignmentsCsvImportResult {
+  assignments: ResourceAssignment[]
   errors: CsvRowError[]
 }
 
@@ -222,6 +233,120 @@ export function triggerCSVDownload(csv: string, filename = 'schedule.csv'): void
   a.download = filename
   a.click()
   URL.revokeObjectURL(url)
+}
+
+export function parseResourcesCsv(text: string): ResourcesCsvImportResult {
+  const rows = parseCSVText(text)
+  const resources: Resource[] = []
+  const errors: CsvRowError[] = []
+  const ids = new Set<string>()
+
+  rows.forEach((row, i) => {
+    const rowNum = i + 2
+    const id = (row.ID ?? row.id ?? '').trim()
+    const name = (row.Name ?? row.name ?? '').trim()
+    const category = (row.Category ?? row.category ?? '').trim().toLowerCase()
+    const unit = (row.Unit ?? row.unit ?? '').trim()
+    const capacityRaw = (row.Capacity ?? row.capacity ?? '').trim()
+    const costRateRaw = (row.CostRate ?? row.costRate ?? row['Cost Rate'] ?? '').trim()
+    const color = (row.Color ?? row.color ?? '').trim() || GROUP_PALETTE[resources.length % GROUP_PALETTE.length] || GROUP_PALETTE[0] || '#378ADD'
+
+    if (!id) errors.push({ row: rowNum, field: 'ID', reason: 'Missing resource ID' })
+    if (!name) errors.push({ row: rowNum, field: 'Name', reason: 'Missing resource name' })
+    if (!['labor', 'equipment', 'material'].includes(category)) {
+      errors.push({ row: rowNum, field: 'Category', reason: `Invalid category "${category}"` })
+    }
+    if (!unit) errors.push({ row: rowNum, field: 'Unit', reason: 'Missing unit' })
+    if (ids.has(id)) errors.push({ row: rowNum, field: 'ID', reason: `Duplicate resource ID "${id}"` })
+
+    const capacity = capacityRaw === '' ? 0 : Number(capacityRaw)
+    const costRate = costRateRaw === '' ? 0 : Number(costRateRaw)
+    if (!Number.isFinite(capacity)) errors.push({ row: rowNum, field: 'Capacity', reason: `Invalid capacity "${capacityRaw}"` })
+    if (!Number.isFinite(costRate)) errors.push({ row: rowNum, field: 'CostRate', reason: `Invalid cost rate "${costRateRaw}"` })
+
+    if (errors.some((e) => e.row === rowNum)) return
+
+    ids.add(id)
+    resources.push({
+      id,
+      name,
+      category: category as Resource['category'],
+      unit,
+      capacity,
+      costRate,
+      color,
+    })
+  })
+
+  return { resources, errors }
+}
+
+export function parseAssignmentsCsv(text: string): AssignmentsCsvImportResult {
+  const rows = parseCSVText(text)
+  const assignments: ResourceAssignment[] = []
+  const errors: CsvRowError[] = []
+  const ids = new Set<string>()
+
+  rows.forEach((row, i) => {
+    const rowNum = i + 2
+    const id = (row.ID ?? row.id ?? '').trim()
+    const taskId = (row.TaskID ?? row.taskId ?? row.task_id ?? '').trim()
+    const resourceId = (row.ResourceID ?? row.resourceId ?? row.resource_id ?? '').trim()
+    const quantityRaw = (row.Quantity ?? row.quantity ?? '').trim()
+    const notes = row.Notes ?? row.notes ?? ''
+
+    if (!id) errors.push({ row: rowNum, field: 'ID', reason: 'Missing assignment ID' })
+    if (!taskId) errors.push({ row: rowNum, field: 'TaskID', reason: 'Missing task ID' })
+    if (!resourceId) errors.push({ row: rowNum, field: 'ResourceID', reason: 'Missing resource ID' })
+    if (ids.has(id)) errors.push({ row: rowNum, field: 'ID', reason: `Duplicate assignment ID "${id}"` })
+
+    const quantity = Number(quantityRaw)
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      errors.push({ row: rowNum, field: 'Quantity', reason: `Invalid quantity "${quantityRaw}"` })
+    }
+
+    if (errors.some((e) => e.row === rowNum)) return
+    ids.add(id)
+    assignments.push({ id, taskId, resourceId, quantity, notes })
+  })
+
+  return { assignments, errors }
+}
+
+export function generateResourcesCsv(resources: Resource[]): string {
+  const headers = ['ID', 'Name', 'Category', 'Unit', 'Capacity', 'CostRate', 'Color']
+  const lines = [headers.join(',')]
+
+  resources.forEach((resource) => {
+    lines.push([
+      escapeCsv(resource.id),
+      escapeCsv(resource.name),
+      resource.category,
+      escapeCsv(resource.unit),
+      String(resource.capacity),
+      String(resource.costRate),
+      escapeCsv(resource.color),
+    ].join(','))
+  })
+
+  return lines.join('\n')
+}
+
+export function generateAssignmentsCsv(assignments: ResourceAssignment[]): string {
+  const headers = ['ID', 'TaskID', 'ResourceID', 'Quantity', 'Notes']
+  const lines = [headers.join(',')]
+
+  assignments.forEach((assignment) => {
+    lines.push([
+      escapeCsv(assignment.id),
+      escapeCsv(assignment.taskId),
+      escapeCsv(assignment.resourceId),
+      String(assignment.quantity),
+      escapeCsv(assignment.notes),
+    ].join(','))
+  })
+
+  return lines.join('\n')
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

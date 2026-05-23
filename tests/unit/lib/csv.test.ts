@@ -1,6 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { parseCSVText, csvRowsToTasks, generateCSV } from '../../../src/lib/csv'
+import {
+  parseCSVText,
+  csvRowsToTasks,
+  generateCSV,
+  parseResourcesCsv,
+  parseAssignmentsCsv,
+  generateResourcesCsv,
+  generateAssignmentsCsv,
+} from '../../../src/lib/csv'
 import type { Task } from '../../../src/types'
+import { pruneOrphanAssignments } from '../../../src/lib/resources'
 
 // ─── parseCSVText ─────────────────────────────────────────────────────────────
 
@@ -201,5 +210,79 @@ describe('generateCSV', () => {
     // Actual Start is column 6 (0-indexed 5) and Actual Finish is column 7
     expect(cols[5]).toBe('')
     expect(cols[6]).toBe('')
+  })
+})
+
+describe('resource CSV helpers', () => {
+  it('round-trips resources CSV rows', () => {
+    const csv = generateResourcesCsv([
+      { id: 'r1', name: 'Crew A', category: 'labor', unit: 'hours', capacity: 8, costRate: 95, color: '#123456' },
+      { id: 'r2', name: 'Crane', category: 'equipment', unit: 'days', capacity: 1, costRate: 600, color: '#abcdef' },
+    ])
+
+    const { resources, errors } = parseResourcesCsv(csv)
+    expect(errors).toHaveLength(0)
+    expect(resources).toHaveLength(2)
+    expect(resources[0]!.id).toBe('r1')
+    expect(resources[1]!.category).toBe('equipment')
+  })
+
+  it('reports resource validation errors', () => {
+    const { resources, errors } = parseResourcesCsv('ID,Name,Category,Unit,Capacity,CostRate\nr1,,bad,,oops,nope')
+    expect(resources).toHaveLength(0)
+    expect(errors.length).toBeGreaterThanOrEqual(5)
+  })
+})
+
+describe('assignment CSV helpers', () => {
+  it('round-trips assignments CSV rows', () => {
+    const csv = generateAssignmentsCsv([
+      { id: 'a1', taskId: 't1', resourceId: 'r1', quantity: 2, notes: 'day shift' },
+      { id: 'a2', taskId: 't2', resourceId: 'r2', quantity: 0.5, notes: '' },
+    ])
+
+    const { assignments, errors } = parseAssignmentsCsv(csv)
+    expect(errors).toHaveLength(0)
+    expect(assignments).toHaveLength(2)
+    expect(assignments[0]!.resourceId).toBe('r1')
+  })
+
+  it('reports assignment validation errors', () => {
+    const { assignments, errors } = parseAssignmentsCsv('ID,TaskID,ResourceID,Quantity\na1,,,0')
+    expect(assignments).toHaveLength(0)
+    expect(errors.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('supports orphan-reference pruning after parse', () => {
+    const { assignments, errors } = parseAssignmentsCsv(
+      'ID,TaskID,ResourceID,Quantity\na1,t1,r1,1\na2,t-orphan,r1,1\na3,t1,r-orphan,1',
+    )
+    expect(errors).toHaveLength(0)
+
+    const pruned = pruneOrphanAssignments(
+      assignments,
+      [{
+        id: 't1',
+        name: 'Task 1',
+        group: 'g1',
+        s: '2024-01-01',
+        e: '2024-01-02',
+        actualStart: null,
+        actualFinish: null,
+        pct: 0,
+        status: 'not_started',
+        party: null,
+        notes: '',
+        milestone: false,
+        manualStatus: false,
+        manualPct: false,
+        deps: [],
+      }],
+      [{ id: 'r1', name: 'Crew', category: 'labor', unit: 'hours', capacity: 8, costRate: 100, color: '#111111' }],
+    )
+
+    expect(pruned.assignments).toHaveLength(1)
+    expect(pruned.assignments[0]!.id).toBe('a1')
+    expect(pruned.droppedCount).toBe(2)
   })
 })

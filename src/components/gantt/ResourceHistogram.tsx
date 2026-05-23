@@ -15,6 +15,7 @@ interface ResourceHistogramProps {
   holidays: string[]
   selectedResourceId: string | null
   onSelectResource: (resourceId: string) => void
+  isComputing?: boolean
 }
 
 function getResourceById(resources: Resource[], resourceId: string | null): Resource | null {
@@ -32,6 +33,7 @@ export function ResourceHistogram({
   holidays,
   selectedResourceId,
   onSelectResource,
+  isComputing = false,
 }: ResourceHistogramProps) {
   const selectedResource = getResourceById(resources, selectedResourceId)
 
@@ -62,8 +64,11 @@ export function ResourceHistogram({
         background: 'var(--surface-sunken)',
         padding: `8px ${HISTOGRAM_PAD_X}px`,
         boxSizing: 'border-box',
+        position: 'relative',
       }}
     >
+      {isComputing && <div className="computing-bar" aria-hidden="true" />}
+
       <ResourceSelectorPill
         resources={resources}
         selectedResourceId={selectedResourceId}
@@ -71,11 +76,17 @@ export function ResourceHistogram({
       />
 
       {resources.length === 0 && (
-        <EmptyState message="No resources defined yet." />
+        <EmptyState
+          message="No resources defined yet."
+          hint="Add resources from the top bar to render a demand histogram."
+        />
       )}
 
       {resources.length > 0 && !selectedResource && (
-        <EmptyState message="Select a resource above to see demand." />
+        <EmptyState
+          message="No resource selected."
+          hint="Choose a resource pill above to render its day-by-day demand."
+        />
       )}
 
       {selectedResource && (
@@ -135,7 +146,7 @@ export function ResourceHistogram({
   )
 }
 
-function EmptyState({ message }: { message: string }) {
+function EmptyState({ message, hint }: { message: string; hint?: string }) {
   return (
     <div
       style={{
@@ -152,6 +163,7 @@ function EmptyState({ message }: { message: string }) {
     >
       <ChartBar size={14} weight="regular" aria-hidden="true" />
       <span>{message}</span>
+      {hint && <span style={{ color: 'var(--color-text-tertiary)' }}>{hint}</span>}
     </div>
   )
 }

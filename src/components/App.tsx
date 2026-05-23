@@ -793,7 +793,24 @@ export function App() {
       {resourcesManagerOpen && (
         <ResourcesManager
           resources={resources}
-          onSave={(newResources) => updateState({ resources: newResources })}
+          assignments={assignments}
+          tasks={enrichedTasks}
+          onSave={(newResources) => {
+            const deletedIds = new Set(resources.map(r => r.id))
+            newResources.forEach(r => deletedIds.delete(r.id))
+            if (deletedIds.size > 0) {
+              const snapResources = resources
+              const snapAssignments = assignments
+              const entryId = Math.random().toString(36).slice(2)
+              setUndoStack(prev => [{
+                id: entryId,
+                label: 'Deleted resource',
+                restore: () => setState(s => ({ ...s, resources: snapResources, assignments: snapAssignments })),
+              }, ...prev].slice(0, UNDO_STACK_MAX))
+            }
+            updateState({ resources: newResources })
+          }}
+          onSaveAssignments={(newAssignments) => updateState({ assignments: newAssignments })}
           onClose={() => setResourcesManagerOpen(false)}
         />
       )}

@@ -1,11 +1,17 @@
 import { useId, useMemo, useRef, useState } from 'react'
-import type { Resource, ResourceCategory } from '../../types'
+import type { ChangeEvent } from 'react'
+import type { Resource, ResourceAssignment, ResourceCategory, Task } from '../../types'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
-import { createResource, validateResource } from '../../lib/resources'
+import { createResource, pruneOrphanAssignments, validateResource } from '../../lib/resources'
+import { generateAssignmentsCsv, generateResourcesCsv, parseAssignmentsCsv, parseResourcesCsv, triggerCSVDownload } from '../../lib/csv'
+import { ToastMessage } from '../overlays/UndoToast'
 
 interface ResourcesManagerProps {
   resources: Resource[]
+  assignments: ResourceAssignment[]
+  tasks: Task[]
   onSave: (resources: Resource[]) => void
+  onSaveAssignments: (assignments: ResourceAssignment[]) => void
   onClose: () => void
 }
 
@@ -81,16 +87,27 @@ function categoryLabel(category: ResourceCategory): string {
   }
 }
 
-export function ResourcesManager({ resources, onSave, onClose }: ResourcesManagerProps) {
+export function ResourcesManager({
+  resources,
+  assignments,
+  tasks,
+  onSave,
+  onSaveAssignments,
+  onClose,
+}: ResourcesManagerProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
   const descId = useId()
   const [items, setItems] = useState<Resource[]>(resources.map((resource) => ({ ...resource })))
+  const [localAssignments, setLocalAssignments] = useState<ResourceAssignment[]>(assignments.map((assignment) => ({ ...assignment })))
   const [newName, setNewName] = useState('')
   const [newCategory, setNewCategory] = useState<ResourceCategory>('labor')
   const [newUnit, setNewUnit] = useState('hours')
   const [newCapacity, setNewCapacity] = useState(1)
   const [newCostRate, setNewCostRate] = useState(0)
+  const [toast, setToast] = useState<{ id: string; label: string } | null>(null)
+  const resourcesImportRef = useRef<HTMLInputElement>(null)
+  const assignmentsImportRef = useRef<HTMLInputElement>(null)
 
   useDialogA11y({ containerRef: dialogRef, onClose })
 
@@ -102,6 +119,14 @@ export function ResourcesManager({ resources, onSave, onClose }: ResourcesManage
   }
 
   const removeResource = (id: string) => {
+    const assignmentCount = localAssignments.filter((assignment) => assignment.resourceId === id).length
+    if (assignmentCount > 0) {
+      const shouldDrop = window.confirm(
+        `This resource has ${assignmentCount} assignment${assignmentCount !== 1 ? 's' : ''}. Delete resource and drop those assignments?`,
+      )
+      if (!shouldDrop) return
+      setLocalAssignments((prev) => prev.filter((assignment) => assignment.resourceId !== id))
+    }
     setItems((prev) => prev.filter((resource) => resource.id !== id))
   }
 
@@ -125,6 +150,49 @@ export function ResourcesManager({ resources, onSave, onClose }: ResourcesManage
     setNewCostRate(0)
   }
 
+  const handleImportResources = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    const parsed = parseResourcesCsv(text)
+    if (parsed.resources.length > 0) {
+      setItems(parsed.resources)
+    }
+    if (parsed.resources.length > 0) {
+      setToast({
+        id: Math.random().toString(36).slice(2),
+        label: `Imported ${parsed.resources.length} resource${parsed.resources.length !== 1 ? 's' : ''}.`,
+      })
+    }
+    if (parsed.errors.length > 0) {
+      window.alert(`Imported ${parsed.resources.length} resources with ${parsed.errors.length} row issues.`)
+    }
+    event.target.value = ''
+  }
+
+  const handleImportAssignments = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    const parsed = parseAssignmentsCsv(text)
+    const pruned = pruneOrphanAssignments(parsed.assignments, tasks, items)
+    setLocalAssignments(pruned.assignments)
+    if (pruned.assignments.length > 0) {
+      setToast({
+        id: Math.random().toString(36).slice(2),
+        label: `Imported ${pruned.assignments.length} assignment${pruned.assignments.length !== 1 ? 's' : ''}.`,
+      })
+    }
+
+    const droppedText = pruned.droppedCount > 0 ? ` and dropped ${pruned.droppedCount} orphan assignment(s)` : ''
+    if (parsed.errors.length > 0 || pruned.droppedCount > 0) {
+      window.alert(
+        `Imported ${pruned.assignments.length} assignments with ${parsed.errors.length} row issue(s)${droppedText}.`,
+      )
+    }
+    event.target.value = ''
+  }
+
   return (
     <div style={OVERLAY} onClick={onClose}>
       <div
@@ -145,6 +213,22 @@ export function ResourcesManager({ resources, onSave, onClose }: ResourcesManage
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {items.length === 0 && (
+            <div
+              style={{
+                border: '1px dashed var(--color-border)',
+                borderRadius: 'var(--radius)',
+                padding: '18px 14px',
+                textAlign: 'center',
+                color: 'var(--color-text-dim)',
+                fontSize: 'var(--text-xs)',
+                lineHeight: 1.5,
+              }}
+            >
+              No resources yet. Add one below or import a `resources.csv` file.
+            </div>
+          )}
+
           {items.map((resource) => {
             const resourceErrors = validationState[resource.id] ?? {}
             const isMaterial = resource.category === 'material'
@@ -201,6 +285,7 @@ export function ResourcesManager({ resources, onSave, onClose }: ResourcesManage
                     type="number"
                     min={0}
                     step="0.1"
+                    aria-label="Capacity per workday"
                     value={resource.capacity}
                     disabled={isMaterial}
                     onChange={(event) => updateResource(resource.id, { capacity: Number(event.target.value) })}
@@ -212,6 +297,7 @@ export function ResourcesManager({ resources, onSave, onClose }: ResourcesManage
                     type="number"
                     min={0}
                     step="0.01"
+                    aria-label="Cost rate"
                     value={resource.costRate}
                     onChange={(event) => updateResource(resource.id, { costRate: Number(event.target.value) })}
                     style={{ ...INPUT, width: 84, borderColor: resourceErrors.costRate ? 'var(--color-danger)' : 'var(--color-border)' }}
@@ -248,6 +334,7 @@ export function ResourcesManager({ resources, onSave, onClose }: ResourcesManage
           />
 
           <select
+            aria-label="Resource category"
             value={newCategory}
             onChange={(event) => setNewCategory(event.target.value as ResourceCategory)}
             style={{ ...INPUT, width: 110 }}
@@ -269,6 +356,7 @@ export function ResourcesManager({ resources, onSave, onClose }: ResourcesManage
             type="number"
             min={0}
             step="0.1"
+            aria-label="Capacity per workday"
             value={newCategory === 'material' ? 0 : newCapacity}
             disabled={newCategory === 'material'}
             onChange={(event) => setNewCapacity(Number(event.target.value))}
@@ -279,6 +367,7 @@ export function ResourcesManager({ resources, onSave, onClose }: ResourcesManage
             type="number"
             min={0}
             step="0.01"
+            aria-label="Cost rate"
             value={newCostRate}
             onChange={(event) => setNewCostRate(Number(event.target.value))}
             style={{ ...INPUT, width: 84 }}
@@ -293,31 +382,80 @@ export function ResourcesManager({ resources, onSave, onClose }: ResourcesManage
         </div>
 
         <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-          <button
-            onClick={onClose}
-            style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
-          >
-            Cancel
-          </button>
-          <button
-            disabled={hasValidationErrors}
-            onClick={() => { onSave(items); onClose() }}
-            style={{
-              height: 30,
-              padding: '0 14px',
-              borderRadius: 'var(--radius)',
-              border: 'none',
-              background: hasValidationErrors ? 'var(--color-border)' : 'var(--accent)',
-              color: '#fff',
-              fontSize: 'var(--text-xs)',
-              fontWeight: 'var(--weight-medium)',
-              cursor: hasValidationErrors ? 'not-allowed' : 'pointer',
-            }}
-          >
-            Save
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <input
+              ref={resourcesImportRef}
+              type="file"
+              accept=".csv,text/csv"
+              onChange={handleImportResources}
+              style={{ display: 'none' }}
+            />
+            <input
+              ref={assignmentsImportRef}
+              type="file"
+              accept=".csv,text/csv"
+              onChange={handleImportAssignments}
+              style={{ display: 'none' }}
+            />
+            <button
+              onClick={() => resourcesImportRef.current?.click()}
+              style={{ height: 30, padding: '0 10px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
+            >
+              Import Resources
+            </button>
+            <button
+              onClick={() => triggerCSVDownload(generateResourcesCsv(items), 'resources.csv')}
+              style={{ height: 30, padding: '0 10px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
+            >
+              Export Resources
+            </button>
+            <button
+              onClick={() => assignmentsImportRef.current?.click()}
+              style={{ height: 30, padding: '0 10px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
+            >
+              Import Assignments
+            </button>
+            <button
+              onClick={() => triggerCSVDownload(generateAssignmentsCsv(assignments), 'assignments.csv')}
+              style={{ height: 30, padding: '0 10px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
+            >
+              Export Assignments
+            </button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={onClose}
+              style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+            <button
+              disabled={hasValidationErrors}
+              onClick={() => { onSave(items); onSaveAssignments(localAssignments); onClose() }}
+              style={{
+                height: 30,
+                padding: '0 14px',
+                borderRadius: 'var(--radius)',
+                border: 'none',
+                background: hasValidationErrors ? 'var(--color-border)' : 'var(--accent)',
+                color: '#fff',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 'var(--weight-medium)',
+                cursor: hasValidationErrors ? 'not-allowed' : 'pointer',
+              }}
+            >
+              Save
+            </button>
+          </div>
         </div>
       </div>
+      {toast && (
+        <ToastMessage
+          id={toast.id}
+          label={toast.label}
+          onDismiss={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }
