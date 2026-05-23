@@ -1,5 +1,6 @@
 import type { Task, CpmResult } from '../types'
 import { shortDate } from '../lib/dates'
+import { HEALTH_AMBER_THRESHOLD, HEALTH_GREEN_THRESHOLD } from '../constants'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -9,7 +10,9 @@ interface StatBarProps {
   criticalPath?: CpmResult | null
   projectCost?: number
   overAllocationCount?: number
+  healthScore?: number
   onOpenOverAllocations?: () => void
+  onOpenQualityPanel?: () => void
 }
 
 // ─── StatBar ──────────────────────────────────────────────────────────────────
@@ -28,7 +31,9 @@ export function StatBar({
   criticalPath,
   projectCost = 0,
   overAllocationCount = 0,
+  healthScore = 0,
   onOpenOverAllocations,
+  onOpenQualityPanel,
 }: StatBarProps) {
   const count = tasks.length
 
@@ -58,6 +63,11 @@ export function StatBar({
   // Conditional stats
   const criticalCount = criticalPath ? criticalPath.criticalIds.size : 0
   const varianceCount = workTasks.filter(t => t.status === 'at_risk' || t.status === 'delayed').length
+  const healthColor = healthScore >= HEALTH_GREEN_THRESHOLD
+    ? 'var(--health-green)'
+    : healthScore >= HEALTH_AMBER_THRESHOLD
+      ? 'var(--health-amber)'
+      : 'var(--health-red)'
 
   return (
     <div className="stat-bar">
@@ -177,6 +187,35 @@ export function StatBar({
           </span>
         </>
       )}
+
+      <Divider />
+      <button
+        className="stat-item"
+        onClick={onOpenQualityPanel}
+        title="Click for full quality report"
+        style={{
+          height: 22,
+          padding: '0 8px',
+          borderRadius: 'var(--radius-sm)',
+          border: '1px solid var(--color-border)',
+          background: 'transparent',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 'var(--text-2xs)',
+          cursor: 'pointer',
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        <span style={{ color: 'var(--color-text-tertiary)' }}>Health</span>
+        {' '}
+        <strong
+          style={{
+            color: healthColor,
+            fontWeight: 'var(--weight-semibold)' as React.CSSProperties['fontWeight'],
+          }}
+        >
+          {healthScore}
+        </strong>
+      </button>
       </div>
 
       <div className="stat-bar-spacer" />

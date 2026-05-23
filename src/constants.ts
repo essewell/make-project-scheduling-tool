@@ -75,3 +75,15 @@ export const DEFAULT_ZOOM_INDEX = 1  // Week
 
 export const LARGE_TASK_THRESHOLD = 500  // task count above which loading bar appears
 export const RESOURCE_MAX_PER_PROJECT = 200
+
+// Schedule quality
+export const EXCESSIVE_LAG_RATIO = 0.5
+export const HEALTH_GREEN_THRESHOLD = 80
+export const HEALTH_AMBER_THRESHOLD = 60
+export const HEALTH_WEIGHTS = {
+  logic: 0.3,
+  resource: 0.25,
+  baseline: 0.2,
+  float: 0.15,
+  completeness: 0.1,
+} as const

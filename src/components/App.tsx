@@ -8,11 +8,14 @@ import { generateCSV, triggerCSVDownload } from '../lib/csv'
 import { EXAMPLE_TASKS, EXAMPLE_GROUPS, EXAMPLE_PARTIES } from '../lib/exampleData'
 import { computeProjectTotalCost, computeTaskCosts } from '../lib/cost'
 import { computeResourceDemand } from '../lib/resourceDemand'
+import { runDcmaAssessment } from '../lib/dcma'
+import { buildFloatDistribution } from '../lib/floatDistribution'
+import { computeScheduleHealth } from '../lib/health'
 import { useMidnightTicker } from '../hooks/useMidnightTicker'
 import { useScrollSync } from '../hooks/useScrollSync'
 import { useKeyboard } from '../hooks/useKeyboard'
 import { useOnboarding } from '../hooks/useOnboarding'
-import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX, LARGE_TASK_THRESHOLD } from '../constants'
+import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX, LARGE_TASK_THRESHOLD, HEALTH_WEIGHTS } from '../constants'
 import { TaskList } from './task-list/TaskList'
 import { Gantt } from './gantt/Gantt'
 import { SidePanel } from './panels/SidePanel'
@@ -63,6 +66,7 @@ export function App() {
   const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
   const [histogramVisible, setHistogramVisible] = useState(false)
+  const [qualityPanelOpen, setQualityPanelOpen] = useState(false)
 
   // ── Modal state ───────────────────────────────────────────────────────────
   const [linkBuilderTaskId, setLinkBuilderTaskId] = useState<string | null>(null)
@@ -158,6 +162,11 @@ export function App() {
     return computeCriticalPath(enrichedTasks, dependencies)
   }, [showCriticalPath, hasDeps, enrichedTasks, dependencies])
 
+  const qualityCpm = useMemo(() => {
+    if (!hasDeps) return null
+    return computeCriticalPath(enrichedTasks, dependencies)
+  }, [hasDeps, enrichedTasks, dependencies])
+
   const taskCosts = useMemo(
     () =>
       computeTaskCosts(enrichedTasks, {
@@ -191,10 +200,42 @@ export function App() {
     [overAllocationByResource],
   )
 
+  const overAllocatedResourceCount = useMemo(
+    () => overAllocationByResource.filter((item) => item.overCount > 0).length,
+    [overAllocationByResource],
+  )
+
   const firstOverAllocatedResourceId = useMemo(
     () => overAllocationByResource.find((item) => item.overCount > 0)?.resourceId ?? null,
     [overAllocationByResource],
   )
+
+  const dcmaAssessment = useMemo(() => {
+    return runDcmaAssessment({
+      tasks: enrichedTasks,
+      dependencies,
+      baselines,
+      resources,
+      assignments,
+      cpm: qualityCpm,
+      today,
+    })
+  }, [enrichedTasks, dependencies, baselines, resources, assignments, qualityCpm, today])
+
+  const floatDistribution = useMemo(() => {
+    return buildFloatDistribution(enrichedTasks, qualityCpm?.totalFloat ?? new Map())
+  }, [enrichedTasks, qualityCpm])
+
+  const scheduleHealth = useMemo(() => {
+    return computeScheduleHealth({
+      assessment: dcmaAssessment,
+      tasks: enrichedTasks,
+      overAllocatedResourceCount,
+      totalResourceCount: resources.length,
+      floatDistribution,
+      weights: HEALTH_WEIGHTS,
+    })
+  }, [dcmaAssessment, enrichedTasks, overAllocatedResourceCount, resources.length, floatDistribution])
 
   useEffect(() => {
     if (resources.length === 0) {
@@ -641,11 +682,13 @@ export function App() {
             criticalPath={criticalPath}
             projectCost={projectCost}
             overAllocationCount={overAllocationCount}
+            healthScore={scheduleHealth.score}
             onOpenOverAllocations={() => {
               if (!firstOverAllocatedResourceId) return
               setSelectedResourceId(firstOverAllocatedResourceId)
               setHistogramVisible(true)
             }}
+            onOpenQualityPanel={() => setQualityPanelOpen(true)}
           />
 
           <FilterBar
@@ -836,6 +879,33 @@ export function App() {
           today={today}
           onClose={() => setPrintPreviewOpen(false)}
         />
+      )}
+
+      {qualityPanelOpen && (
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Quality panel coming soon">
+          <div className="modal-box" style={{ width: 420, padding: 'var(--space-4)' }}>
+            <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-2)' }}>
+              Schedule Quality Panel
+            </div>
+            <div style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+              Phase D will render the full DCMA and float distribution report.
+            </div>
+            <button
+              onClick={() => setQualityPanelOpen(false)}
+              style={{
+                height: 30,
+                padding: '0 12px',
+                borderRadius: 'var(--radius)',
+                border: '1px solid var(--color-border)',
+                background: 'var(--color-surface)',
+                color: 'var(--color-text-primary)',
+                cursor: 'pointer',
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
 
       {mobilePanelOpen && (

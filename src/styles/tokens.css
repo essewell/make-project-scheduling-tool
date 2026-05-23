@@ -57,6 +57,12 @@
   --histogram-bar-bg:   rgba(28, 48, 72, 0.24);
   --histogram-capacity-line: #7894a6;
   --histogram-over:     rgba(191, 59, 46, 0.72);
+  --health-green:       #1D9E75;
+  --health-amber:       #EF9F27;
+  --health-red:         #bf3b2e;
+  --float-bucket-bg:    rgba(28, 48, 72, 0.12);
+  --float-bucket-critical: rgba(39, 170, 225, 0.24);
+  --float-bucket-negative: rgba(191, 59, 46, 0.2);
   --phase-1:            #7C5CBF;
   --phase-2:            #E0862A;
   --phase-3:            #2E8B57;
@@ -184,6 +190,12 @@
     --histogram-bar-bg:   rgba(216, 234, 244, 0.28);
     --histogram-capacity-line: #88a8bc;
     --histogram-over:     rgba(217, 107, 96, 0.72);
+    --health-green:       #26c492;
+    --health-amber:       #f5af41;
+    --health-red:         #d96b60;
+    --float-bucket-bg:    rgba(216, 234, 244, 0.14);
+    --float-bucket-critical: rgba(77, 184, 230, 0.24);
+    --float-bucket-negative: rgba(217, 107, 96, 0.22);
     --phase-1:            #8f74cb;
     --phase-2:            #ee9f4d;
     --phase-3:            #43a06d;
