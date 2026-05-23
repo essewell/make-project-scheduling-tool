@@ -4,6 +4,7 @@ import type { Resource, ResourceAssignment, ResourceCategory, Task } from '../..
 import { useDialogA11y } from '../../hooks/useDialogA11y'
 import { createResource, pruneOrphanAssignments, validateResource } from '../../lib/resources'
 import { generateAssignmentsCsv, generateResourcesCsv, parseAssignmentsCsv, parseResourcesCsv, triggerCSVDownload } from '../../lib/csv'
+import { ToastMessage } from '../overlays/UndoToast'
 
 interface ResourcesManagerProps {
   resources: Resource[]
@@ -104,6 +105,7 @@ export function ResourcesManager({
   const [newUnit, setNewUnit] = useState('hours')
   const [newCapacity, setNewCapacity] = useState(1)
   const [newCostRate, setNewCostRate] = useState(0)
+  const [toast, setToast] = useState<{ id: string; label: string } | null>(null)
   const resourcesImportRef = useRef<HTMLInputElement>(null)
   const assignmentsImportRef = useRef<HTMLInputElement>(null)
 
@@ -156,6 +158,12 @@ export function ResourcesManager({
     if (parsed.resources.length > 0) {
       setItems(parsed.resources)
     }
+    if (parsed.resources.length > 0) {
+      setToast({
+        id: Math.random().toString(36).slice(2),
+        label: `Imported ${parsed.resources.length} resource${parsed.resources.length !== 1 ? 's' : ''}.`,
+      })
+    }
     if (parsed.errors.length > 0) {
       window.alert(`Imported ${parsed.resources.length} resources with ${parsed.errors.length} row issues.`)
     }
@@ -169,6 +177,12 @@ export function ResourcesManager({
     const parsed = parseAssignmentsCsv(text)
     const pruned = pruneOrphanAssignments(parsed.assignments, tasks, items)
     setLocalAssignments(pruned.assignments)
+    if (pruned.assignments.length > 0) {
+      setToast({
+        id: Math.random().toString(36).slice(2),
+        label: `Imported ${pruned.assignments.length} assignment${pruned.assignments.length !== 1 ? 's' : ''}.`,
+      })
+    }
 
     const droppedText = pruned.droppedCount > 0 ? ` and dropped ${pruned.droppedCount} orphan assignment(s)` : ''
     if (parsed.errors.length > 0 || pruned.droppedCount > 0) {
@@ -430,6 +444,13 @@ export function ResourcesManager({
           </div>
         </div>
       </div>
+      {toast && (
+        <ToastMessage
+          id={toast.id}
+          label={toast.label}
+          onDismiss={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }

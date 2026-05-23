@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { TOAST_DURATION_MS } from '../../constants'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -17,6 +18,12 @@ interface UndoToastProps {
   onDismiss: () => void
 }
 
+interface ToastMessageProps {
+  id: string
+  label: string
+  onDismiss: () => void
+}
+
 // ─── UndoToast ────────────────────────────────────────────────────────────────
 
 export function UndoToast({ entry, onUndo, onDismiss }: UndoToastProps) {
@@ -26,26 +33,7 @@ export function UndoToast({ entry, onUndo, onDismiss }: UndoToastProps) {
   }, [entry.id, onDismiss])
 
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      style={{
-        position: 'fixed',
-        bottom: 24,
-        left: 24,
-        zIndex: 500,
-        background: 'var(--color-surface)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-xl)',
-        display: 'flex', alignItems: 'center', gap: 10,
-        padding: '10px 14px',
-        fontSize: 'var(--text-xs)',
-        animation: 'schedule-toast-in 0.22s cubic-bezier(0.22,1,0.36,1) both',
-        minWidth: 240,
-      }}
-    >
+    <ToastFrame>
       <span style={{ flex: 1, color: 'var(--color-text-primary)' }}>
         {entry.label}
       </span>
@@ -75,6 +63,58 @@ export function UndoToast({ entry, onUndo, onDismiss }: UndoToastProps) {
           color: 'var(--color-text-dim)', fontSize: 16,
         }}
       >×</button>
+    </ToastFrame>
+  )
+}
+
+export function ToastMessage({ id, label, onDismiss }: ToastMessageProps) {
+  useEffect(() => {
+    const timer = setTimeout(onDismiss, TOAST_DURATION_MS)
+    return () => clearTimeout(timer)
+  }, [id, onDismiss])
+
+  return (
+    <ToastFrame>
+      <span style={{ flex: 1, color: 'var(--color-text-primary)' }}>
+        {label}
+      </span>
+      <button
+        onClick={onDismiss}
+        aria-label="Dismiss message"
+        style={{
+          width: 24, height: 24,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'var(--color-text-dim)', fontSize: 16,
+        }}
+      >×</button>
+    </ToastFrame>
+  )
+}
+
+function ToastFrame({ children }: { children: ReactNode }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      style={{
+        position: 'fixed',
+        bottom: 24,
+        left: 24,
+        zIndex: 500,
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-xl)',
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '10px 14px',
+        fontSize: 'var(--text-xs)',
+        animation: 'schedule-toast-in 0.22s cubic-bezier(0.22,1,0.36,1) both',
+        minWidth: 240,
+      }}
+    >
+      {children}
     </div>
   )
 }
