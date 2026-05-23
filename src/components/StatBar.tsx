@@ -1,5 +1,6 @@
 import type { Task, CpmResult } from '../types'
 import { shortDate } from '../lib/dates'
+import { HEALTH_AMBER_THRESHOLD, HEALTH_GREEN_THRESHOLD } from '../constants'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -9,7 +10,9 @@ interface StatBarProps {
   criticalPath?: CpmResult | null
   projectCost?: number
   overAllocationCount?: number
+  healthScore?: number
   onOpenOverAllocations?: () => void
+  onOpenQualityPanel?: () => void
 }
 
 // ─── StatBar ──────────────────────────────────────────────────────────────────
@@ -28,7 +31,9 @@ export function StatBar({
   criticalPath,
   projectCost = 0,
   overAllocationCount = 0,
+  healthScore = 0,
   onOpenOverAllocations,
+  onOpenQualityPanel,
 }: StatBarProps) {
   const count = tasks.length
 
@@ -58,26 +63,17 @@ export function StatBar({
   // Conditional stats
   const criticalCount = criticalPath ? criticalPath.criticalIds.size : 0
   const varianceCount = workTasks.filter(t => t.status === 'at_risk' || t.status === 'delayed').length
+  const healthColor = healthScore >= HEALTH_GREEN_THRESHOLD
+    ? 'var(--health-green)'
+    : healthScore >= HEALTH_AMBER_THRESHOLD
+      ? 'var(--health-amber)'
+      : 'var(--health-red)'
 
   return (
-    <div
-      className="stat-bar"
-      style={{
-        height: 'var(--stat-bar-height)',
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
-        display: 'flex',
-        alignItems: 'center',
-        paddingInline: 'var(--space-4)',
-        gap: 'var(--space-3)',
-        fontFamily: 'var(--font-sans)',
-        fontSize: 'var(--text-xs)',
-        color: 'var(--color-text-secondary)',
-        overflow: 'hidden',
-      }}
-    >
+    <div className="stat-bar">
+      <div className="stat-bar-main">
       {/* Project window */}
-      <span>
+      <span className="stat-item stat-item-window">
         <span style={{ color: 'var(--color-text-tertiary)' }}>Window</span>
         {' '}
         <span style={{ fontFamily: 'var(--font-mono)' }}>
@@ -88,7 +84,7 @@ export function StatBar({
       <Divider />
 
       {/* Task count */}
-      <span>
+      <span className="stat-item stat-item-tasks">
         <span style={{ color: 'var(--color-text-tertiary)' }}>Tasks</span>
         {' '}
         <strong style={{ fontWeight: 'var(--weight-semibold)' as React.CSSProperties['fontWeight'], color: 'var(--color-text-primary)' }}>
@@ -99,7 +95,7 @@ export function StatBar({
       <Divider />
 
       {/* Overall progress */}
-      <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+      <span className="stat-item stat-item-progress" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
         <span style={{ color: 'var(--color-text-tertiary)' }}>Progress</span>
         <span
           style={{
@@ -168,13 +164,13 @@ export function StatBar({
       {criticalPath && criticalCount > 0 && (
         <>
           <Divider />
-          <span>
+      <span className="stat-item stat-item-cost">
             <span style={{ color: 'var(--color-text-tertiary)' }}>Critical</span>
             {' '}
             <strong style={{ fontWeight: 'var(--weight-semibold)' as React.CSSProperties['fontWeight'], color: 'var(--data-negative)', fontFamily: 'var(--font-mono)' }}>
               {criticalCount}
             </strong>
-          </span>
+      </span>
         </>
       )}
 
@@ -192,59 +188,91 @@ export function StatBar({
         </>
       )}
 
-      {/* Spacer */}
-      <span style={{ flex: 1 }} />
-
-      {/* Project total cost */}
-      <span>
-        <span style={{ color: 'var(--color-text-tertiary)' }}>Cost</span>
-        {' '}
-        <strong style={{ fontWeight: 'var(--weight-semibold)' as React.CSSProperties['fontWeight'], color: 'var(--color-text-primary)', fontFamily: 'var(--font-mono)' }}>
-          {formatMoney(projectCost)}
-        </strong>
-      </span>
-
-      {overAllocationCount > 0 && (
-        <>
-          <Divider />
-          <button
-            onClick={onOpenOverAllocations}
-            style={{
-              height: 22,
-              padding: '0 8px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--color-danger)',
-              background: 'var(--color-danger-dim)',
-              color: 'var(--color-danger)',
-              fontSize: 'var(--text-2xs)',
-              fontFamily: 'var(--font-mono)',
-              cursor: 'pointer',
-            }}
-            title="Open first over-allocated resource"
-          >
-            Over-alloc {overAllocationCount}
-          </button>
-        </>
-      )}
-
       <Divider />
+      <button
+        className="stat-item"
+        onClick={onOpenQualityPanel}
+        title="Click for full quality report"
+        style={{
+          height: 22,
+          padding: '0 8px',
+          borderRadius: 'var(--radius-sm)',
+          border: '1px solid var(--color-border)',
+          background: 'transparent',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 'var(--text-2xs)',
+          cursor: 'pointer',
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        <span style={{ color: 'var(--color-text-tertiary)' }}>Health</span>
+        {' '}
+        <strong
+          style={{
+            color: healthColor,
+            fontWeight: 'var(--weight-semibold)' as React.CSSProperties['fontWeight'],
+          }}
+        >
+          {healthScore}
+        </strong>
+      </button>
+      </div>
 
-      {/* Today pill — right-aligned */}
-      <span style={{
-        display: 'inline-flex', alignItems: 'center', gap: 5,
-        padding: '0 8px', height: 20,
-        borderRadius: 'var(--radius-sm)',
-        background: 'var(--surface-sunken)',
-        border: '1px solid var(--color-border-light)',
-        fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-semibold)',
-        color: 'var(--color-text-tertiary)',
-        letterSpacing: '0.04em', textTransform: 'uppercase', flexShrink: 0,
-      }}>
-        <span>Today</span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 'var(--weight-regular)', letterSpacing: 0, textTransform: 'none', color: 'var(--color-text-secondary)' }}>
-          {shortDate(today)}
+      <div className="stat-bar-spacer" />
+
+      <div className="stat-bar-side">
+        {/* Project total cost */}
+        <span>
+          <span style={{ color: 'var(--color-text-tertiary)' }}>Cost</span>
+          {' '}
+          <strong style={{ fontWeight: 'var(--weight-semibold)' as React.CSSProperties['fontWeight'], color: 'var(--color-text-primary)', fontFamily: 'var(--font-mono)' }}>
+            {formatMoney(projectCost)}
+          </strong>
         </span>
-      </span>
+
+        {overAllocationCount > 0 && (
+          <>
+            <Divider />
+            <button
+              onClick={onOpenOverAllocations}
+              className="stat-item stat-item-overalloc"
+              style={{
+                height: 22,
+                padding: '0 8px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--color-danger)',
+                background: 'var(--color-danger-dim)',
+                color: 'var(--color-danger)',
+                fontSize: 'var(--text-2xs)',
+                fontFamily: 'var(--font-mono)',
+                cursor: 'pointer',
+              }}
+              title="Open first over-allocated resource"
+            >
+              Over-alloc {overAllocationCount}
+            </button>
+          </>
+        )}
+
+        <Divider />
+
+        {/* Today pill — right-aligned */}
+        <span className="stat-item stat-item-today" style={{
+          display: 'inline-flex', alignItems: 'center', gap: 5,
+          padding: '0 8px', height: 20,
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--surface-sunken)',
+          border: '1px solid var(--color-border-light)',
+          fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-semibold)',
+          color: 'var(--color-text-tertiary)',
+          letterSpacing: '0.04em', textTransform: 'uppercase', flexShrink: 0,
+        }}>
+          <span>Today</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 'var(--weight-regular)', letterSpacing: 0, textTransform: 'none', color: 'var(--color-text-secondary)' }}>
+            {shortDate(today)}
+          </span>
+        </span>
+      </div>
     </div>
   )
 }

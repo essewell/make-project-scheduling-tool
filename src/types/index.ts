@@ -171,6 +171,28 @@ export interface CpmResult {
   totalFloat: Map<string, number>
 }
 
+// ─── Schedule quality / DCMA ────────────────────────────────────────────────
+
+export type DcmaCheckId =
+  | 1 | 2 | 3 | 4 | 5 | 6 | 7
+  | 8 | 9 | 10 | 11 | 12 | 13 | 14
+
+export interface DcmaCheckResult {
+  id: DcmaCheckId
+  name: string
+  passed: boolean
+  score: number
+  threshold: number
+  plainEnglish: string
+  affectedTaskIds: string[]
+  note?: string
+}
+
+export interface DcmaAssessmentResult {
+  checks: DcmaCheckResult[]
+  generatedAt: string
+}
+
 // ─── Filter state ────────────────────────────────────────────────────────────
 
 export interface FilterState {

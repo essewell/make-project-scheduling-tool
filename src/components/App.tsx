@@ -8,11 +8,14 @@ import { generateCSV, triggerCSVDownload } from '../lib/csv'
 import { EXAMPLE_TASKS, EXAMPLE_GROUPS, EXAMPLE_PARTIES } from '../lib/exampleData'
 import { computeProjectTotalCost, computeTaskCosts } from '../lib/cost'
 import { computeResourceDemand } from '../lib/resourceDemand'
+import { runDcmaAssessment } from '../lib/dcma'
+import { buildFloatDistribution } from '../lib/floatDistribution'
+import { computeScheduleHealth } from '../lib/health'
 import { useMidnightTicker } from '../hooks/useMidnightTicker'
 import { useScrollSync } from '../hooks/useScrollSync'
 import { useKeyboard } from '../hooks/useKeyboard'
 import { useOnboarding } from '../hooks/useOnboarding'
-import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX, LARGE_TASK_THRESHOLD } from '../constants'
+import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX, LARGE_TASK_THRESHOLD, HEALTH_WEIGHTS } from '../constants'
 import { TaskList } from './task-list/TaskList'
 import { Gantt } from './gantt/Gantt'
 import { SidePanel } from './panels/SidePanel'
@@ -31,6 +34,7 @@ import { PartiesManager } from './modals/PartiesManager'
 import { ResourcesManager } from './modals/ResourcesManager'
 import { CsvImportDialog } from './modals/CsvImportDialog'
 import { PrintPreviewModal } from './modals/PrintPreviewModal'
+import { QualityPanel } from './modals/QualityPanel'
 import { StatBar } from './StatBar'
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -63,6 +67,7 @@ export function App() {
   const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
   const [histogramVisible, setHistogramVisible] = useState(false)
+  const [qualityPanelOpen, setQualityPanelOpen] = useState(false)
 
   // ── Modal state ───────────────────────────────────────────────────────────
   const [linkBuilderTaskId, setLinkBuilderTaskId] = useState<string | null>(null)
@@ -158,6 +163,11 @@ export function App() {
     return computeCriticalPath(enrichedTasks, dependencies)
   }, [showCriticalPath, hasDeps, enrichedTasks, dependencies])
 
+  const qualityCpm = useMemo(() => {
+    if (!hasDeps) return null
+    return computeCriticalPath(enrichedTasks, dependencies)
+  }, [hasDeps, enrichedTasks, dependencies])
+
   const taskCosts = useMemo(
     () =>
       computeTaskCosts(enrichedTasks, {
@@ -191,10 +201,42 @@ export function App() {
     [overAllocationByResource],
   )
 
+  const overAllocatedResourceCount = useMemo(
+    () => overAllocationByResource.filter((item) => item.overCount > 0).length,
+    [overAllocationByResource],
+  )
+
   const firstOverAllocatedResourceId = useMemo(
     () => overAllocationByResource.find((item) => item.overCount > 0)?.resourceId ?? null,
     [overAllocationByResource],
   )
+
+  const dcmaAssessment = useMemo(() => {
+    return runDcmaAssessment({
+      tasks: enrichedTasks,
+      dependencies,
+      baselines,
+      resources,
+      assignments,
+      cpm: qualityCpm,
+      today,
+    })
+  }, [enrichedTasks, dependencies, baselines, resources, assignments, qualityCpm, today])
+
+  const floatDistribution = useMemo(() => {
+    return buildFloatDistribution(enrichedTasks, qualityCpm?.totalFloat ?? new Map())
+  }, [enrichedTasks, qualityCpm])
+
+  const scheduleHealth = useMemo(() => {
+    return computeScheduleHealth({
+      assessment: dcmaAssessment,
+      tasks: enrichedTasks,
+      overAllocatedResourceCount,
+      totalResourceCount: resources.length,
+      floatDistribution,
+      weights: HEALTH_WEIGHTS,
+    })
+  }, [dcmaAssessment, enrichedTasks, overAllocatedResourceCount, resources.length, floatDistribution])
 
   useEffect(() => {
     if (resources.length === 0) {
@@ -599,6 +641,7 @@ export function App() {
             onOpenGroups={() => setGroupsManagerOpen(true)}
             onOpenParties={() => setPartiesManagerOpen(true)}
             onOpenResources={() => setResourcesManagerOpen(true)}
+            onOpenQuality={() => setQualityPanelOpen(true)}
             onOpenCsvImport={() => setCsvImportOpen(true)}
             onOpenPrint={() => setPrintPreviewOpen(true)}
             onExportCsv={handleExportCsv}
@@ -641,11 +684,13 @@ export function App() {
             criticalPath={criticalPath}
             projectCost={projectCost}
             overAllocationCount={overAllocationCount}
+            healthScore={scheduleHealth.score}
             onOpenOverAllocations={() => {
               if (!firstOverAllocatedResourceId) return
               setSelectedResourceId(firstOverAllocatedResourceId)
               setHistogramVisible(true)
             }}
+            onOpenQualityPanel={() => setQualityPanelOpen(true)}
           />
 
           <FilterBar
@@ -677,10 +722,12 @@ export function App() {
               completionFlashId={completionFlashId}
               showCostColumn={showCostColumn}
               taskCosts={taskCosts}
+              dependencies={dependencies}
               listRef={listRef}
               onScroll={handleListScroll}
               onSelectTask={handleSelectTask}
               onOpenPanel={handleOpenPanel}
+              onOpenLinks={(id) => setLinkBuilderTaskId(id)}
               onToggleGroup={onToggleGroup}
               onNewTask={handleNewTask}
             />
@@ -830,6 +877,7 @@ export function App() {
           parties={parties}
           taskCosts={taskCosts}
           projectCost={projectCost}
+          healthScore={scheduleHealth.score}
           projectName={projectName}
           workweek={workweek}
           holidays={holidays}
@@ -837,6 +885,21 @@ export function App() {
           onClose={() => setPrintPreviewOpen(false)}
         />
       )}
+
+      <QualityPanel
+        open={qualityPanelOpen}
+        taskCount={enrichedTasks.length}
+        hasResources={resources.length > 0}
+        isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
+        assessment={dcmaAssessment}
+        health={scheduleHealth}
+        floatDistribution={floatDistribution}
+        onCaptureBaseline={() => {
+          setQualityPanelOpen(false)
+          captureBaseline()
+        }}
+        onClose={() => setQualityPanelOpen(false)}
+      />
 
       {mobilePanelOpen && (
         <MobileBottomSheet

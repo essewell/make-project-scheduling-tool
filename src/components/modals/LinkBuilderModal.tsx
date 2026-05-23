@@ -1,6 +1,7 @@
 import { useId, useRef, useState, useMemo } from 'react'
 import type { Task, Dependency, DepType } from '../../types'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
+import { daysBetween } from '../../lib/dates'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -146,6 +147,10 @@ export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose 
   }
 
   const checkedCount = rows.filter(r => r.checked).length
+  const durationByTaskId = useMemo(
+    () => new Map(tasks.map((task) => [task.id, Math.max(1, daysBetween(task.s, task.e) + 1)])),
+    [tasks],
+  )
 
   return (
     <div style={OVERLAY} onClick={onClose}>
@@ -227,14 +232,23 @@ export function LinkBuilderModal({ taskId, tasks, dependencies, onSave, onClose 
                   ))}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <input
-                    type="number"
-                    value={row.lag}
-                    disabled={!row.checked}
-                    onChange={e => setRow(task.id, { lag: parseInt(e.target.value, 10) || 0 })}
-                    style={{ ...INPUT, width: 44, opacity: row.checked ? 1 : 0.4, fontFamily: 'var(--font-mono)' }}
-                  />
-                  <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)' }}>d</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <input
+                        type="number"
+                        value={row.lag}
+                        disabled={!row.checked}
+                        onChange={e => setRow(task.id, { lag: parseInt(e.target.value, 10) || 0 })}
+                        style={{ ...INPUT, width: 44, opacity: row.checked ? 1 : 0.4, fontFamily: 'var(--font-mono)' }}
+                      />
+                      <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)' }}>d</span>
+                    </div>
+                    {row.checked && row.lag > (durationByTaskId.get(task.id) ?? 1) * 0.5 && (
+                      <span style={{ fontSize: '10px', color: 'var(--health-amber)', whiteSpace: 'nowrap' }}>
+                        Lag exceeds 50% of predecessor
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             )

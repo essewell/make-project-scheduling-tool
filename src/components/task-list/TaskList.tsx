@@ -1,9 +1,10 @@
 import { memo, type RefObject } from 'react'
-import type { Group, Party, VisibleRow, Task } from '../../types'
+import type { Group, Party, VisibleRow, Task, Dependency } from '../../types'
 import { daysBetween, shortDate } from '../../lib/dates'
 import { ROW_HEIGHT, GANTT_HEADER_HEIGHT } from '../../constants'
 import { StatusBadge } from './StatusBadge'
-import { CaretDown, CaretRight, Funnel } from '../../lib/icons'
+import { CaretDown, CaretRight, Funnel, Warning } from '../../lib/icons'
+import { findExcessiveLagDependencies, findNegativeFloatTaskIds, findOrphanTaskIds } from '../../lib/logicValidation'
 
 const WBS_COL_WIDTH = 24
 
@@ -21,9 +22,11 @@ interface TaskListProps {
   completionFlashId: string | null
   showCostColumn?: boolean
   taskCosts?: Map<string, number>
+  dependencies: Dependency[]
   today: string
   onSelectTask: (id: string) => void
   onOpenPanel: (id: string) => void
+  onOpenLinks: (id: string) => void
   onToggleGroup: (groupId: string) => void
   onNewTask: () => void
   listRef: RefObject<HTMLDivElement>
@@ -189,9 +192,13 @@ interface TaskRowProps {
   isFlashing: boolean
   showCostColumn: boolean
   cost: number
+  isOrphan: boolean
+  hasExcessiveLag: boolean
+  hasNegativeFloat: boolean
   today: string
   onSelect: () => void
   onOpen: () => void
+  onOpenLinks: () => void
 }
 
 const TaskRow = memo(function TaskRow({
@@ -204,9 +211,13 @@ const TaskRow = memo(function TaskRow({
   isFlashing,
   showCostColumn,
   cost,
+  isOrphan,
+  hasExcessiveLag,
+  hasNegativeFloat,
   today,
   onSelect,
   onOpen,
+  onOpenLinks,
 }: TaskRowProps) {
   const float = floatDays(task, today)
   const columns = showCostColumn ? '1fr 52px 80px 48px 90px' : '1fr 52px 80px 48px'
@@ -286,6 +297,21 @@ const TaskRow = memo(function TaskRow({
         {/* Status badge */}
         <StatusBadge status={task.status} />
 
+        {hasExcessiveLag && (
+          <span
+            aria-hidden="true"
+            title="Dependency lag exceeds 50% of predecessor duration"
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              background: 'var(--health-amber)',
+              display: 'inline-block',
+              flexShrink: 0,
+            }}
+          />
+        )}
+
         {/* Note indicator */}
         {task.notes && (
           <svg width="10" height="10" viewBox="0 0 10 10" style={{ flexShrink: 0, color: 'var(--color-text-dim)' }}>
@@ -355,6 +381,11 @@ const TaskRow = memo(function TaskRow({
         alignItems: 'center',
         justifyContent: 'flex-end',
         paddingRight: 10,
+        border: hasNegativeFloat ? '1px solid var(--color-danger)' : 'none',
+        borderLeftWidth: hasNegativeFloat ? 3 : 0,
+        borderRadius: hasNegativeFloat ? 'var(--radius-sm)' : 0,
+        minHeight: 20,
+        boxSizing: 'border-box',
       }}>
         {float !== null && (
           <span style={{
@@ -379,6 +410,33 @@ const TaskRow = memo(function TaskRow({
           </span>
         </div>
       )}
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {isOrphan && (
+          <button
+            onClick={(event) => {
+              event.stopPropagation()
+              onOpenLinks()
+            }}
+            title="No predecessors or successors"
+            aria-label="Open links for orphan task"
+            style={{
+              width: 18,
+              height: 18,
+              border: 'none',
+              background: 'transparent',
+              color: 'var(--color-text-tertiary)',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+            }}
+          >
+            <Warning size={12} weight="fill" aria-hidden="true" />
+          </button>
+        )}
+      </div>
     </div>
   )
 })
@@ -397,18 +455,28 @@ export function TaskList({
   completionFlashId,
   showCostColumn = false,
   taskCosts = new Map<string, number>(),
+  dependencies,
   today,
   onSelectTask,
   onOpenPanel,
+  onOpenLinks,
   onToggleGroup,
   onNewTask,
   listRef,
   onScroll,
 }: TaskListProps) {
-  const columns = showCostColumn ? '1fr 52px 80px 48px 90px' : '1fr 52px 80px 48px'
+  const columns = showCostColumn ? '1fr 52px 80px 48px 90px 16px' : '1fr 52px 80px 48px 16px'
   const wbsMap = computeWbs(visibleRows)
   const partyMap = new Map(parties.map(p => [p.id, p]))
   const groupColorMap = new Map(groups.map(g => [g.id, g.color]))
+  const orphanTaskIds = new Set(findOrphanTaskIds(filteredTasks, dependencies))
+  const negativeFloatTaskIds = new Set(findNegativeFloatTaskIds(filteredTasks, new Map(
+    filteredTasks
+      .map((task) => [task.id, floatDays(task, today) ?? 0] as const),
+  )))
+  const excessiveLagTaskIds = new Set(
+    findExcessiveLagDependencies(filteredTasks, dependencies, 0.5).flatMap((pair) => [pair.fromId, pair.toId]),
+  )
   const groupStats = new Map<string, { totalPct: number; count: number }>()
   for (const task of filteredTasks) {
     const current = groupStats.get(task.group) ?? { totalPct: 0, count: 0 }
@@ -463,6 +531,7 @@ export function TaskList({
             Cost
           </span>
         )}
+        <span />
       </div>
 
       {/* ── Scrollable row area ── */}
@@ -515,9 +584,13 @@ export function TaskList({
               isFlashing={task.id === completionFlashId}
               showCostColumn={showCostColumn}
               cost={taskCosts.get(task.id) ?? 0}
+              isOrphan={orphanTaskIds.has(task.id)}
+              hasExcessiveLag={excessiveLagTaskIds.has(task.id)}
+              hasNegativeFloat={negativeFloatTaskIds.has(task.id)}
               today={today}
               onSelect={() => onSelectTask(task.id)}
               onOpen={() => onOpenPanel(task.id)}
+              onOpenLinks={() => onOpenLinks(task.id)}
             />
           )
         })}
