@@ -828,6 +828,8 @@ export function App() {
           tasks={enrichedTasks}
           groups={groups}
           parties={parties}
+          taskCosts={taskCosts}
+          projectCost={projectCost}
           projectName={projectName}
           workweek={workweek}
           holidays={holidays}
