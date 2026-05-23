@@ -24,3 +24,7 @@ Real-device touch QA for bottom-sheet interactions (iPhone + Android):
 
 This environment does not provide direct access to physical iPhone/Android devices.  
 Phase 0.2 documentation is prepared and awaiting human-executed device results to mark complete.
+
+## v1.5 Defer Reaffirmation (2026-05-23)
+
+v1.5 scope is desktop-first (multi-baseline, change orders, variance trend, and comparison surfaces), with no mobile-only UI additions planned in this version. Real-device mobile QA remains intentionally deferred in v1.5 and will be revisited when a version introduces new mobile interactions that require physical gesture validation.
