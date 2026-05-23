@@ -52,6 +52,42 @@ test.describe('resources histogram', () => {
     await expect(page.getByRole('button', { name: /over-alloc/i })).toBeVisible()
   })
 
+  test('undo restores resource and assignments after deleting a resource with active assignments', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: /load example data/i }).click()
+    await expect(page.locator('.app')).toHaveAttribute('data-phase', 'complete')
+
+    // Stub window.confirm so the "delete resource with assignments" dialog is auto-accepted
+    await page.evaluate(() => { window.confirm = () => true })
+
+    await importResourceFixtures(page)
+
+    // Toggle histogram on; verify Crew A + over-alloc (confirms both resources + assignments in state)
+    await page.getByRole('button', { name: /histogram/i }).click()
+    await expect(page.getByRole('button', { name: /crew a/i })).toBeVisible()
+    await page.getByRole('button', { name: /crew a/i }).click()
+    await expect(page.getByRole('button', { name: /over-alloc/i })).toBeVisible()
+
+    // Re-open ResourcesManager, delete Crew A (has 2 assignments; stubbed confirm accepts)
+    await page.getByRole('button', { name: /resources/i }).first().click()
+    const dialog = page.getByRole('dialog', { name: /manage resources/i })
+    await expect(dialog).toBeVisible()
+    await dialog.getByRole('button', { name: /remove crew a/i }).click()
+    await dialog.getByRole('button', { name: /^save$/i }).click()
+
+    // Histogram should now show "no resources defined yet"
+    await expect(page.getByText(/no resources defined yet/i)).toBeVisible()
+
+    // Undo toast should appear — clicking it restores resource + assignments
+    const undoBtn = page.getByRole('button', { name: /^undo$/i })
+    await expect(undoBtn).toBeVisible()
+    await undoBtn.click()
+
+    // Crew A pill back + over-alloc visible confirms both resources and assignments restored
+    await expect(page.getByRole('button', { name: /crew a/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /over-alloc/i })).toBeVisible()
+  })
+
   test('updates over-allocation count after dragging an assigned overlapping task', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('button', { name: /load example data/i }).click()
