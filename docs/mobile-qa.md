@@ -24,7 +24,3 @@ Real-device touch QA for bottom-sheet interactions (iPhone + Android):
 
 This environment does not provide direct access to physical iPhone/Android devices.  
 Phase 0.2 documentation is prepared and awaiting human-executed device results to mark complete.
-
-## Product Priority Note (2026-05-23)
-
-Mobile real-device QA is intentionally deferred for v1.4 implementation while desktop quality and Vercel deployment readiness are prioritized as the primary release goal.
