@@ -1,5 +1,5 @@
 import type { Resource, ResourceAssignment, Task, Timeline, WorkweekConfig } from '../types'
-import { fmtDate } from './dates'
+import { addDays, daysBetween, fmtDate } from './dates'
 import { isWorkday, workdays } from './workdays'
 
 export interface ResourceDemandPoint {
@@ -32,6 +32,9 @@ export function computeResourceDemand(
     overAllocation: 0,
   }))
 
+  const timelineStart = fmtDate(context.timeline.min)
+  const timelineEnd = fmtDate(context.timeline.max)
+
   context.assignments.forEach((assignment) => {
     if (assignment.resourceId !== resourceId) return
     if (assignment.quantity <= 0) return
@@ -42,10 +45,14 @@ export function computeResourceDemand(
     const totalWorkdays = workdays(task.s, task.e, context.workweek, context.holidays)
     const materialPerWorkday = totalWorkdays > 0 ? assignment.quantity / totalWorkdays : 0
 
-    context.timeline.days.forEach(({ date }) => {
-      const dayStr = fmtDate(date)
-      if (dayStr < task.s || dayStr > task.e) return
-      if (!isWorkday(dayStr, context.workweek, context.holidays)) return
+    const spanStart = task.s > timelineStart ? task.s : timelineStart
+    const spanEnd = task.e < timelineEnd ? task.e : timelineEnd
+    if (spanStart > spanEnd) return
+
+    const spanDays = daysBetween(spanStart, spanEnd)
+    for (let offset = 0; offset <= spanDays; offset += 1) {
+      const dayStr = addDays(spanStart, offset)
+      if (!isWorkday(dayStr, context.workweek, context.holidays)) continue
 
       const increment =
         resource.category === 'material'
@@ -53,7 +60,7 @@ export function computeResourceDemand(
           : assignment.quantity
 
       demandByDay.set(dayStr, (demandByDay.get(dayStr) ?? 0) + increment)
-    })
+    }
   })
 
   points.forEach((point) => {
