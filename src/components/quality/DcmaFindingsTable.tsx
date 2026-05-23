@@ -3,9 +3,11 @@ import { Check, WarningCircle } from '../../lib/icons'
 
 interface DcmaFindingsTableProps {
   checks: DcmaCheckResult[]
+  hasResources: boolean
+  onCaptureBaseline: () => void
 }
 
-export function DcmaFindingsTable({ checks }: DcmaFindingsTableProps) {
+export function DcmaFindingsTable({ checks, hasResources, onCaptureBaseline }: DcmaFindingsTableProps) {
   return (
     <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
       <div
@@ -28,6 +30,27 @@ export function DcmaFindingsTable({ checks }: DcmaFindingsTableProps) {
           const score = check.id === 13 || check.id === 14
             ? check.score.toFixed(2)
             : `${Math.round(check.score)}${check.id === 2 || check.id === 7 || check.id === 9 ? '' : '%'}`
+          const inlineNote = check.id === 14 && check.note
+            ? (
+                <button
+                  onClick={onCaptureBaseline}
+                  style={{
+                    padding: 0,
+                    border: 'none',
+                    background: 'none',
+                    color: 'var(--accent)',
+                    cursor: 'pointer',
+                    fontSize: 'var(--text-2xs)',
+                    textAlign: 'left',
+                  }}
+                >
+                  N/A — capture a baseline first
+                </button>
+              )
+            : check.id === 10 && !hasResources
+              ? <span>No resources defined — open Resources to add.</span>
+              : <span>{check.note ?? check.plainEnglish}</span>
+
           return (
             <div
               key={check.id}
@@ -53,7 +76,7 @@ export function DcmaFindingsTable({ checks }: DcmaFindingsTableProps) {
                   <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-primary)' }}>{check.name}</span>
                 </div>
                 <div style={{ marginTop: 2, fontSize: 'var(--text-2xs)', color: 'var(--color-text-secondary)' }}>
-                  {check.note ?? check.plainEnglish}
+                  {inlineNote}
                 </div>
               </div>
               <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--color-text-primary)' }}>

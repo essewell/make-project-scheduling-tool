@@ -10,17 +10,25 @@ import { X } from '../../lib/icons'
 
 interface QualityPanelProps {
   open: boolean
+  taskCount: number
+  hasResources: boolean
+  isComputing: boolean
   assessment: DcmaAssessmentResult
   health: ScheduleHealthResult
   floatDistribution: FloatBucketCount[]
+  onCaptureBaseline: () => void
   onClose: () => void
 }
 
 export function QualityPanel({
   open,
+  taskCount,
+  hasResources,
+  isComputing,
   assessment,
   health,
   floatDistribution,
+  onCaptureBaseline,
   onClose,
 }: QualityPanelProps) {
   const panelRef = useRef<HTMLDivElement | null>(null)
@@ -68,11 +76,30 @@ export function QualityPanel({
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 12 }}>
-          <DcmaFindingsTable checks={assessment.checks} />
-          <div style={{ display: 'grid', gap: 12, alignContent: 'start' }}>
-            <HealthScoreBreakdown health={health} />
-            <FloatDistributionChart buckets={floatDistribution} />
-          </div>
+          {isComputing && <div className="computing-bar" aria-hidden="true" style={{ position: 'relative', gridColumn: '1 / -1' }} />}
+          {taskCount === 0 ? (
+            <div
+              style={{
+                gridColumn: '1 / -1',
+                border: '1px dashed var(--color-border)',
+                borderRadius: 'var(--radius)',
+                padding: 'var(--space-6)',
+                textAlign: 'center',
+                color: 'var(--color-text-secondary)',
+                fontSize: 'var(--text-sm)',
+              }}
+            >
+              Add tasks before running quality assessment.
+            </div>
+          ) : (
+            <>
+              <DcmaFindingsTable checks={assessment.checks} hasResources={hasResources} onCaptureBaseline={onCaptureBaseline} />
+              <div style={{ display: 'grid', gap: 12, alignContent: 'start' }}>
+                <HealthScoreBreakdown health={health} />
+                <FloatDistributionChart buckets={floatDistribution} />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

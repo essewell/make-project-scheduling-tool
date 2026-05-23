@@ -886,9 +886,16 @@ export function App() {
 
       <QualityPanel
         open={qualityPanelOpen}
+        taskCount={enrichedTasks.length}
+        hasResources={resources.length > 0}
+        isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
         assessment={dcmaAssessment}
         health={scheduleHealth}
         floatDistribution={floatDistribution}
+        onCaptureBaseline={() => {
+          setQualityPanelOpen(false)
+          captureBaseline()
+        }}
         onClose={() => setQualityPanelOpen(false)}
       />
 
