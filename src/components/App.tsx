@@ -726,6 +726,7 @@ export function App() {
               onScroll={handleListScroll}
               onSelectTask={handleSelectTask}
               onOpenPanel={handleOpenPanel}
+              onOpenLinks={(id) => setLinkBuilderTaskId(id)}
               onToggleGroup={onToggleGroup}
               onNewTask={handleNewTask}
             />
