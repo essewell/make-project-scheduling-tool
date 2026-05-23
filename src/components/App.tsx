@@ -722,6 +722,7 @@ export function App() {
               completionFlashId={completionFlashId}
               showCostColumn={showCostColumn}
               taskCosts={taskCosts}
+              dependencies={dependencies}
               listRef={listRef}
               onScroll={handleListScroll}
               onSelectTask={handleSelectTask}

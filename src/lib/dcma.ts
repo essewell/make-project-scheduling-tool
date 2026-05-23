@@ -138,7 +138,7 @@ function checkRelationshipTypes(context: DcmaAssessmentContext): DcmaCheckResult
   }
 }
 
-function checkHardConstraints(context: DcmaAssessmentContext): DcmaCheckResult {
+function checkHardConstraints(_context: DcmaAssessmentContext): DcmaCheckResult {
   return {
     id: 5,
     name: 'Hard Constraints',
