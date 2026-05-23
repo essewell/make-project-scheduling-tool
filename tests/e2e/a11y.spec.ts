@@ -44,6 +44,15 @@ test('axe sweep: wizard, main app, and desktop modals', async ({ page }) => {
   await openModalAndScan(page, /import/i, 'CSV import modal')
   await openModalAndScan(page, /links/i, 'Link builder modal')
   await openModalAndScan(page, /print/i, 'Print preview modal')
+
+  // ResourcesManager: toolbar may render multiple "Resources" buttons; use .first()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await page.getByRole('button', { name: /resources/i }).first().click()
+  const resourcesDialog = page.getByRole('dialog').last()
+  await expect(resourcesDialog).toBeVisible()
+  await expectNoSeriousOrCriticalViolations(page, 'Resources manager modal')
+  await resourcesDialog.getByRole('button', { name: /cancel|close/i }).first().click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
 })
 
 test('axe sweep: mobile bottom sheet', async ({ page }) => {

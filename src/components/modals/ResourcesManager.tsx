@@ -285,6 +285,7 @@ export function ResourcesManager({
                     type="number"
                     min={0}
                     step="0.1"
+                    aria-label="Capacity per workday"
                     value={resource.capacity}
                     disabled={isMaterial}
                     onChange={(event) => updateResource(resource.id, { capacity: Number(event.target.value) })}
@@ -296,6 +297,7 @@ export function ResourcesManager({
                     type="number"
                     min={0}
                     step="0.01"
+                    aria-label="Cost rate"
                     value={resource.costRate}
                     onChange={(event) => updateResource(resource.id, { costRate: Number(event.target.value) })}
                     style={{ ...INPUT, width: 84, borderColor: resourceErrors.costRate ? 'var(--color-danger)' : 'var(--color-border)' }}
@@ -332,6 +334,7 @@ export function ResourcesManager({
           />
 
           <select
+            aria-label="Resource category"
             value={newCategory}
             onChange={(event) => setNewCategory(event.target.value as ResourceCategory)}
             style={{ ...INPUT, width: 110 }}
@@ -353,6 +356,7 @@ export function ResourcesManager({
             type="number"
             min={0}
             step="0.1"
+            aria-label="Capacity per workday"
             value={newCategory === 'material' ? 0 : newCapacity}
             disabled={newCategory === 'material'}
             onChange={(event) => setNewCapacity(Number(event.target.value))}
@@ -363,6 +367,7 @@ export function ResourcesManager({
             type="number"
             min={0}
             step="0.01"
+            aria-label="Cost rate"
             value={newCostRate}
             onChange={(event) => setNewCostRate(Number(event.target.value))}
             style={{ ...INPUT, width: 84 }}
