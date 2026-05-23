@@ -17,6 +17,7 @@ interface PrintPreviewModalProps {
   parties: Party[]
   taskCosts: Map<string, number>
   projectCost: number
+  healthScore: number
   projectName: string
   workweek: WorkweekConfig
   holidays: string[]
@@ -75,7 +76,7 @@ const BOX: React.CSSProperties = {
 // ─── PrintPreviewModal ────────────────────────────────────────────────────────
 
 export function PrintPreviewModal({
-  tasks, groups, parties, taskCosts, projectCost, projectName, workweek, holidays, today, onClose,
+  tasks, groups, parties, taskCosts, projectCost, healthScore, projectName, workweek, holidays, today, onClose,
 }: PrintPreviewModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
@@ -228,6 +229,7 @@ export function PrintPreviewModal({
                   partyMap={partyMap}
                   taskCosts={taskCosts}
                   projectCost={projectCost}
+                  healthScore={healthScore}
                   projectName={projectName}
                   workweek={workweek}
                   holidays={holidays}
@@ -389,6 +391,7 @@ interface SummaryPrintLayoutProps {
   partyMap: Map<string, Party>
   taskCosts: Map<string, number>
   projectCost: number
+  healthScore: number
   projectName: string
   workweek: WorkweekConfig
   holidays: string[]
@@ -409,6 +412,7 @@ function SummaryPrintLayout({
   partyMap,
   taskCosts,
   projectCost,
+  healthScore,
   projectName,
   workweek,
   holidays,
@@ -425,6 +429,9 @@ function SummaryPrintLayout({
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 7, color: '#999', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Printed</div>
           <div style={{ fontSize: 9, color: '#444', fontFamily: 'monospace' }}>{prettyDate(today)}</div>
+          <div style={{ fontSize: 8, color: '#1c3048', fontFamily: 'monospace', marginTop: 1 }}>
+            Quality score: {healthScore}/100
+          </div>
         </div>
       </div>
 

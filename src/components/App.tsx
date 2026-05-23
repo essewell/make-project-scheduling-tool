@@ -877,6 +877,7 @@ export function App() {
           parties={parties}
           taskCosts={taskCosts}
           projectCost={projectCost}
+          healthScore={scheduleHealth.score}
           projectName={projectName}
           workweek={workweek}
           holidays={holidays}
