@@ -18,10 +18,12 @@ export {
   Path,
   Plus,
   Printer,
+  ShieldCheck,
   SquaresFour,
   UploadSimple,
   Users,
   UsersThree,
   Warning,
+  WarningCircle,
   X,
 } from '@phosphor-icons/react';

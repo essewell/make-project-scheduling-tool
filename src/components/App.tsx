@@ -34,6 +34,7 @@ import { PartiesManager } from './modals/PartiesManager'
 import { ResourcesManager } from './modals/ResourcesManager'
 import { CsvImportDialog } from './modals/CsvImportDialog'
 import { PrintPreviewModal } from './modals/PrintPreviewModal'
+import { QualityPanel } from './modals/QualityPanel'
 import { StatBar } from './StatBar'
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -640,6 +641,7 @@ export function App() {
             onOpenGroups={() => setGroupsManagerOpen(true)}
             onOpenParties={() => setPartiesManagerOpen(true)}
             onOpenResources={() => setResourcesManagerOpen(true)}
+            onOpenQuality={() => setQualityPanelOpen(true)}
             onOpenCsvImport={() => setCsvImportOpen(true)}
             onOpenPrint={() => setPrintPreviewOpen(true)}
             onExportCsv={handleExportCsv}
@@ -881,32 +883,13 @@ export function App() {
         />
       )}
 
-      {qualityPanelOpen && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Quality panel coming soon">
-          <div className="modal-box" style={{ width: 420, padding: 'var(--space-4)' }}>
-            <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-2)' }}>
-              Schedule Quality Panel
-            </div>
-            <div style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
-              Phase D will render the full DCMA and float distribution report.
-            </div>
-            <button
-              onClick={() => setQualityPanelOpen(false)}
-              style={{
-                height: 30,
-                padding: '0 12px',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--color-border)',
-                background: 'var(--color-surface)',
-                color: 'var(--color-text-primary)',
-                cursor: 'pointer',
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      <QualityPanel
+        open={qualityPanelOpen}
+        assessment={dcmaAssessment}
+        health={scheduleHealth}
+        floatDistribution={floatDistribution}
+        onClose={() => setQualityPanelOpen(false)}
+      />
 
       {mobilePanelOpen && (
         <MobileBottomSheet

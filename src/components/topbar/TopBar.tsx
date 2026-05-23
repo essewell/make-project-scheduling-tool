@@ -13,6 +13,7 @@ import {
   Path,
   Plus,
   Printer,
+  ShieldCheck,
   SquaresFour,
   UploadSimple,
   Users,
@@ -38,6 +39,7 @@ interface TopBarProps {
   onOpenGroups: () => void
   onOpenParties: () => void
   onOpenResources: () => void
+  onOpenQuality: () => void
   onOpenCsvImport: () => void
   onOpenPrint: () => void
   onExportCsv: () => void
@@ -88,6 +90,7 @@ export function TopBar({
   baselines, activeBaselineId, ghostStyle,
   onCaptureBaseline, onSetActiveBaseline, onDeleteBaseline, onSetGhostStyle,
   onOpenWorkweek, onOpenGroups, onOpenParties, onOpenResources,
+  onOpenQuality,
   onOpenCsvImport, onOpenPrint, onExportCsv,
   hasDeps, showCriticalPath, onToggleCriticalPath,
   onReset, onNewTask,
@@ -170,6 +173,7 @@ export function TopBar({
           <button onClick={onOpenGroups} style={ICON_BTN}><SquaresFour size={14} weight="regular" aria-hidden="true" />Phases</button>
           <button onClick={onOpenParties} style={ICON_BTN}><UsersThree size={14} weight="regular" aria-hidden="true" />Parties</button>
           <button onClick={onOpenResources} style={ICON_BTN}><Users size={14} weight="regular" aria-hidden="true" />Resources</button>
+          <button onClick={onOpenQuality} style={ICON_BTN}><ShieldCheck size={14} weight="regular" aria-hidden="true" />Quality</button>
         </div>
 
         {/* Data buttons */}
