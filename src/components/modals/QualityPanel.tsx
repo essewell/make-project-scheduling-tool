@@ -1,11 +1,12 @@
 import { useRef } from 'react'
-import type { DcmaAssessmentResult } from '../../types'
+import type { DcmaAssessmentResult, VarianceSnapshot } from '../../types'
 import type { FloatBucketCount } from '../../lib/floatDistribution'
 import type { ScheduleHealthResult } from '../../lib/health'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
 import { DcmaFindingsTable } from '../quality/DcmaFindingsTable'
 import { FloatDistributionChart } from '../quality/FloatDistributionChart'
 import { HealthScoreBreakdown } from '../quality/HealthScoreBreakdown'
+import { VarianceTrendChart } from '../variance/VarianceTrendChart'
 import { X } from '../../lib/icons'
 
 interface QualityPanelProps {
@@ -16,6 +17,8 @@ interface QualityPanelProps {
   assessment: DcmaAssessmentResult
   health: ScheduleHealthResult
   floatDistribution: FloatBucketCount[]
+  varianceSnapshots: VarianceSnapshot[]
+  activeBaselineId: string | null
   onCaptureBaseline: () => void
   onClose: () => void
 }
@@ -28,6 +31,8 @@ export function QualityPanel({
   assessment,
   health,
   floatDistribution,
+  varianceSnapshots,
+  activeBaselineId,
   onCaptureBaseline,
   onClose,
 }: QualityPanelProps) {
@@ -97,6 +102,7 @@ export function QualityPanel({
               <div style={{ display: 'grid', gap: 12, alignContent: 'start' }}>
                 <HealthScoreBreakdown health={health} />
                 <FloatDistributionChart buckets={floatDistribution} />
+                <VarianceTrendChart snapshots={varianceSnapshots} activeBaselineId={activeBaselineId} />
               </div>
             </>
           )}

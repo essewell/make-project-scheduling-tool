@@ -54,7 +54,7 @@ export function App() {
   const [state, setState] = useState<PersistedState>(INITIAL_STATE)
   const { tasks, groups, parties, dependencies, notes, collapsedGroups,
           workweek, holidays, onboardingPhase,
-          projectName, baselines, ghostStyle, assignments, changeOrders } = state
+          projectName, baselines, ghostStyle, assignments, changeOrders, varianceSnapshots } = state
   const resources = state.resources
 
   // ── Transient UI state ────────────────────────────────────────────────────
@@ -957,6 +957,8 @@ export function App() {
         assessment={dcmaAssessment}
         health={scheduleHealth}
         floatDistribution={floatDistribution}
+        varianceSnapshots={varianceSnapshots}
+        activeBaselineId={activeBaselineId}
         onCaptureBaseline={() => {
           setQualityPanelOpen(false)
           setCaptureBaselineOpen(true)
