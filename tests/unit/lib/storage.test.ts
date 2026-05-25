@@ -65,6 +65,8 @@ describe('makeDefaultState', () => {
     expect(s.holidays).toHaveLength(0)
     expect(s.resources).toHaveLength(0)
     expect(s.assignments).toHaveLength(0)
+    expect(s.changeOrders).toHaveLength(0)
+    expect(s.varianceSnapshots).toHaveLength(0)
   })
 
   it('starts with onboardingPhase "fresh"', () => {
@@ -177,7 +179,7 @@ describe('loadState — v0 migration', () => {
     expect(loaded.dependencies[0]).toMatchObject({ fromId: 't2', toId: 't1', type: 'FS', lag: 0 })
   })
 
-  it('stamps persistedSchemaVersion=2 after migration', () => {
+  it('stamps persistedSchemaVersion=3 after migration', () => {
     const v0 = {
       projectName: 'Legacy',
       tasks: [], groups: [], parties: [], notes: [], collapsedGroups: [],
@@ -185,7 +187,7 @@ describe('loadState — v0 migration', () => {
       onboardingPhase: 'complete',
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(v0))
-    expect(loadState().persistedSchemaVersion).toBe(2)
+    expect(loadState().persistedSchemaVersion).toBe(3)
   })
 
   it('adds empty resources and assignments arrays on migration', () => {
@@ -209,7 +211,65 @@ describe('loadState — v0 migration', () => {
     const loaded = loadState()
     expect(loaded.resources).toEqual([])
     expect(loaded.assignments).toEqual([])
-    expect(loaded.persistedSchemaVersion).toBe(2)
+    expect(loaded.persistedSchemaVersion).toBe(3)
+  })
+
+  it('migrates v2 payload to v3 additively with baseline defaults', () => {
+    const v2 = {
+      persistedSchemaVersion: 2,
+      projectName: 'v2 payload',
+      tasks: [makeMinimalTask('t1')],
+      groups: [],
+      parties: [],
+      notes: [],
+      dependencies: [],
+      collapsedGroups: [],
+      baselines: [
+        { id: 'b1', name: 'Baseline 1', date: '2026-05-20', tasks: [makeMinimalTask('t1')] },
+      ],
+      workweek: DEFAULT_WORKWEEK,
+      holidays: [],
+      onboardingPhase: 'complete',
+      ghostStyle: 'stripe',
+      resources: [],
+      assignments: [],
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v2))
+
+    const loaded = loadState()
+    expect(loaded.persistedSchemaVersion).toBe(3)
+    expect(loaded.changeOrders).toEqual([])
+    expect(loaded.varianceSnapshots).toEqual([])
+    expect(loaded.baselines[0]?.reason).toBe('')
+    expect(loaded.baselines[0]?.lockedAt).toBe('2026-05-20')
+  })
+
+  it('v2 -> v3 round-trip save/load remains equivalent', () => {
+    const v2 = {
+      persistedSchemaVersion: 2,
+      projectName: 'round-trip',
+      tasks: [makeMinimalTask('t1')],
+      groups: [],
+      parties: [],
+      notes: [],
+      dependencies: [],
+      collapsedGroups: [],
+      baselines: [
+        { id: 'b1', name: 'Baseline 1', date: '2026-05-20', tasks: [makeMinimalTask('t1')] },
+      ],
+      workweek: DEFAULT_WORKWEEK,
+      holidays: [],
+      onboardingPhase: 'complete',
+      ghostStyle: 'stripe',
+      resources: [],
+      assignments: [],
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v2))
+
+    const firstLoad = loadState()
+    saveState(firstLoad)
+    const secondLoad = loadState()
+    expect(secondLoad).toEqual(firstLoad)
   })
 
   it('sets ghostStyle to "stripe" when missing', () => {
