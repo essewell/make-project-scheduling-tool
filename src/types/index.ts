@@ -122,6 +122,23 @@ export interface BaselineDiff {
   }
 }
 
+export type ChangeOrderStatus = 'draft' | 'approved' | 'rejected'
+
+export interface ChangeOrder {
+  id: string
+  number: string
+  name: string
+  reason: string
+  status: ChangeOrderStatus
+  createdAt: string
+  lockedAt: string
+  author?: string
+  affectedTaskIds: string[]
+  daysImpact: number
+  costImpact?: number
+  baselineLinkId?: string
+}
+
 // ─── Workweek / Calendar ─────────────────────────────────────────────────────
 
 export interface WorkweekConfig {
