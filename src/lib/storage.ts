@@ -1,4 +1,4 @@
-import type { PersistedState, Task, Dependency } from '../types'
+import type { PersistedState, Task, Dependency, Baseline } from '../types'
 import { PERSISTED_SCHEMA_VERSION } from '../types'
 import { STORAGE_KEY } from '../constants'
 
@@ -72,10 +72,10 @@ function migrateState(parsed: Record<string, unknown>): PersistedState {
     if (!Array.isArray(base.changeOrders)) base.changeOrders = []
     if (!Array.isArray(base.varianceSnapshots)) base.varianceSnapshots = []
     if (Array.isArray(base.baselines)) {
-      base.baselines = base.baselines.map((baseline: Record<string, unknown>) => ({
+      base.baselines = (base.baselines as Baseline[]).map((baseline) => ({
         ...baseline,
         reason: typeof baseline.reason === 'string' ? baseline.reason : '',
-        lockedAt: typeof baseline.lockedAt === 'string' ? baseline.lockedAt : String(baseline.date ?? ''),
+        lockedAt: typeof baseline.lockedAt === 'string' ? baseline.lockedAt : baseline.date,
       }))
     }
   }
