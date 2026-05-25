@@ -1,5 +1,5 @@
-import { useMemo, useRef } from 'react'
-import type { Baseline } from '../../types'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { Baseline, BaselineDiff } from '../../types'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
 import { compareBaselines } from '../../lib/baselines'
 import { BaselineSelectPair } from '../baseline/BaselineSelectPair'
@@ -25,6 +25,8 @@ export function BaselineCompareModal({
   onClose,
 }: BaselineCompareModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
+  const [diff, setDiff] = useState<BaselineDiff | null>(null)
+  const [loading, setLoading] = useState(false)
   useDialogA11y({ containerRef: dialogRef, onClose, enabled: open })
 
   const baselineA = useMemo(
@@ -35,10 +37,35 @@ export function BaselineCompareModal({
     () => baselines.find((baseline) => baseline.id === baselineBId) ?? null,
     [baselines, baselineBId],
   )
-  const diff = useMemo(
-    () => (baselineA && baselineB ? compareBaselines(baselineA, baselineB) : null),
-    [baselineA, baselineB],
-  )
+
+  useEffect(() => {
+    if (!open || !baselineA || !baselineB) {
+      setDiff(null)
+      setLoading(false)
+      return
+    }
+
+    setDiff(null)
+    let canceled = false
+    const loadingTimer = window.setTimeout(() => {
+      if (!canceled) setLoading(true)
+    }, 100)
+
+    const compareTimer = window.setTimeout(() => {
+      const nextDiff = compareBaselines(baselineA, baselineB)
+      if (canceled) return
+      setDiff(nextDiff)
+      setLoading(false)
+      window.clearTimeout(loadingTimer)
+    }, 0)
+
+    return () => {
+      canceled = true
+      setLoading(false)
+      window.clearTimeout(loadingTimer)
+      window.clearTimeout(compareTimer)
+    }
+  }, [open, baselineA, baselineB])
 
   if (!open) return null
 
@@ -76,6 +103,12 @@ export function BaselineCompareModal({
           animation: 'schedule-slide-in 0.16s ease-out both',
         }}
       >
+        {loading ? (
+          <div style={{ height: 2, background: 'var(--accent)', width: '100%', opacity: 0.9 }} />
+        ) : (
+          <div style={{ height: 2, background: 'transparent', width: '100%' }} />
+        )}
+
         <div style={{ padding: '18px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
           <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Compare Baselines</div>
           <div style={{ marginTop: 2, fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
@@ -94,7 +127,11 @@ export function BaselineCompareModal({
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px 20px' }}>
-          {diff ? (
+          {baselines.length < 2 ? (
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
+              Capture at least two baselines to compare.
+            </div>
+          ) : diff ? (
             <BaselineDiffTable diff={diff} />
           ) : (
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
