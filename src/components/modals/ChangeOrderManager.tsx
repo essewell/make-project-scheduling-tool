@@ -174,7 +174,11 @@ export function ChangeOrderManager({
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {visible.length === 0 ? (
+          {items.length === 0 ? (
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
+              Log a change order to track schedule impacts.
+            </div>
+          ) : visible.length === 0 ? (
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
               No change orders for this filter.
             </div>
