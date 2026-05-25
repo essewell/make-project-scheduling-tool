@@ -19,7 +19,7 @@ import { useMidnightTicker } from '../hooks/useMidnightTicker'
 import { useScrollSync } from '../hooks/useScrollSync'
 import { useKeyboard } from '../hooks/useKeyboard'
 import { useOnboarding } from '../hooks/useOnboarding'
-import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX, LARGE_TASK_THRESHOLD, HEALTH_WEIGHTS } from '../constants'
+import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX, LARGE_TASK_THRESHOLD, HEALTH_WEIGHTS, MAX_OVERLAY_RESOURCES } from '../constants'
 import { TaskList } from './task-list/TaskList'
 import { Gantt } from './gantt/Gantt'
 import { SidePanel } from './panels/SidePanel'
@@ -72,7 +72,8 @@ export function App() {
   const [showCostColumn, setShowCostColumn] = useState(false)
   const [completionFlashId, setCompletionFlashId] = useState<string | null>(null)
   const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
-  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
+  const [selectedResourceIds, setSelectedResourceIds] = useState<string[]>([])
+  const [compareResourcesMode, setCompareResourcesMode] = useState(false)
   const [histogramVisible, setHistogramVisible] = useState(false)
   const [qualityPanelOpen, setQualityPanelOpen] = useState(false)
   const [baselineMenuOpenSignal, setBaselineMenuOpenSignal] = useState(0)
@@ -265,12 +266,29 @@ export function App() {
 
   useEffect(() => {
     if (resources.length === 0) {
-      setSelectedResourceId(null)
+      setSelectedResourceIds([])
       return
     }
-    if (selectedResourceId && resources.some((resource) => resource.id === selectedResourceId)) return
-    setSelectedResourceId(resources[0]?.id ?? null)
-  }, [resources, selectedResourceId])
+    const valid = selectedResourceIds.filter((id) => resources.some((resource) => resource.id === id))
+    if (valid.length > 0) {
+      if (valid.length !== selectedResourceIds.length) {
+        setSelectedResourceIds(valid.slice(0, MAX_OVERLAY_RESOURCES))
+      }
+      return
+    }
+    setSelectedResourceIds(resources[0] ? [resources[0].id] : [])
+  }, [resources, selectedResourceIds])
+
+  const handleSelectResource = useCallback((resourceId: string, additive: boolean) => {
+    setSelectedResourceIds((prev) => {
+      if (!additive) return [resourceId]
+      if (prev.includes(resourceId)) {
+        const trimmed = prev.filter((id) => id !== resourceId)
+        return trimmed.length > 0 ? trimmed : [resourceId]
+      }
+      return [...prev, resourceId].slice(0, MAX_OVERLAY_RESOURCES)
+    })
+  }, [])
 
   // ── Persistence ───────────────────────────────────────────────────────────
 
@@ -768,7 +786,7 @@ export function App() {
             healthScore={scheduleHealth.score}
             onOpenOverAllocations={() => {
               if (!firstOverAllocatedResourceId) return
-              setSelectedResourceId(firstOverAllocatedResourceId)
+              setSelectedResourceIds([firstOverAllocatedResourceId])
               setHistogramVisible(true)
             }}
             onOpenQualityPanel={() => setQualityPanelOpen(true)}
@@ -828,7 +846,8 @@ export function App() {
               dependencies={dependencies}
               resources={resources}
               assignments={assignments}
-              selectedResourceId={selectedResourceId}
+              selectedResourceIds={selectedResourceIds}
+              compareResourcesMode={compareResourcesMode}
               histogramVisible={histogramVisible}
               histogramRef={histogramRef}
               baselines={baselines}
@@ -847,7 +866,8 @@ export function App() {
               onZoomOut={onZoomOut}
               onSetGhostStyle={setGhostStyle}
               onToggleHistogram={() => setHistogramVisible((value) => !value)}
-              onSelectResource={setSelectedResourceId}
+              onToggleCompareResourcesMode={() => setCompareResourcesMode((value) => !value)}
+              onSelectResource={handleSelectResource}
               onHistogramScroll={handleHistogramScroll}
               isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
             />

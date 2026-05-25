@@ -75,6 +75,7 @@ export const DEFAULT_ZOOM_INDEX = 1  // Week
 
 export const LARGE_TASK_THRESHOLD = 500  // task count above which loading bar appears
 export const RESOURCE_MAX_PER_PROJECT = 200
+export const MAX_OVERLAY_RESOURCES = 4
 
 // Schedule quality
 export const EXCESSIVE_LAG_RATIO = 0.5

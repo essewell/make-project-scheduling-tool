@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { Resource, ResourceAssignment, Task, Timeline, WorkweekConfig } from '../../types'
 import { computeResourceDemand } from '../../lib/resourceDemand'
-import { HISTOGRAM_BAR_GAP, HISTOGRAM_HEIGHT, HISTOGRAM_PAD_X } from '../../constants'
+import { HISTOGRAM_BAR_GAP, HISTOGRAM_HEIGHT, HISTOGRAM_PAD_X, MAX_OVERLAY_RESOURCES } from '../../constants'
 import { ChartBar } from '../../lib/icons'
 import { ResourceSelectorPill } from './ResourceSelectorPill'
 
@@ -13,14 +13,16 @@ interface ResourceHistogramProps {
   dayPx: number
   workweek: WorkweekConfig
   holidays: string[]
-  selectedResourceId: string | null
-  onSelectResource: (resourceId: string) => void
+  selectedResourceIds: string[]
+  compareMode: boolean
+  onToggleCompareMode: () => void
+  onSelectResource: (resourceId: string, additive: boolean) => void
   isComputing?: boolean
 }
 
-function getResourceById(resources: Resource[], resourceId: string | null): Resource | null {
-  if (!resourceId) return null
-  return resources.find((resource) => resource.id === resourceId) ?? null
+function getResourcesById(resources: Resource[], resourceIds: string[]): Resource[] {
+  const set = new Set(resourceIds)
+  return resources.filter((resource) => set.has(resource.id))
 }
 
 export function ResourceHistogram({
@@ -31,11 +33,14 @@ export function ResourceHistogram({
   dayPx,
   workweek,
   holidays,
-  selectedResourceId,
+  selectedResourceIds,
+  compareMode,
+  onToggleCompareMode,
   onSelectResource,
   isComputing = false,
 }: ResourceHistogramProps) {
-  const selectedResource = getResourceById(resources, selectedResourceId)
+  const selectedResources = getResourcesById(resources, selectedResourceIds).slice(0, MAX_OVERLAY_RESOURCES)
+  const selectedResource = selectedResources[0] ?? null
 
   const demand = useMemo(() => {
     if (!selectedResource) return []
@@ -71,7 +76,9 @@ export function ResourceHistogram({
 
       <ResourceSelectorPill
         resources={resources}
-        selectedResourceId={selectedResourceId}
+        selectedResourceIds={selectedResourceIds}
+        compareMode={compareMode}
+        onToggleCompareMode={onToggleCompareMode}
         onSelectResource={onSelectResource}
       />
 
@@ -82,7 +89,7 @@ export function ResourceHistogram({
         />
       )}
 
-      {resources.length > 0 && !selectedResource && (
+      {resources.length > 0 && selectedResources.length === 0 && (
         <EmptyState
           message="No resource selected."
           hint="Choose a resource pill above to render its day-by-day demand."
