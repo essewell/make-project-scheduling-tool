@@ -21,6 +21,9 @@ test('onboarding flow: start blank -> baseline tip -> capture completes onboardi
   await expect(page.locator('.baseline-tip')).toContainText('Save a baseline to track schedule variance')
 
   await page.getByRole('button', { name: /capture/i }).click()
+  const captureDialog = page.getByRole('dialog', { name: /capture baseline/i })
+  await expect(captureDialog).toBeVisible()
+  await captureDialog.getByRole('button', { name: /^capture$/i }).click()
   await expect(page.locator('.baseline-tip')).toHaveCount(0)
 
   // Confirm onboarding completion persists.

@@ -64,6 +64,9 @@ test('BEI shows N/A without baseline and clears after capture baseline', async (
 
   await dialog.getByRole('button', { name: /capture a baseline first/i }).click()
   await expect(dialog).toHaveCount(0)
+  const captureDialog = page.getByRole('dialog', { name: /capture baseline/i })
+  await expect(captureDialog).toBeVisible()
+  await captureDialog.getByRole('button', { name: /^capture$/i }).click()
   await expect(page.getByRole('button', { name: /baselines · baseline 1/i })).toBeVisible()
 
   await openQualityPanel(page)

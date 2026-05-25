@@ -14,6 +14,9 @@ test('capture baseline, show variance, persist ghost style on reload', async ({ 
   await startBlankProject(page)
 
   await page.getByRole('button', { name: /capture/i }).click()
+  const captureDialog = page.getByRole('dialog', { name: /capture baseline/i })
+  await expect(captureDialog).toBeVisible()
+  await captureDialog.getByRole('button', { name: /^capture$/i }).click()
   await expect(page.getByRole('button', { name: /baselines · baseline 1/i })).toBeVisible()
 
   await page.locator('input[type="date"]').nth(1).fill(addDaysIso(4))
