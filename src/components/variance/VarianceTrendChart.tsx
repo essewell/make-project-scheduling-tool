@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { VarianceSnapshot } from '../../types'
 
 interface VarianceTrendChartProps {
@@ -22,6 +22,10 @@ function toDate(date: string): number {
 
 export function VarianceTrendChart({ snapshots, activeBaselineId }: VarianceTrendChartProps) {
   const [hoveredDate, setHoveredDate] = useState<string | null>(null)
+
+  useEffect(() => {
+    setHoveredDate(null)
+  }, [activeBaselineId])
 
   const points = useMemo<Point[]>(() => {
     if (!activeBaselineId) return []
