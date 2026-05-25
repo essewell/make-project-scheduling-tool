@@ -22,6 +22,8 @@ interface PrintPreviewModalProps {
   workweek: WorkweekConfig
   holidays: string[]
   today: string
+  activeBaselineName?: string | null
+  projectFinishVariance?: number | null
   onClose: () => void
 }
 
@@ -76,7 +78,7 @@ const BOX: React.CSSProperties = {
 // ─── PrintPreviewModal ────────────────────────────────────────────────────────
 
 export function PrintPreviewModal({
-  tasks, groups, parties, taskCosts, projectCost, healthScore, projectName, workweek, holidays, today, onClose,
+  tasks, groups, parties, taskCosts, projectCost, healthScore, projectName, workweek, holidays, today, activeBaselineName, projectFinishVariance, onClose,
 }: PrintPreviewModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
@@ -221,6 +223,8 @@ export function PrintPreviewModal({
                   minDate={minDate}
                   dayPx={dayPx}
                   today={today}
+                  activeBaselineName={activeBaselineName}
+                  projectFinishVariance={projectFinishVariance}
                 />
               ) : (
                 <SummaryPrintLayout
@@ -234,6 +238,8 @@ export function PrintPreviewModal({
                   workweek={workweek}
                   holidays={holidays}
                   today={today}
+                  activeBaselineName={activeBaselineName}
+                  projectFinishVariance={projectFinishVariance}
                 />
               )}
             </div>
@@ -270,9 +276,11 @@ interface GanttPrintLayoutProps {
   minDate: string
   dayPx: number
   today: string
+  activeBaselineName?: string | null
+  projectFinishVariance?: number | null
 }
 
-function GanttPrintLayout({ tasks, groupMap, projectName, minDate, dayPx, today }: GanttPrintLayoutProps) {
+function GanttPrintLayout({ tasks, groupMap, projectName, minDate, dayPx, today, activeBaselineName, projectFinishVariance }: GanttPrintLayoutProps) {
   const ganttW = A3_W - PRINT_TL_W
 
   // Today line offset
@@ -289,6 +297,11 @@ function GanttPrintLayout({ tasks, groupMap, projectName, minDate, dayPx, today 
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 7, color: '#7ca9cc', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Printed</div>
           <div style={{ fontSize: 9, color: '#fff', fontFamily: 'monospace' }}>{prettyDate(today)}</div>
+          {activeBaselineName && (
+            <div style={{ fontSize: 7, color: '#7ca9cc', fontFamily: 'monospace', marginTop: 1 }}>
+              Baseline: {activeBaselineName}{typeof projectFinishVariance === 'number' ? ` · variance ${projectFinishVariance >= 0 ? '+' : ''}${projectFinishVariance}d` : ''}
+            </div>
+          )}
         </div>
       </div>
 
@@ -396,6 +409,8 @@ interface SummaryPrintLayoutProps {
   workweek: WorkweekConfig
   holidays: string[]
   today: string
+  activeBaselineName?: string | null
+  projectFinishVariance?: number | null
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -417,6 +432,8 @@ function SummaryPrintLayout({
   workweek,
   holidays,
   today,
+  activeBaselineName,
+  projectFinishVariance,
 }: SummaryPrintLayoutProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '10px 14px' }}>
@@ -432,6 +449,11 @@ function SummaryPrintLayout({
           <div style={{ fontSize: 8, color: '#1c3048', fontFamily: 'monospace', marginTop: 1 }}>
             Quality score: {healthScore}/100
           </div>
+          {activeBaselineName && (
+            <div style={{ fontSize: 7, color: '#555', fontFamily: 'monospace', marginTop: 1 }}>
+              Baseline: {activeBaselineName}{typeof projectFinishVariance === 'number' ? ` · variance ${projectFinishVariance >= 0 ? '+' : ''}${projectFinishVariance}d` : ''}
+            </div>
+          )}
         </div>
       </div>
 

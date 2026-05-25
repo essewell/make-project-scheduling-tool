@@ -22,3 +22,11 @@ Scope: Onboarding continuity checks through v1.3 resource foundation
 - This QA pass is executable and repeatable in Playwright.  
 - Real touch-device UX remains tracked separately under mobile manual QA.
 - v1.3 keeps onboarding non-prescriptive for resources (no extra UI nag), consistent with plan guidance.
+
+## v1.5 Recommendation
+
+After CSV import, prompt the PM to capture a baseline before editing dates. Suggested tip location: the same "capture baseline" nudge that fires at 3 tasks, or a one-time inline banner beneath the Baselines button that reads:
+
+> "CSV imported — capture a baseline to track variance from this plan."
+
+The banner should auto-dismiss on first baseline capture and never re-appear (persisted flag). This is not yet implemented; logged here for the v1.6 onboarding pass.

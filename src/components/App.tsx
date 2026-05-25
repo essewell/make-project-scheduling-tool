@@ -995,6 +995,8 @@ export function App() {
           workweek={workweek}
           holidays={holidays}
           today={today}
+          activeBaselineName={activeBaselineId ? findBaselineById(baselines, activeBaselineId)?.name : null}
+          projectFinishVariance={activeBaselineId ? computeProjectFinishVariance(enrichedTasks, findBaselineById(baselines, activeBaselineId)!) : null}
           onClose={() => setPrintPreviewOpen(false)}
         />
       )}
