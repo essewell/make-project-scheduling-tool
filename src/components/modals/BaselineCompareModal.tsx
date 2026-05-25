@@ -104,9 +104,17 @@ export function BaselineCompareModal({
         </div>
 
         <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-          <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)' }}>
-            {baselineA?.name ?? '—'} vs {baselineB?.name ?? '—'}
-          </div>
+          {diff ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 'var(--text-2xs)', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>
+              <span>Slip +{diff.totals.totalSlipDays}d</span>
+              <span>Net Tasks {diff.totals.netTaskCountChange >= 0 ? '+' : ''}{diff.totals.netTaskCountChange}</span>
+              <span>Cost {diff.totals.totalCostDelta >= 0 ? '+' : ''}${diff.totals.totalCostDelta.toLocaleString()}</span>
+            </div>
+          ) : (
+            <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)' }}>
+              {baselineA?.name ?? '—'} vs {baselineB?.name ?? '—'}
+            </div>
+          )}
           <button
             onClick={onClose}
             style={{
