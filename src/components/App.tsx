@@ -12,6 +12,9 @@ import { runDcmaAssessment } from '../lib/dcma'
 import { buildFloatDistribution } from '../lib/floatDistribution'
 import { computeScheduleHealth } from '../lib/health'
 import { linkChangeOrderToTask, unlinkChangeOrderFromTask } from '../lib/changeOrders'
+import { findBaselineById } from '../lib/baselines'
+import { appendVarianceSnapshot, computeProjectFinishVariance, trimSnapshots } from '../lib/variance'
+import { todayStr } from '../lib/dates'
 import { useMidnightTicker } from '../hooks/useMidnightTicker'
 import { useScrollSync } from '../hooks/useScrollSync'
 import { useKeyboard } from '../hooks/useKeyboard'
@@ -94,7 +97,19 @@ export function App() {
   const [isMobile, setIsMobile] = useState(false)
 
   // ── Hooks ─────────────────────────────────────────────────────────────────
-  const today = useMidnightTicker()
+  const today = useMidnightTicker(() => {
+    if (!activeBaselineId) return
+    const activeBaseline = findBaselineById(baselines, activeBaselineId)
+    if (!activeBaseline) return
+
+    const next = appendVarianceSnapshot(varianceSnapshots, {
+      date: todayStr(),
+      activeBaselineId,
+      projectFinishVariance: computeProjectFinishVariance(enrichedTasks, activeBaseline),
+      criticalPathLength: qualityCpm?.criticalIds.size ?? 0,
+    })
+    updateState({ varianceSnapshots: trimSnapshots(next) })
+  })
   const { listRef, ganttRef, histogramRef, handleListScroll, handleGanttScroll, handleHistogramScroll } = useScrollSync()
 
   const dayPx = ZOOM_LEVELS[zoomIndex]?.dayPx ?? 16
