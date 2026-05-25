@@ -9,6 +9,7 @@ import {
   CalendarBlank,
   Camera,
   Download,
+  FileText,
   Minus,
   Path,
   Plus,
@@ -41,6 +42,7 @@ interface TopBarProps {
   onOpenParties: () => void
   onOpenResources: () => void
   onOpenQuality: () => void
+  onOpenChangeOrders: () => void
   onOpenCsvImport: () => void
   onOpenPrint: () => void
   onExportCsv: () => void
@@ -91,7 +93,7 @@ export function TopBar({
   baselines, activeBaselineId, ghostStyle,
   onCaptureBaseline, onSetActiveBaseline, onDeleteBaseline, onCompareBaselines, onSetGhostStyle,
   onOpenWorkweek, onOpenGroups, onOpenParties, onOpenResources,
-  onOpenQuality,
+  onOpenQuality, onOpenChangeOrders,
   onOpenCsvImport, onOpenPrint, onExportCsv,
   hasDeps, showCriticalPath, onToggleCriticalPath,
   onReset, onNewTask,
@@ -174,6 +176,7 @@ export function TopBar({
           <button onClick={onOpenGroups} style={ICON_BTN}><SquaresFour size={14} weight="regular" aria-hidden="true" />Phases</button>
           <button onClick={onOpenParties} style={ICON_BTN}><UsersThree size={14} weight="regular" aria-hidden="true" />Parties</button>
           <button onClick={onOpenResources} style={ICON_BTN}><Users size={14} weight="regular" aria-hidden="true" />Resources</button>
+          <button onClick={onOpenChangeOrders} style={ICON_BTN}><FileText size={14} weight="regular" aria-hidden="true" />Change Orders</button>
           <button onClick={onOpenQuality} style={ICON_BTN}><ShieldCheck size={14} weight="regular" aria-hidden="true" />Quality</button>
         </div>
 

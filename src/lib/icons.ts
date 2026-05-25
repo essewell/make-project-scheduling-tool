@@ -11,6 +11,7 @@ export {
   CircleHalf,
   Clock,
   Download,
+  FileText,
   FileArrowUp,
   Funnel,
   Lock,

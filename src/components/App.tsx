@@ -36,6 +36,7 @@ import { CsvImportDialog } from './modals/CsvImportDialog'
 import { PrintPreviewModal } from './modals/PrintPreviewModal'
 import { QualityPanel } from './modals/QualityPanel'
 import { CaptureBaselineModal, type CaptureBaselineValues } from './modals/CaptureBaselineModal'
+import { ChangeOrderManager } from './modals/ChangeOrderManager'
 import { StatBar } from './StatBar'
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -79,6 +80,7 @@ export function App() {
   const [csvImportOpen, setCsvImportOpen] = useState(false)
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false)
   const [captureBaselineOpen, setCaptureBaselineOpen] = useState(false)
+  const [changeOrderManagerOpen, setChangeOrderManagerOpen] = useState(false)
 
   // ── Undo stack (transient — restore fns can't be serialized) ─────────────────
   const [undoStack, setUndoStack] = useState<UndoEntry[]>([])
@@ -654,6 +656,7 @@ export function App() {
             onOpenGroups={() => setGroupsManagerOpen(true)}
             onOpenParties={() => setPartiesManagerOpen(true)}
             onOpenResources={() => setResourcesManagerOpen(true)}
+            onOpenChangeOrders={() => setChangeOrderManagerOpen(true)}
             onOpenQuality={() => setQualityPanelOpen(true)}
             onOpenCsvImport={() => setCsvImportOpen(true)}
             onOpenPrint={() => setPrintPreviewOpen(true)}
@@ -919,6 +922,12 @@ export function App() {
         defaultName={`Baseline ${baselines.length + 1}`}
         onConfirm={captureBaseline}
         onClose={() => setCaptureBaselineOpen(false)}
+      />
+
+      <ChangeOrderManager
+        open={changeOrderManagerOpen}
+        changeOrders={changeOrders}
+        onClose={() => setChangeOrderManagerOpen(false)}
       />
 
       {mobilePanelOpen && (
