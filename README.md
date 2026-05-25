@@ -8,7 +8,9 @@ A Gantt-style scheduling tool for construction PM workflows, built with Vite + R
 - Resource pools + per-task assignments with category, unit, capacity, and cost rate
 - Resource histogram with over-allocation highlighting and manual leveling via drag-reschedule
 - Project/task cost rollups with optional TaskList cost column and print-summary cost export
-- Baseline capture with ghost overlays and variance tracking
+- Multi-baseline capture with ghost overlays, variance tracking, and named baseline comparison (side-by-side diff modal)
+- Variance trend chart: per-task finish-variance sparkline history
+- Change orders manager: modal + sidepanel section for tracking scope changes
 - CSV import/export with append/replace flows and undo support
 - Mobile bottom-sheet task details workflow
 - Accessibility-focused keyboard and dialog behavior
