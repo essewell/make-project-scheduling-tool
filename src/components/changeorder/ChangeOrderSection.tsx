@@ -84,8 +84,21 @@ export function ChangeOrderSection({
       {expanded && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {linked.length === 0 ? (
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
-              No change orders affect this task.
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <span>No change orders affect this task.</span>
+              <button
+                onClick={() => onOpenManager()}
+                style={{
+                  border: 'none',
+                  background: 'none',
+                  color: 'var(--accent)',
+                  fontSize: 'var(--text-xs)',
+                  padding: 0,
+                  cursor: 'pointer',
+                }}
+              >
+                Create one
+              </button>
             </div>
           ) : (
             linked.map((changeOrder) => (
