@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Baseline, GhostStyle } from '../../types'
 import { ZOOM_LEVELS } from '../../constants'
 import { EditableTitle } from './EditableTitle'
@@ -46,6 +46,7 @@ interface TopBarProps {
   onOpenCsvImport: () => void
   onOpenPrint: () => void
   onExportCsv: () => void
+  baselineMenuOpenSignal: number
   hasDeps: boolean
   showCriticalPath: boolean
   onToggleCriticalPath: () => void
@@ -95,11 +96,16 @@ export function TopBar({
   onOpenWorkweek, onOpenGroups, onOpenParties, onOpenResources,
   onOpenQuality, onOpenChangeOrders,
   onOpenCsvImport, onOpenPrint, onExportCsv,
+  baselineMenuOpenSignal,
   hasDeps, showCriticalPath, onToggleCriticalPath,
   onReset, onNewTask,
 }: TopBarProps) {
   const [baselineMenuOpen, setBaselineMenuOpen] = useState(false)
   const baselineBtnRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (baselineMenuOpenSignal <= 0) return
+    setBaselineMenuOpen(true)
+  }, [baselineMenuOpenSignal])
 
   const zoomLabel = ZOOM_LEVELS[zoomIndex]?.label ?? '—'
   const activeBaseline = baselines.find(b => b.id === activeBaselineId)

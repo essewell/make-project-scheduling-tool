@@ -19,7 +19,7 @@ interface QualityPanelProps {
   floatDistribution: FloatBucketCount[]
   varianceSnapshots: VarianceSnapshot[]
   activeBaselineId: string | null
-  onCaptureBaseline: () => void
+  onOpenBaselineMenu: () => void
   onClose: () => void
 }
 
@@ -33,7 +33,7 @@ export function QualityPanel({
   floatDistribution,
   varianceSnapshots,
   activeBaselineId,
-  onCaptureBaseline,
+  onOpenBaselineMenu,
   onClose,
 }: QualityPanelProps) {
   const panelRef = useRef<HTMLDivElement | null>(null)
@@ -98,7 +98,7 @@ export function QualityPanel({
             </div>
           ) : (
             <>
-              <DcmaFindingsTable checks={assessment.checks} hasResources={hasResources} onCaptureBaseline={onCaptureBaseline} />
+              <DcmaFindingsTable checks={assessment.checks} hasResources={hasResources} onOpenBaselineMenu={onOpenBaselineMenu} />
               <div style={{ display: 'grid', gap: 12, alignContent: 'start' }}>
                 <HealthScoreBreakdown health={health} />
                 <FloatDistributionChart buckets={floatDistribution} />

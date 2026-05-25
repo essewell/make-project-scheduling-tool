@@ -75,6 +75,7 @@ export function App() {
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
   const [histogramVisible, setHistogramVisible] = useState(false)
   const [qualityPanelOpen, setQualityPanelOpen] = useState(false)
+  const [baselineMenuOpenSignal, setBaselineMenuOpenSignal] = useState(0)
 
   // ── Modal state ───────────────────────────────────────────────────────────
   const [linkBuilderTaskId, setLinkBuilderTaskId] = useState<string | null>(null)
@@ -667,6 +668,11 @@ export function App() {
     setChangeOrderManagerOpen(true)
   }, [])
 
+  const handleOpenBaselineMenuFromQuality = useCallback(() => {
+    setQualityPanelOpen(false)
+    setBaselineMenuOpenSignal((value) => value + 1)
+  }, [])
+
   const handleOpenCompareBaselines = useCallback((seedBaselineId?: string) => {
     if (baselines.length < 2) {
       setCompareModalOpen({ aId: baselines[0]?.id ?? null, bId: null })
@@ -719,6 +725,7 @@ export function App() {
             onOpenCsvImport={() => setCsvImportOpen(true)}
             onOpenPrint={() => setPrintPreviewOpen(true)}
             onExportCsv={handleExportCsv}
+            baselineMenuOpenSignal={baselineMenuOpenSignal}
             hasDeps={hasDeps}
             showCriticalPath={showCriticalPath}
             onToggleCriticalPath={() => setShowCriticalPath(v => !v)}
@@ -975,10 +982,7 @@ export function App() {
         floatDistribution={floatDistribution}
         varianceSnapshots={varianceSnapshots}
         activeBaselineId={activeBaselineId}
-        onOpenBaselineMenu={() => {
-          setQualityPanelOpen(false)
-          setCaptureBaselineOpen(true)
-        }}
+        onOpenBaselineMenu={handleOpenBaselineMenuFromQuality}
         onClose={() => setQualityPanelOpen(false)}
       />
 
