@@ -239,12 +239,13 @@ export function App() {
       tasks: enrichedTasks,
       dependencies,
       baselines,
+      activeBaselineId,
       resources,
       assignments,
       cpm: qualityCpm,
       today,
     })
-  }, [enrichedTasks, dependencies, baselines, resources, assignments, qualityCpm, today])
+  }, [enrichedTasks, dependencies, baselines, activeBaselineId, resources, assignments, qualityCpm, today])
 
   const floatDistribution = useMemo(() => {
     return buildFloatDistribution(enrichedTasks, qualityCpm?.totalFloat ?? new Map())
@@ -974,7 +975,7 @@ export function App() {
         floatDistribution={floatDistribution}
         varianceSnapshots={varianceSnapshots}
         activeBaselineId={activeBaselineId}
-        onCaptureBaseline={() => {
+        onOpenBaselineMenu={() => {
           setQualityPanelOpen(false)
           setCaptureBaselineOpen(true)
         }}
