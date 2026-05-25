@@ -1,6 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import type { Baseline, GhostStyle } from '../../types'
-import { Lock } from '../../lib/icons'
+import { GitDiff, Lock } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -11,7 +11,7 @@ interface BaselineMenuProps {
   anchorRef: RefObject<HTMLButtonElement | null>
   onSetActive: (id: string | null) => void
   onDelete: (id: string) => void
-  onCompare: (id: string) => void
+  onCompare: (id?: string) => void
   onSetGhostStyle: (style: GhostStyle) => void
   onClose: () => void
 }
@@ -74,6 +74,27 @@ export function BaselineMenu({
         <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)', marginTop: 1 }}>
           {baselines.length} snapshot{baselines.length !== 1 ? 's' : ''}
         </div>
+        <button
+          onClick={() => onCompare()}
+          style={{
+            marginTop: 8,
+            height: 24,
+            width: '100%',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-surface-2)',
+            color: 'var(--color-text-secondary)',
+            fontSize: 'var(--text-2xs)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+          }}
+        >
+          <GitDiff size={12} weight="regular" aria-hidden="true" />
+          Compare baselines…
+        </button>
       </div>
 
       {/* Baseline list */}

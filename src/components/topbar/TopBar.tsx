@@ -35,7 +35,7 @@ interface TopBarProps {
   onCaptureBaseline: () => void
   onSetActiveBaseline: (id: string | null) => void
   onDeleteBaseline: (id: string) => void
-  onCompareBaselines: (id: string) => void
+  onCompareBaselines: (id?: string) => void
   onSetGhostStyle: (style: GhostStyle) => void
   onOpenWorkweek: () => void
   onOpenGroups: () => void

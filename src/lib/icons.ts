@@ -14,6 +14,7 @@ export {
   FileText,
   FileArrowUp,
   Funnel,
+  GitDiff,
   Lock,
   MagnifyingGlass,
   Minus,

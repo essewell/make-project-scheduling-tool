@@ -38,6 +38,7 @@ import { PrintPreviewModal } from './modals/PrintPreviewModal'
 import { QualityPanel } from './modals/QualityPanel'
 import { CaptureBaselineModal, type CaptureBaselineValues } from './modals/CaptureBaselineModal'
 import { ChangeOrderManager } from './modals/ChangeOrderManager'
+import { BaselineCompareModal } from './modals/BaselineCompareModal'
 import { StatBar } from './StatBar'
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -83,6 +84,7 @@ export function App() {
   const [captureBaselineOpen, setCaptureBaselineOpen] = useState(false)
   const [changeOrderManagerOpen, setChangeOrderManagerOpen] = useState(false)
   const [changeOrderEditingId, setChangeOrderEditingId] = useState<string | null>(null)
+  const [compareModalOpen, setCompareModalOpen] = useState<{ aId: string | null; bId: string | null } | null>(null)
 
   // ── Undo stack (transient — restore fns can't be serialized) ─────────────────
   const [undoStack, setUndoStack] = useState<UndoEntry[]>([])
@@ -649,6 +651,21 @@ export function App() {
     setChangeOrderManagerOpen(true)
   }, [])
 
+  const handleOpenCompareBaselines = useCallback((seedBaselineId?: string) => {
+    if (baselines.length < 2) {
+      setCompareModalOpen({ aId: baselines[0]?.id ?? null, bId: null })
+      return
+    }
+    const newest = baselines[baselines.length - 1] ?? null
+    const previous = baselines[baselines.length - 2] ?? null
+    const seeded = seedBaselineId
+      ? baselines.find((baseline) => baseline.id === seedBaselineId) ?? null
+      : null
+    const first = seeded ?? newest
+    const second = baselines.find((baseline) => baseline.id !== first?.id) ?? previous
+    setCompareModalOpen({ aId: first?.id ?? null, bId: second?.id ?? null })
+  }, [baselines])
+
   return (
     <div className="app" data-phase={onboardingPhase}>
       {showWizard && (
@@ -675,7 +692,7 @@ export function App() {
             onCaptureBaseline={() => setCaptureBaselineOpen(true)}
             onSetActiveBaseline={setActiveBaselineId}
             onDeleteBaseline={deleteBaseline}
-            onCompareBaselines={() => {}}
+            onCompareBaselines={handleOpenCompareBaselines}
             onSetGhostStyle={setGhostStyle}
             onOpenWorkweek={() => setWorkweekModalOpen(true)}
             onOpenGroups={() => setGroupsManagerOpen(true)}
@@ -963,6 +980,20 @@ export function App() {
           setChangeOrderManagerOpen(false)
           setChangeOrderEditingId(null)
         }}
+      />
+
+      <BaselineCompareModal
+        open={compareModalOpen !== null}
+        baselines={baselines}
+        baselineAId={compareModalOpen?.aId ?? null}
+        baselineBId={compareModalOpen?.bId ?? null}
+        onChangeBaselineA={(baselineId) => {
+          setCompareModalOpen((prev) => (prev ? { ...prev, aId: baselineId } : prev))
+        }}
+        onChangeBaselineB={(baselineId) => {
+          setCompareModalOpen((prev) => (prev ? { ...prev, bId: baselineId } : prev))
+        }}
+        onClose={() => setCompareModalOpen(null)}
       />
 
       {mobilePanelOpen && (
