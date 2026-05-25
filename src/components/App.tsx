@@ -51,7 +51,7 @@ export function App() {
   const [state, setState] = useState<PersistedState>(INITIAL_STATE)
   const { tasks, groups, parties, dependencies, notes, collapsedGroups,
           workweek, holidays, onboardingPhase,
-          projectName, baselines, ghostStyle, assignments } = state
+          projectName, baselines, ghostStyle, assignments, changeOrders } = state
   const resources = state.resources
 
   // ── Transient UI state ────────────────────────────────────────────────────
@@ -525,7 +525,12 @@ export function App() {
   // ── Reset ─────────────────────────────────────────────────────────────────
 
   const handleReset = useCallback(() => {
-    if (!window.confirm('Reset project? This will clear all tasks, groups, and baselines.')) return
+    const baselineCount = baselines.length
+    const changeOrderCount = changeOrders.length
+    const extraScope = baselineCount > 0 || changeOrderCount > 0
+      ? ` This will also delete ${baselineCount} baseline${baselineCount !== 1 ? 's' : ''} and ${changeOrderCount} change order${changeOrderCount !== 1 ? 's' : ''}.`
+      : ''
+    if (!window.confirm(`Reset project? This will clear all tasks, groups, and baselines.${extraScope}`)) return
     const snapTasks = tasks
     const snapDeps = dependencies
     const snapNotes = notes
@@ -547,7 +552,7 @@ export function App() {
       label: 'Reset project',
       restore: () => setState(s => ({ ...s, tasks: snapTasks, dependencies: snapDeps, notes: snapNotes })),
     }, ...prev].slice(0, UNDO_STACK_MAX))
-  }, [tasks, dependencies, notes, updateState])
+  }, [tasks, dependencies, notes, baselines.length, changeOrders.length, updateState])
 
   // ── Export ────────────────────────────────────────────────────────────────
 
