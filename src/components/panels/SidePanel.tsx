@@ -32,6 +32,8 @@ interface SidePanelProps {
   onOpenLinkBuilder: (taskId: string) => void
   onOpenChangeOrders: (changeOrderId?: string) => void
   onStartLinkChangeOrder: () => void
+  onLinkChangeOrder: (changeOrderId: string, taskId: string) => void
+  onUnlinkChangeOrder: (changeOrderId: string, taskId: string) => void
   mode?: 'desktop' | 'mobile'
 }
 
@@ -137,6 +139,8 @@ export function SidePanel({
   onOpenLinkBuilder,
   onOpenChangeOrders,
   onStartLinkChangeOrder,
+  onLinkChangeOrder,
+  onUnlinkChangeOrder,
   mode = 'desktop',
 }: SidePanelProps) {
   const [newNoteText, setNewNoteText] = useState('')
@@ -468,6 +472,8 @@ export function SidePanel({
           changeOrders={changeOrders}
           onOpenManager={onOpenChangeOrders}
           onStartLink={onStartLinkChangeOrder}
+          onLinkChangeOrder={(changeOrderId) => onLinkChangeOrder(changeOrderId, task.id)}
+          onUnlinkChangeOrder={(changeOrderId) => onUnlinkChangeOrder(changeOrderId, task.id)}
         />
 
         {/* Dependencies preview */}

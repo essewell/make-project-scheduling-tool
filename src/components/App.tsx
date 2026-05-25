@@ -11,6 +11,7 @@ import { computeResourceDemand } from '../lib/resourceDemand'
 import { runDcmaAssessment } from '../lib/dcma'
 import { buildFloatDistribution } from '../lib/floatDistribution'
 import { computeScheduleHealth } from '../lib/health'
+import { linkChangeOrderToTask, unlinkChangeOrderFromTask } from '../lib/changeOrders'
 import { useMidnightTicker } from '../hooks/useMidnightTicker'
 import { useScrollSync } from '../hooks/useScrollSync'
 import { useKeyboard } from '../hooks/useKeyboard'
@@ -369,6 +370,24 @@ export function App() {
     setState(prev => ({
       ...prev,
       assignments: prev.assignments.filter((assignment) => assignment.id !== assignmentId),
+    }))
+  }, [])
+
+  const onLinkChangeOrder = useCallback((changeOrderId: string, taskId: string) => {
+    setState((prev) => ({
+      ...prev,
+      changeOrders: prev.changeOrders.map((changeOrder) =>
+        changeOrder.id === changeOrderId ? linkChangeOrderToTask(changeOrder, taskId) : changeOrder,
+      ),
+    }))
+  }, [])
+
+  const onUnlinkChangeOrder = useCallback((changeOrderId: string, taskId: string) => {
+    setState((prev) => ({
+      ...prev,
+      changeOrders: prev.changeOrders.map((changeOrder) =>
+        changeOrder.id === changeOrderId ? unlinkChangeOrderFromTask(changeOrder, taskId) : changeOrder,
+      ),
     }))
   }, [])
 
@@ -819,6 +838,8 @@ export function App() {
                 onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
                 onOpenChangeOrders={handleOpenChangeOrders}
                 onStartLinkChangeOrder={() => handleOpenChangeOrders()}
+                onLinkChangeOrder={onLinkChangeOrder}
+                onUnlinkChangeOrder={onUnlinkChangeOrder}
               />
             )}
           </div>
@@ -972,6 +993,8 @@ export function App() {
             onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
             onOpenChangeOrders={handleOpenChangeOrders}
             onStartLinkChangeOrder={() => handleOpenChangeOrders()}
+            onLinkChangeOrder={onLinkChangeOrder}
+            onUnlinkChangeOrder={onUnlinkChangeOrder}
             mode="mobile"
           />
         </MobileBottomSheet>
