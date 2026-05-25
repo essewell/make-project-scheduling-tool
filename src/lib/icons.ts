@@ -13,6 +13,7 @@ export {
   Download,
   FileArrowUp,
   Funnel,
+  Lock,
   MagnifyingGlass,
   Minus,
   Path,

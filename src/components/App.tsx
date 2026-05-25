@@ -643,6 +643,7 @@ export function App() {
             onCaptureBaseline={() => setCaptureBaselineOpen(true)}
             onSetActiveBaseline={setActiveBaselineId}
             onDeleteBaseline={deleteBaseline}
+            onCompareBaselines={() => {}}
             onSetGhostStyle={setGhostStyle}
             onOpenWorkweek={() => setWorkweekModalOpen(true)}
             onOpenGroups={() => setGroupsManagerOpen(true)}

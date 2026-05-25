@@ -34,6 +34,7 @@ interface TopBarProps {
   onCaptureBaseline: () => void
   onSetActiveBaseline: (id: string | null) => void
   onDeleteBaseline: (id: string) => void
+  onCompareBaselines: (id: string) => void
   onSetGhostStyle: (style: GhostStyle) => void
   onOpenWorkweek: () => void
   onOpenGroups: () => void
@@ -88,7 +89,7 @@ export function TopBar({
   projectName, onRenameProject,
   zoomIndex, onZoomIn, onZoomOut,
   baselines, activeBaselineId, ghostStyle,
-  onCaptureBaseline, onSetActiveBaseline, onDeleteBaseline, onSetGhostStyle,
+  onCaptureBaseline, onSetActiveBaseline, onDeleteBaseline, onCompareBaselines, onSetGhostStyle,
   onOpenWorkweek, onOpenGroups, onOpenParties, onOpenResources,
   onOpenQuality,
   onOpenCsvImport, onOpenPrint, onExportCsv,
@@ -228,6 +229,7 @@ export function TopBar({
           anchorRef={baselineBtnRef}
           onSetActive={id => { onSetActiveBaseline(id); setBaselineMenuOpen(false) }}
           onDelete={id => { onDeleteBaseline(id) }}
+          onCompare={id => { onCompareBaselines(id); setBaselineMenuOpen(false) }}
           onSetGhostStyle={onSetGhostStyle}
           onClose={() => setBaselineMenuOpen(false)}
         />
