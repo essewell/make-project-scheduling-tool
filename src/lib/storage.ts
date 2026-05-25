@@ -23,6 +23,8 @@ export function makeDefaultState(projectName = 'My Project'): PersistedState {
     ghostStyle: 'stripe',
     resources: [],
     assignments: [],
+    changeOrders: [],
+    varianceSnapshots: [],
   }
 }
 
@@ -64,6 +66,18 @@ function migrateState(parsed: Record<string, unknown>): PersistedState {
   if (version === 1) {
     if (!Array.isArray(base.resources)) base.resources = []
     if (!Array.isArray(base.assignments)) base.assignments = []
+  }
+
+  if (version === 2) {
+    if (!Array.isArray(base.changeOrders)) base.changeOrders = []
+    if (!Array.isArray(base.varianceSnapshots)) base.varianceSnapshots = []
+    if (Array.isArray(base.baselines)) {
+      base.baselines = base.baselines.map((baseline: Record<string, unknown>) => ({
+        ...baseline,
+        reason: typeof baseline.reason === 'string' ? baseline.reason : '',
+        lockedAt: typeof baseline.lockedAt === 'string' ? baseline.lockedAt : String(baseline.date ?? ''),
+      }))
+    }
   }
 
   // Stamp the current schema version so downstream code can rely on the field.
