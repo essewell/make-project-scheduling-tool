@@ -10,6 +10,7 @@ interface StatBarProps {
   criticalPath?: CpmResult | null
   projectCost?: number
   overAllocationCount?: number
+  overAllocatedResourceNames?: string[]
   healthScore?: number
   onOpenOverAllocations?: () => void
   onOpenQualityPanel?: () => void
@@ -31,6 +32,7 @@ export function StatBar({
   criticalPath,
   projectCost = 0,
   overAllocationCount = 0,
+  overAllocatedResourceNames = [],
   healthScore = 0,
   onOpenOverAllocations,
   onOpenQualityPanel,
@@ -247,7 +249,11 @@ export function StatBar({
                 fontFamily: 'var(--font-mono)',
                 cursor: 'pointer',
               }}
-              title="Open first over-allocated resource"
+              title={
+                overAllocatedResourceNames.length > 0
+                  ? `Over-allocated: ${overAllocatedResourceNames.join(', ')}`
+                  : 'Open first over-allocated resource'
+              }
             >
               Over-alloc {overAllocationCount}
             </button>

@@ -235,6 +235,12 @@ export function App() {
     () => overAllocationByResource.find((item) => item.overCount > 0)?.resourceId ?? null,
     [overAllocationByResource],
   )
+  const overAllocatedResourceNames = useMemo(
+    () => overAllocationByResource
+      .filter((item) => item.overCount > 0)
+      .map((item) => resources.find((resource) => resource.id === item.resourceId)?.name ?? item.resourceId),
+    [overAllocationByResource, resources],
+  )
 
   const dcmaAssessment = useMemo(() => {
     return runDcmaAssessment({
@@ -783,6 +789,7 @@ export function App() {
             criticalPath={criticalPath}
             projectCost={projectCost}
             overAllocationCount={overAllocationCount}
+            overAllocatedResourceNames={overAllocatedResourceNames}
             healthScore={scheduleHealth.score}
             onOpenOverAllocations={() => {
               if (!firstOverAllocatedResourceId) return
