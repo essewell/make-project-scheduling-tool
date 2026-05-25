@@ -35,6 +35,7 @@ import { ResourcesManager } from './modals/ResourcesManager'
 import { CsvImportDialog } from './modals/CsvImportDialog'
 import { PrintPreviewModal } from './modals/PrintPreviewModal'
 import { QualityPanel } from './modals/QualityPanel'
+import { CaptureBaselineModal, type CaptureBaselineValues } from './modals/CaptureBaselineModal'
 import { StatBar } from './StatBar'
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -77,6 +78,7 @@ export function App() {
   const [resourcesManagerOpen, setResourcesManagerOpen] = useState(false)
   const [csvImportOpen, setCsvImportOpen] = useState(false)
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false)
+  const [captureBaselineOpen, setCaptureBaselineOpen] = useState(false)
 
   // ── Undo stack (transient — restore fns can't be serialized) ─────────────────
   const [undoStack, setUndoStack] = useState<UndoEntry[]>([])
@@ -498,17 +500,19 @@ export function App() {
 
   // ── Baseline actions ──────────────────────────────────────────────────────
 
-  const captureBaseline = useCallback(() => {
+  const captureBaseline = useCallback((values: CaptureBaselineValues) => {
     const newBaseline: Baseline = {
       id: Math.random().toString(36).slice(2) + Date.now().toString(36),
-      name: `Baseline ${baselines.length + 1}`,
+      name: values.name,
       date: today,
-      reason: '',
+      reason: values.reason,
       lockedAt: today,
+      author: values.author,
       tasks: enrichedTasks,
     }
     updateState({ baselines: [...baselines, newBaseline] })
     setActiveBaselineId(newBaseline.id)
+    setCaptureBaselineOpen(false)
     onBaselineLocked()
   }, [baselines, enrichedTasks, today, updateState, onBaselineLocked])
 
@@ -635,7 +639,7 @@ export function App() {
             baselines={baselines}
             activeBaselineId={activeBaselineId}
             ghostStyle={ghostStyle}
-            onCaptureBaseline={captureBaseline}
+            onCaptureBaseline={() => setCaptureBaselineOpen(true)}
             onSetActiveBaseline={setActiveBaselineId}
             onDeleteBaseline={deleteBaseline}
             onSetGhostStyle={setGhostStyle}
@@ -898,9 +902,16 @@ export function App() {
         floatDistribution={floatDistribution}
         onCaptureBaseline={() => {
           setQualityPanelOpen(false)
-          captureBaseline()
+          setCaptureBaselineOpen(true)
         }}
         onClose={() => setQualityPanelOpen(false)}
+      />
+
+      <CaptureBaselineModal
+        open={captureBaselineOpen}
+        defaultName={`Baseline ${baselines.length + 1}`}
+        onConfirm={captureBaseline}
+        onClose={() => setCaptureBaselineOpen(false)}
       />
 
       {mobilePanelOpen && (
