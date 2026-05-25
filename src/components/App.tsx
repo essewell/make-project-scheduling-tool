@@ -501,12 +501,13 @@ export function App() {
   // ── Baseline actions ──────────────────────────────────────────────────────
 
   const captureBaseline = useCallback((values: CaptureBaselineValues) => {
+    const baselineDate = today
     const newBaseline: Baseline = {
       id: Math.random().toString(36).slice(2) + Date.now().toString(36),
       name: values.name,
-      date: today,
+      date: baselineDate,
       reason: values.reason,
-      lockedAt: today,
+      lockedAt: baselineDate,
       author: values.author,
       tasks: enrichedTasks,
     }

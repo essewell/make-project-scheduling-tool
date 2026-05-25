@@ -19,6 +19,17 @@ export function assertNotLocked(baseline: LockableBaseline): void {
   }
 }
 
+export function applyBaselineMetadataUpdate(
+  baseline: LockableBaseline,
+  patch: Partial<Pick<LockableBaseline, 'name' | 'reason' | 'author'>>,
+): LockableBaseline {
+  assertNotLocked(baseline)
+  return {
+    ...baseline,
+    ...patch,
+  }
+}
+
 type CostLookup = Map<string, number> | Record<string, number>
 
 function readCost(costs: CostLookup | undefined, taskId: string): number {
