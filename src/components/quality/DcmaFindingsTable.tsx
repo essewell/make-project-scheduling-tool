@@ -25,7 +25,7 @@ export function DcmaFindingsTable({ checks, hasResources, onOpenBaselineMenu }: 
         <span>Check</span>
         <span style={{ textAlign: 'right' }}>Score</span>
       </div>
-      <div style={{ maxHeight: 380, overflow: 'auto' }}>
+      <div style={{ maxHeight: 380, overflow: 'auto' }} tabIndex={0}>
         {checks.map((check) => {
           const score = check.id === 13 || check.id === 14
             ? check.score.toFixed(2)

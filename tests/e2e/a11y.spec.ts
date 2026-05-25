@@ -38,10 +38,28 @@ test('axe sweep: wizard, main app, and desktop modals', async ({ page }) => {
   await expect(page.getByLabel('Task name')).toBeVisible()
   await expectNoSeriousOrCriticalViolations(page, 'Main app shell')
 
+  await page.getByRole('button', { name: /capture/i }).click()
+  const captureDialog = page.getByRole('dialog', { name: /capture baseline/i })
+  await expect(captureDialog).toBeVisible()
+  await captureDialog.getByRole('button', { name: /^capture$/i }).click()
+  await expect(page.getByRole('button', { name: /baselines · baseline 1/i })).toBeVisible()
+
   await openModalAndScan(page, /calendar/i, 'Workweek modal')
   await openModalAndScan(page, /phases/i, 'Groups modal')
   await openModalAndScan(page, /parties/i, 'Parties modal')
   await openModalAndScan(page, /import/i, 'CSV import modal')
+  await openModalAndScan(page, /^change orders$/i, 'Change order manager modal')
+
+  await page.getByRole('button', { name: /baselines · baseline 1/i }).click()
+  await expect(page.getByText('Compare baselines…')).toBeVisible()
+  await expectNoSeriousOrCriticalViolations(page, 'Baseline menu overlay')
+  await page.getByRole('button', { name: /compare baselines/i }).click()
+  const compareDialog = page.getByRole('dialog', { name: /compare baselines/i })
+  await expect(compareDialog).toBeVisible()
+  await expectNoSeriousOrCriticalViolations(page, 'Baseline compare modal')
+  await compareDialog.getByRole('button', { name: /^close$/i }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await page.getByTitle(/click for full quality report/i).click()
   const qualityDialog = page.getByRole('dialog', { name: /schedule quality panel/i })

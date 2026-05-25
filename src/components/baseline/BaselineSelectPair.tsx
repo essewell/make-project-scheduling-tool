@@ -20,6 +20,7 @@ export function BaselineSelectPair({
       <div>
         <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)', marginBottom: 4 }}>Baseline A</div>
         <select
+          aria-label="Baseline A"
           value={baselineAId ?? ''}
           onChange={(event) => onChangeBaselineA(event.target.value)}
           style={{
@@ -43,6 +44,7 @@ export function BaselineSelectPair({
       <div>
         <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)', marginBottom: 4 }}>Baseline B</div>
         <select
+          aria-label="Baseline B"
           value={baselineBId ?? ''}
           onChange={(event) => onChangeBaselineB(event.target.value)}
           style={{

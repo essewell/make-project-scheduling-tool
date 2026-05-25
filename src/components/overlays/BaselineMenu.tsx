@@ -32,9 +32,9 @@ export function BaselineMenu({
 }: BaselineMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
-  // Close on outside click
+  // Close on outside click or Escape
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const mouseHandler = (e: MouseEvent) => {
       if (
         menuRef.current && !menuRef.current.contains(e.target as Node) &&
         anchorRef.current && !anchorRef.current.contains(e.target as Node)
@@ -42,8 +42,18 @@ export function BaselineMenu({
         onClose()
       }
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        onClose()
+      }
+    }
+    document.addEventListener('mousedown', mouseHandler)
+    document.addEventListener('keydown', keyHandler)
+    return () => {
+      document.removeEventListener('mousedown', mouseHandler)
+      document.removeEventListener('keydown', keyHandler)
+    }
   }, [anchorRef, onClose])
 
   // Position below the anchor button
@@ -144,7 +154,7 @@ export function BaselineMenu({
                 <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {b.name}
                 </span>
-                <Lock size={12} weight="fill" color="var(--color-text-tertiary)" aria-hidden="true" />
+                <Lock size={12} weight="fill" color="var(--color-text-tertiary)" aria-label="Locked baseline" />
               </div>
               <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)' }}>
                 {b.date} · {b.tasks.length} task{b.tasks.length !== 1 ? 's' : ''}
