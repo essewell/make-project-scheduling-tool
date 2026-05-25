@@ -18,16 +18,20 @@ interface UseDialogA11yOptions {
   containerRef: RefObject<HTMLElement | null>
   initialFocusRef?: RefObject<HTMLElement | null>
   onClose?: () => void
+  enabled?: boolean
 }
 
 export function useDialogA11y({
   containerRef,
   initialFocusRef,
   onClose,
+  enabled = true,
 }: UseDialogA11yOptions) {
   const previousFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
+    if (!enabled) return
+
     previousFocusRef.current = document.activeElement instanceof HTMLElement
       ? document.activeElement
       : null
@@ -83,5 +87,5 @@ export function useDialogA11y({
         window.requestAnimationFrame(() => previousFocus.focus())
       }
     }
-  }, [containerRef, initialFocusRef, onClose])
+  }, [containerRef, initialFocusRef, onClose, enabled])
 }
