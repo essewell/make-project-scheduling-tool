@@ -139,6 +139,13 @@ export interface ChangeOrder {
   baselineLinkId?: string
 }
 
+export interface VarianceSnapshot {
+  date: string
+  activeBaselineId: string
+  projectFinishVariance: number
+  criticalPathLength: number
+}
+
 // ─── Workweek / Calendar ─────────────────────────────────────────────────────
 
 export interface WorkweekConfig {
