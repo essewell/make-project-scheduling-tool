@@ -104,7 +104,7 @@ export function BaselineCompareModal({
         }}
       >
         {loading ? (
-          <div style={{ height: 2, background: 'var(--accent)', width: '100%', opacity: 0.9 }} />
+          <div style={{ height: 2, background: 'linear-gradient(90deg, transparent 0%, var(--accent) 35%, transparent 100%)', width: '100%', animation: 'schedule-gantt-pulse 1.1s ease-in-out infinite' }} />
         ) : (
           <div style={{ height: 2, background: 'transparent', width: '100%' }} />
         )}
