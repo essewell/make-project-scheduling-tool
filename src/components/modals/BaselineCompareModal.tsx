@@ -1,7 +1,9 @@
 import { useMemo, useRef } from 'react'
 import type { Baseline } from '../../types'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
+import { compareBaselines } from '../../lib/baselines'
 import { BaselineSelectPair } from '../baseline/BaselineSelectPair'
+import { BaselineDiffTable } from '../baseline/BaselineDiffTable'
 
 interface BaselineCompareModalProps {
   open: boolean
@@ -32,6 +34,10 @@ export function BaselineCompareModal({
   const baselineB = useMemo(
     () => baselines.find((baseline) => baseline.id === baselineBId) ?? null,
     [baselines, baselineBId],
+  )
+  const diff = useMemo(
+    () => (baselineA && baselineB ? compareBaselines(baselineA, baselineB) : null),
+    [baselineA, baselineB],
   )
 
   if (!open) return null
@@ -88,9 +94,13 @@ export function BaselineCompareModal({
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px 20px' }}>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
-            Comparison details will appear here.
-          </div>
+          {diff ? (
+            <BaselineDiffTable diff={diff} />
+          ) : (
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
+              Select two baselines to compare.
+            </div>
+          )}
         </div>
 
         <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
