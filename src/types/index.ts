@@ -85,6 +85,10 @@ export interface Baseline {
   id: string
   name: string
   date: string   // YYYY-MM-DD snapshot date
+  reason: string
+  lockedAt: string
+  author?: string
+  supersededById?: string
   tasks: Task[]
 }
 
@@ -169,7 +173,7 @@ export type GhostStyle = 'stripe' | 'solid' | 'outline'
 // ─── Persisted state (localStorage) ─────────────────────────────────────────
 
 /** Current persisted-state schema version. Bump in lockstep with `migrateState` in storage.ts. */
-export const PERSISTED_SCHEMA_VERSION = 2
+export const PERSISTED_SCHEMA_VERSION = 3
 
 export interface PersistedState {
   /** Stamped on save by storage.ts. Absent on legacy (v0) payloads. */
@@ -188,6 +192,8 @@ export interface PersistedState {
   ghostStyle: GhostStyle       // C2 — persisted
   resources: Resource[]
   assignments: ResourceAssignment[]
+  changeOrders: ChangeOrder[]
+  varianceSnapshots: VarianceSnapshot[]
 }
 
 // ─── Visible rows (task list rendering) ──────────────────────────────────────
