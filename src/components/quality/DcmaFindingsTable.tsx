@@ -4,10 +4,10 @@ import { Check, WarningCircle } from '../../lib/icons'
 interface DcmaFindingsTableProps {
   checks: DcmaCheckResult[]
   hasResources: boolean
-  onCaptureBaseline: () => void
+  onOpenBaselineMenu: () => void
 }
 
-export function DcmaFindingsTable({ checks, hasResources, onCaptureBaseline }: DcmaFindingsTableProps) {
+export function DcmaFindingsTable({ checks, hasResources, onOpenBaselineMenu }: DcmaFindingsTableProps) {
   return (
     <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
       <div
@@ -25,7 +25,7 @@ export function DcmaFindingsTable({ checks, hasResources, onCaptureBaseline }: D
         <span>Check</span>
         <span style={{ textAlign: 'right' }}>Score</span>
       </div>
-      <div style={{ maxHeight: 380, overflow: 'auto' }}>
+      <div style={{ maxHeight: 380, overflow: 'auto' }} tabIndex={0}>
         {checks.map((check) => {
           const score = check.id === 13 || check.id === 14
             ? check.score.toFixed(2)
@@ -33,7 +33,7 @@ export function DcmaFindingsTable({ checks, hasResources, onCaptureBaseline }: D
           const inlineNote = check.id === 14 && check.note
             ? (
                 <button
-                  onClick={onCaptureBaseline}
+                  onClick={onOpenBaselineMenu}
                   style={{
                     padding: 0,
                     border: 'none',
@@ -44,7 +44,7 @@ export function DcmaFindingsTable({ checks, hasResources, onCaptureBaseline }: D
                     textAlign: 'left',
                   }}
                 >
-                  N/A — capture a baseline first
+                  N/A — select an active baseline
                 </button>
               )
             : check.id === 10 && !hasResources

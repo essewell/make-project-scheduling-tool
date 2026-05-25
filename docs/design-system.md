@@ -61,18 +61,36 @@ Current approved exports in `src/lib/icons.ts`:
 - `Camera`
 - `CaretDown`
 - `CaretRight`
+- `ChartBar`
 - `Check`
 - `CircleHalf`
 - `Clock`
 - `Download`
 - `FileArrowUp`
+- `FileText`
 - `Funnel`
+- `GitDiff`
+- `Lock`
+- `MagnifyingGlass`
 - `Minus`
 - `Path`
 - `Plus`
 - `Printer`
+- `ShieldCheck`
 - `SquaresFour`
 - `UploadSimple`
+- `Users`
 - `UsersThree`
 - `Warning`
+- `WarningCircle`
 - `X`
+
+## v1.5 Token Notes
+
+v1.5 (multi-baseline & change management) adds no new color tokens. The plan called for `--variance-line-healthy`, `--variance-line-degrading`, `--diff-added`, `--diff-removed`, `--diff-slipped`, and `--baseline-locked-fg`, but implementation reused existing semantic tokens instead:
+
+- Variance trend healthy/degrading line colors → `--health-green` / `--health-amber` (same palette as schedule health)
+- Baseline diff section text → existing `--color-text-*` scale
+- Baseline locked icon → `--color-text-tertiary` inline
+
+This was the correct decision: new tokens are only introduced when an existing token would be semantically misleading. The health palette maps cleanly to "on track / drifting," so no new token was needed.

@@ -1,5 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import type { Baseline, GhostStyle } from '../../types'
+import { GitDiff, Lock } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -10,6 +11,7 @@ interface BaselineMenuProps {
   anchorRef: RefObject<HTMLButtonElement | null>
   onSetActive: (id: string | null) => void
   onDelete: (id: string) => void
+  onCompare: (id?: string) => void
   onSetGhostStyle: (style: GhostStyle) => void
   onClose: () => void
 }
@@ -26,13 +28,13 @@ const GHOST_OPTIONS: Array<{ value: GhostStyle; label: string; desc: string }> =
 
 export function BaselineMenu({
   baselines, activeBaselineId, ghostStyle,
-  anchorRef, onSetActive, onDelete, onSetGhostStyle, onClose,
+  anchorRef, onSetActive, onDelete, onCompare, onSetGhostStyle, onClose,
 }: BaselineMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
-  // Close on outside click
+  // Close on outside click or Escape
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const mouseHandler = (e: MouseEvent) => {
       if (
         menuRef.current && !menuRef.current.contains(e.target as Node) &&
         anchorRef.current && !anchorRef.current.contains(e.target as Node)
@@ -40,8 +42,18 @@ export function BaselineMenu({
         onClose()
       }
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        onClose()
+      }
+    }
+    document.addEventListener('mousedown', mouseHandler)
+    document.addEventListener('keydown', keyHandler)
+    return () => {
+      document.removeEventListener('mousedown', mouseHandler)
+      document.removeEventListener('keydown', keyHandler)
+    }
   }, [anchorRef, onClose])
 
   // Position below the anchor button
@@ -72,6 +84,27 @@ export function BaselineMenu({
         <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)', marginTop: 1 }}>
           {baselines.length} snapshot{baselines.length !== 1 ? 's' : ''}
         </div>
+        <button
+          onClick={() => onCompare()}
+          style={{
+            marginTop: 8,
+            height: 24,
+            width: '100%',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-surface-2)',
+            color: 'var(--color-text-secondary)',
+            fontSize: 'var(--text-2xs)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+          }}
+        >
+          <GitDiff size={12} weight="regular" aria-hidden="true" />
+          Compare baselines…
+        </button>
       </div>
 
       {/* Baseline list */}
@@ -104,32 +137,82 @@ export function BaselineMenu({
           <div
             key={b.id}
             style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '5px 14px',
-              cursor: 'pointer',
+              display: 'grid',
+              gridTemplateColumns: '18px 1fr',
+              alignItems: 'start',
+              gap: 8,
+              padding: '7px 14px',
               background: b.id === activeBaselineId ? 'var(--color-selected-bg)' : 'transparent',
               transition: 'background 0.1s',
             }}
-            onClick={() => onSetActive(b.id)}
           >
             <span style={{ width: 14, textAlign: 'center', fontSize: 'var(--text-xs)', color: 'var(--accent)' }}>
               {b.id === activeBaselineId ? '●' : '○'}
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {b.name}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {b.name}
+                </span>
+                <Lock size={12} weight="fill" color="var(--color-text-tertiary)" aria-label="Locked baseline" />
               </div>
-              <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)' }}>{b.date}</div>
+              <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)' }}>
+                {b.date} · {b.tasks.length} task{b.tasks.length !== 1 ? 's' : ''}
+              </div>
+              <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)' }}>
+                Reason: {b.reason || '—'}
+              </div>
+              <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-dim)' }}>
+                Author: {b.author || '—'}
+              </div>
+              <div style={{ display: 'flex', gap: 6, marginTop: 5 }}>
+                <button
+                  onClick={() => onSetActive(b.id)}
+                  style={{
+                    height: 22,
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-border)',
+                    background: b.id === activeBaselineId ? 'var(--accent)' : 'var(--color-surface-2)',
+                    color: b.id === activeBaselineId ? '#fff' : 'var(--color-text-secondary)',
+                    fontSize: '10px',
+                    padding: '0 6px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Set Active
+                </button>
+                <button
+                  onClick={() => onCompare(b.id)}
+                  style={{
+                    height: 22,
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-surface-2)',
+                    color: 'var(--color-text-secondary)',
+                    fontSize: '10px',
+                    padding: '0 6px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Compare
+                </button>
+                <button
+                  onClick={() => onDelete(b.id)}
+                  style={{
+                    height: 22,
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-danger)',
+                    background: 'var(--color-danger-dim)',
+                    color: 'var(--color-danger)',
+                    fontSize: '10px',
+                    padding: '0 6px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-            <button
-              onClick={e => { e.stopPropagation(); onDelete(b.id) }}
-              style={{
-                width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: 'var(--color-text-dim)', fontSize: 14, flexShrink: 0,
-              }}
-              title="Delete baseline"
-            >×</button>
           </div>
         ))}
       </div>

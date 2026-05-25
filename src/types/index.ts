@@ -85,7 +85,69 @@ export interface Baseline {
   id: string
   name: string
   date: string   // YYYY-MM-DD snapshot date
+  reason: string
+  lockedAt: string
+  author?: string
+  supersededById?: string
   tasks: Task[]
+}
+
+export interface BaselineSlippedTaskDiff {
+  taskId: string
+  name: string
+  baselineAFinish: string
+  baselineBFinish: string
+  slipDays: number
+  costDelta: number
+}
+
+export interface BaselineAddedTaskDiff {
+  taskId: string
+  name: string
+  finish: string
+  costDelta: number
+}
+
+export interface BaselineRemovedTaskDiff {
+  taskId: string
+  name: string
+  finish: string
+  costDelta: number
+}
+
+export interface BaselineDiff {
+  slipped: BaselineSlippedTaskDiff[]
+  added: BaselineAddedTaskDiff[]
+  removed: BaselineRemovedTaskDiff[]
+  totals: {
+    totalSlipDays: number
+    netTaskCountChange: number
+    totalCostDelta: number
+  }
+}
+
+export type ChangeOrderStatus = 'draft' | 'approved' | 'rejected'
+
+export interface ChangeOrder {
+  id: string
+  number: string
+  name: string
+  reason: string
+  status: ChangeOrderStatus
+  createdAt: string
+  lockedAt: string
+  author?: string
+  affectedTaskIds: string[]
+  daysImpact: number
+  costImpact?: number
+  baselineLinkId?: string
+}
+
+export interface VarianceSnapshot {
+  date: string
+  activeBaselineId: string
+  projectFinishVariance: number
+  criticalPathLength: number
 }
 
 // ─── Workweek / Calendar ─────────────────────────────────────────────────────
@@ -111,7 +173,7 @@ export type GhostStyle = 'stripe' | 'solid' | 'outline'
 // ─── Persisted state (localStorage) ─────────────────────────────────────────
 
 /** Current persisted-state schema version. Bump in lockstep with `migrateState` in storage.ts. */
-export const PERSISTED_SCHEMA_VERSION = 2
+export const PERSISTED_SCHEMA_VERSION = 3
 
 export interface PersistedState {
   /** Stamped on save by storage.ts. Absent on legacy (v0) payloads. */
@@ -130,6 +192,8 @@ export interface PersistedState {
   ghostStyle: GhostStyle       // C2 — persisted
   resources: Resource[]
   assignments: ResourceAssignment[]
+  changeOrders: ChangeOrder[]
+  varianceSnapshots: VarianceSnapshot[]
 }
 
 // ─── Visible rows (task list rendering) ──────────────────────────────────────

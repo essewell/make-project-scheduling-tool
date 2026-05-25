@@ -23,5 +23,6 @@ Status: Local-only implementation reference
 ## Notes
 
 - Check 5 remains intentionally neutral until a hard-constraint model exists.
-- Check 14 returns an N/A note when no baseline exists.
+- Check 14 (BEI) in v1.4 currently computes against the most-recent captured baseline and returns N/A when no baseline exists.
+- v1.5 Phase G will rebind BEI to `activeBaselineId` so the quality engine compares against the user-selected active baseline instead of implicit most-recent baseline selection.
 - Unit coverage is in `tests/unit/lib/dcma.test.ts`.

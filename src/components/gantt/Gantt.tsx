@@ -36,7 +36,8 @@ interface GanttProps {
   holidays: string[]
   resources: Resource[]
   assignments: ResourceAssignment[]
-  selectedResourceId: string | null
+  selectedResourceIds: string[]
+  compareResourcesMode: boolean
   histogramVisible: boolean
   ganttRef: RefObject<HTMLDivElement>
   histogramRef: RefObject<HTMLDivElement>
@@ -48,7 +49,8 @@ interface GanttProps {
   onZoomOut: () => void
   onSetGhostStyle: (style: GhostStyle) => void
   onToggleHistogram: () => void
-  onSelectResource: (resourceId: string) => void
+  onToggleCompareResourcesMode: () => void
+  onSelectResource: (resourceId: string, additive: boolean) => void
   onHistogramScroll: () => void
   isComputing?: boolean
 }
@@ -75,7 +77,8 @@ export function Gantt({
   holidays,
   resources,
   assignments,
-  selectedResourceId,
+  selectedResourceIds,
+  compareResourcesMode,
   histogramVisible,
   ganttRef,
   histogramRef,
@@ -87,6 +90,7 @@ export function Gantt({
   onZoomOut,
   onSetGhostStyle,
   onToggleHistogram,
+  onToggleCompareResourcesMode,
   onSelectResource,
   onHistogramScroll,
   isComputing = false,
@@ -111,8 +115,9 @@ export function Gantt({
     [groups]
   )
   const overAllocatedOffsets = useMemo(() => {
-    if (!selectedResourceId) return new Set<number>()
-    const demand = computeResourceDemand(selectedResourceId, {
+    const primaryResourceId = selectedResourceIds[0]
+    if (!primaryResourceId) return new Set<number>()
+    const demand = computeResourceDemand(primaryResourceId, {
       tasks: visibleTasks,
       assignments,
       resources,
@@ -127,7 +132,7 @@ export function Gantt({
       if (offset !== undefined) offsets.add(offset)
     })
     return offsets
-  }, [selectedResourceId, visibleTasks, assignments, resources, timeline, workweek, holidays])
+  }, [selectedResourceIds, visibleTasks, assignments, resources, timeline, workweek, holidays])
 
   const totalPx = timeline.totalPx
   const totalHeight = GANTT_HEADER_HEIGHT + visibleRows.length * ROW_HEIGHT
@@ -413,7 +418,9 @@ export function Gantt({
             dayPx={dayPx}
             workweek={workweek}
             holidays={holidays}
-            selectedResourceId={selectedResourceId}
+            selectedResourceIds={selectedResourceIds}
+            compareMode={compareResourcesMode}
+            onToggleCompareMode={onToggleCompareResourcesMode}
             onSelectResource={onSelectResource}
             isComputing={isComputing}
           />

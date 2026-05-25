@@ -11,11 +11,15 @@ import { computeResourceDemand } from '../lib/resourceDemand'
 import { runDcmaAssessment } from '../lib/dcma'
 import { buildFloatDistribution } from '../lib/floatDistribution'
 import { computeScheduleHealth } from '../lib/health'
+import { linkChangeOrderToTask, unlinkChangeOrderFromTask } from '../lib/changeOrders'
+import { findBaselineById } from '../lib/baselines'
+import { appendVarianceSnapshot, computeProjectFinishVariance, trimSnapshots } from '../lib/variance'
+import { todayStr } from '../lib/dates'
 import { useMidnightTicker } from '../hooks/useMidnightTicker'
 import { useScrollSync } from '../hooks/useScrollSync'
 import { useKeyboard } from '../hooks/useKeyboard'
 import { useOnboarding } from '../hooks/useOnboarding'
-import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX, LARGE_TASK_THRESHOLD, HEALTH_WEIGHTS } from '../constants'
+import { DEFAULT_ZOOM_INDEX, ZOOM_LEVELS, UNDO_STACK_MAX, LARGE_TASK_THRESHOLD, HEALTH_WEIGHTS, MAX_OVERLAY_RESOURCES } from '../constants'
 import { TaskList } from './task-list/TaskList'
 import { Gantt } from './gantt/Gantt'
 import { SidePanel } from './panels/SidePanel'
@@ -35,6 +39,9 @@ import { ResourcesManager } from './modals/ResourcesManager'
 import { CsvImportDialog } from './modals/CsvImportDialog'
 import { PrintPreviewModal } from './modals/PrintPreviewModal'
 import { QualityPanel } from './modals/QualityPanel'
+import { CaptureBaselineModal, type CaptureBaselineValues } from './modals/CaptureBaselineModal'
+import { ChangeOrderManager } from './modals/ChangeOrderManager'
+import { BaselineCompareModal } from './modals/BaselineCompareModal'
 import { StatBar } from './StatBar'
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -50,7 +57,7 @@ export function App() {
   const [state, setState] = useState<PersistedState>(INITIAL_STATE)
   const { tasks, groups, parties, dependencies, notes, collapsedGroups,
           workweek, holidays, onboardingPhase,
-          projectName, baselines, ghostStyle, assignments } = state
+          projectName, baselines, ghostStyle, assignments, changeOrders, varianceSnapshots } = state
   const resources = state.resources
 
   // ── Transient UI state ────────────────────────────────────────────────────
@@ -65,9 +72,11 @@ export function App() {
   const [showCostColumn, setShowCostColumn] = useState(false)
   const [completionFlashId, setCompletionFlashId] = useState<string | null>(null)
   const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
-  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
+  const [selectedResourceIds, setSelectedResourceIds] = useState<string[]>([])
+  const [compareResourcesMode, setCompareResourcesMode] = useState(false)
   const [histogramVisible, setHistogramVisible] = useState(false)
   const [qualityPanelOpen, setQualityPanelOpen] = useState(false)
+  const [baselineMenuOpenSignal, setBaselineMenuOpenSignal] = useState(0)
 
   // ── Modal state ───────────────────────────────────────────────────────────
   const [linkBuilderTaskId, setLinkBuilderTaskId] = useState<string | null>(null)
@@ -77,6 +86,10 @@ export function App() {
   const [resourcesManagerOpen, setResourcesManagerOpen] = useState(false)
   const [csvImportOpen, setCsvImportOpen] = useState(false)
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false)
+  const [captureBaselineOpen, setCaptureBaselineOpen] = useState(false)
+  const [changeOrderManagerOpen, setChangeOrderManagerOpen] = useState(false)
+  const [changeOrderEditingId, setChangeOrderEditingId] = useState<string | null>(null)
+  const [compareModalOpen, setCompareModalOpen] = useState<{ aId: string | null; bId: string | null } | null>(null)
 
   // ── Undo stack (transient — restore fns can't be serialized) ─────────────────
   const [undoStack, setUndoStack] = useState<UndoEntry[]>([])
@@ -86,7 +99,19 @@ export function App() {
   const [isMobile, setIsMobile] = useState(false)
 
   // ── Hooks ─────────────────────────────────────────────────────────────────
-  const today = useMidnightTicker()
+  const today = useMidnightTicker(() => {
+    if (!activeBaselineId) return
+    const activeBaseline = findBaselineById(baselines, activeBaselineId)
+    if (!activeBaseline) return
+
+    const next = appendVarianceSnapshot(varianceSnapshots, {
+      date: todayStr(),
+      activeBaselineId,
+      projectFinishVariance: computeProjectFinishVariance(enrichedTasks, activeBaseline),
+      criticalPathLength: qualityCpm?.criticalIds.size ?? 0,
+    })
+    updateState({ varianceSnapshots: trimSnapshots(next) })
+  })
   const { listRef, ganttRef, histogramRef, handleListScroll, handleGanttScroll, handleHistogramScroll } = useScrollSync()
 
   const dayPx = ZOOM_LEVELS[zoomIndex]?.dayPx ?? 16
@@ -210,18 +235,25 @@ export function App() {
     () => overAllocationByResource.find((item) => item.overCount > 0)?.resourceId ?? null,
     [overAllocationByResource],
   )
+  const overAllocatedResourceNames = useMemo(
+    () => overAllocationByResource
+      .filter((item) => item.overCount > 0)
+      .map((item) => resources.find((resource) => resource.id === item.resourceId)?.name ?? item.resourceId),
+    [overAllocationByResource, resources],
+  )
 
   const dcmaAssessment = useMemo(() => {
     return runDcmaAssessment({
       tasks: enrichedTasks,
       dependencies,
       baselines,
+      activeBaselineId,
       resources,
       assignments,
       cpm: qualityCpm,
       today,
     })
-  }, [enrichedTasks, dependencies, baselines, resources, assignments, qualityCpm, today])
+  }, [enrichedTasks, dependencies, baselines, activeBaselineId, resources, assignments, qualityCpm, today])
 
   const floatDistribution = useMemo(() => {
     return buildFloatDistribution(enrichedTasks, qualityCpm?.totalFloat ?? new Map())
@@ -240,12 +272,29 @@ export function App() {
 
   useEffect(() => {
     if (resources.length === 0) {
-      setSelectedResourceId(null)
+      setSelectedResourceIds([])
       return
     }
-    if (selectedResourceId && resources.some((resource) => resource.id === selectedResourceId)) return
-    setSelectedResourceId(resources[0]?.id ?? null)
-  }, [resources, selectedResourceId])
+    const valid = selectedResourceIds.filter((id) => resources.some((resource) => resource.id === id))
+    if (valid.length > 0) {
+      if (valid.length !== selectedResourceIds.length) {
+        setSelectedResourceIds(valid.slice(0, MAX_OVERLAY_RESOURCES))
+      }
+      return
+    }
+    setSelectedResourceIds(resources[0] ? [resources[0].id] : [])
+  }, [resources, selectedResourceIds])
+
+  const handleSelectResource = useCallback((resourceId: string, additive: boolean) => {
+    setSelectedResourceIds((prev) => {
+      if (!additive) return [resourceId]
+      if (prev.includes(resourceId)) {
+        const trimmed = prev.filter((id) => id !== resourceId)
+        return trimmed.length > 0 ? trimmed : [resourceId]
+      }
+      return [...prev, resourceId].slice(0, MAX_OVERLAY_RESOURCES)
+    })
+  }, [])
 
   // ── Persistence ───────────────────────────────────────────────────────────
 
@@ -364,6 +413,24 @@ export function App() {
     setState(prev => ({
       ...prev,
       assignments: prev.assignments.filter((assignment) => assignment.id !== assignmentId),
+    }))
+  }, [])
+
+  const onLinkChangeOrder = useCallback((changeOrderId: string, taskId: string) => {
+    setState((prev) => ({
+      ...prev,
+      changeOrders: prev.changeOrders.map((changeOrder) =>
+        changeOrder.id === changeOrderId ? linkChangeOrderToTask(changeOrder, taskId) : changeOrder,
+      ),
+    }))
+  }, [])
+
+  const onUnlinkChangeOrder = useCallback((changeOrderId: string, taskId: string) => {
+    setState((prev) => ({
+      ...prev,
+      changeOrders: prev.changeOrders.map((changeOrder) =>
+        changeOrder.id === changeOrderId ? unlinkChangeOrderFromTask(changeOrder, taskId) : changeOrder,
+      ),
     }))
   }, [])
 
@@ -498,15 +565,20 @@ export function App() {
 
   // ── Baseline actions ──────────────────────────────────────────────────────
 
-  const captureBaseline = useCallback(() => {
+  const captureBaseline = useCallback((values: CaptureBaselineValues) => {
+    const baselineDate = today
     const newBaseline: Baseline = {
       id: Math.random().toString(36).slice(2) + Date.now().toString(36),
-      name: `Baseline ${baselines.length + 1}`,
-      date: today,
+      name: values.name,
+      date: baselineDate,
+      reason: values.reason,
+      lockedAt: baselineDate,
+      author: values.author,
       tasks: enrichedTasks,
     }
     updateState({ baselines: [...baselines, newBaseline] })
     setActiveBaselineId(newBaseline.id)
+    setCaptureBaselineOpen(false)
     onBaselineLocked()
   }, [baselines, enrichedTasks, today, updateState, onBaselineLocked])
 
@@ -518,7 +590,12 @@ export function App() {
   // ── Reset ─────────────────────────────────────────────────────────────────
 
   const handleReset = useCallback(() => {
-    if (!window.confirm('Reset project? This will clear all tasks, groups, and baselines.')) return
+    const baselineCount = baselines.length
+    const changeOrderCount = changeOrders.length
+    const extraScope = baselineCount > 0 || changeOrderCount > 0
+      ? ` This will also delete ${baselineCount} baseline${baselineCount !== 1 ? 's' : ''} and ${changeOrderCount} change order${changeOrderCount !== 1 ? 's' : ''}.`
+      : ''
+    if (!window.confirm(`Reset project? This will clear all tasks, groups, and baselines.${extraScope}`)) return
     const snapTasks = tasks
     const snapDeps = dependencies
     const snapNotes = notes
@@ -540,7 +617,7 @@ export function App() {
       label: 'Reset project',
       restore: () => setState(s => ({ ...s, tasks: snapTasks, dependencies: snapDeps, notes: snapNotes })),
     }, ...prev].slice(0, UNDO_STACK_MAX))
-  }, [tasks, dependencies, notes, updateState])
+  }, [tasks, dependencies, notes, baselines.length, changeOrders.length, updateState])
 
   // ── Export ────────────────────────────────────────────────────────────────
 
@@ -610,6 +687,31 @@ export function App() {
     }
   }, [isMobile])
 
+  const handleOpenChangeOrders = useCallback((changeOrderId?: string) => {
+    setChangeOrderEditingId(changeOrderId ?? null)
+    setChangeOrderManagerOpen(true)
+  }, [])
+
+  const handleOpenBaselineMenuFromQuality = useCallback(() => {
+    setQualityPanelOpen(false)
+    setBaselineMenuOpenSignal((value) => value + 1)
+  }, [])
+
+  const handleOpenCompareBaselines = useCallback((seedBaselineId?: string) => {
+    if (baselines.length < 2) {
+      setCompareModalOpen({ aId: baselines[0]?.id ?? null, bId: null })
+      return
+    }
+    const newest = baselines[baselines.length - 1] ?? null
+    const previous = baselines[baselines.length - 2] ?? null
+    const seeded = seedBaselineId
+      ? baselines.find((baseline) => baseline.id === seedBaselineId) ?? null
+      : null
+    const first = seeded ?? newest
+    const second = baselines.find((baseline) => baseline.id !== first?.id) ?? previous
+    setCompareModalOpen({ aId: first?.id ?? null, bId: second?.id ?? null })
+  }, [baselines])
+
   return (
     <div className="app" data-phase={onboardingPhase}>
       {showWizard && (
@@ -633,18 +735,21 @@ export function App() {
             baselines={baselines}
             activeBaselineId={activeBaselineId}
             ghostStyle={ghostStyle}
-            onCaptureBaseline={captureBaseline}
+            onCaptureBaseline={() => setCaptureBaselineOpen(true)}
             onSetActiveBaseline={setActiveBaselineId}
             onDeleteBaseline={deleteBaseline}
+            onCompareBaselines={handleOpenCompareBaselines}
             onSetGhostStyle={setGhostStyle}
             onOpenWorkweek={() => setWorkweekModalOpen(true)}
             onOpenGroups={() => setGroupsManagerOpen(true)}
             onOpenParties={() => setPartiesManagerOpen(true)}
             onOpenResources={() => setResourcesManagerOpen(true)}
+            onOpenChangeOrders={() => handleOpenChangeOrders()}
             onOpenQuality={() => setQualityPanelOpen(true)}
             onOpenCsvImport={() => setCsvImportOpen(true)}
             onOpenPrint={() => setPrintPreviewOpen(true)}
             onExportCsv={handleExportCsv}
+            baselineMenuOpenSignal={baselineMenuOpenSignal}
             hasDeps={hasDeps}
             showCriticalPath={showCriticalPath}
             onToggleCriticalPath={() => setShowCriticalPath(v => !v)}
@@ -684,10 +789,11 @@ export function App() {
             criticalPath={criticalPath}
             projectCost={projectCost}
             overAllocationCount={overAllocationCount}
+            overAllocatedResourceNames={overAllocatedResourceNames}
             healthScore={scheduleHealth.score}
             onOpenOverAllocations={() => {
               if (!firstOverAllocatedResourceId) return
-              setSelectedResourceId(firstOverAllocatedResourceId)
+              setSelectedResourceIds([firstOverAllocatedResourceId])
               setHistogramVisible(true)
             }}
             onOpenQualityPanel={() => setQualityPanelOpen(true)}
@@ -747,7 +853,8 @@ export function App() {
               dependencies={dependencies}
               resources={resources}
               assignments={assignments}
-              selectedResourceId={selectedResourceId}
+              selectedResourceIds={selectedResourceIds}
+              compareResourcesMode={compareResourcesMode}
               histogramVisible={histogramVisible}
               histogramRef={histogramRef}
               baselines={baselines}
@@ -766,7 +873,8 @@ export function App() {
               onZoomOut={onZoomOut}
               onSetGhostStyle={setGhostStyle}
               onToggleHistogram={() => setHistogramVisible((value) => !value)}
-              onSelectResource={setSelectedResourceId}
+              onToggleCompareResourcesMode={() => setCompareResourcesMode((value) => !value)}
+              onSelectResource={handleSelectResource}
               onHistogramScroll={handleHistogramScroll}
               isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
             />
@@ -783,6 +891,7 @@ export function App() {
                 dependencies={dependencies}
                 resources={resources}
                 assignments={assignments}
+                changeOrders={changeOrders}
                 workweek={workweek}
                 holidays={holidays}
                 today={today}
@@ -794,6 +903,10 @@ export function App() {
                 onRemoveAssignment={onRemoveAssignment}
                 onClose={handleClosePanel}
                 onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
+                onOpenChangeOrders={handleOpenChangeOrders}
+                onStartLinkChangeOrder={() => handleOpenChangeOrders()}
+                onLinkChangeOrder={onLinkChangeOrder}
+                onUnlinkChangeOrder={onUnlinkChangeOrder}
               />
             )}
           </div>
@@ -882,6 +995,8 @@ export function App() {
           workweek={workweek}
           holidays={holidays}
           today={today}
+          activeBaselineName={activeBaselineId ? findBaselineById(baselines, activeBaselineId)?.name : null}
+          projectFinishVariance={activeBaselineId ? computeProjectFinishVariance(enrichedTasks, findBaselineById(baselines, activeBaselineId)!) : null}
           onClose={() => setPrintPreviewOpen(false)}
         />
       )}
@@ -894,11 +1009,42 @@ export function App() {
         assessment={dcmaAssessment}
         health={scheduleHealth}
         floatDistribution={floatDistribution}
-        onCaptureBaseline={() => {
-          setQualityPanelOpen(false)
-          captureBaseline()
-        }}
+        varianceSnapshots={varianceSnapshots}
+        activeBaselineId={activeBaselineId}
+        onOpenBaselineMenu={handleOpenBaselineMenuFromQuality}
         onClose={() => setQualityPanelOpen(false)}
+      />
+
+      <CaptureBaselineModal
+        open={captureBaselineOpen}
+        defaultName={`Baseline ${baselines.length + 1}`}
+        onConfirm={captureBaseline}
+        onClose={() => setCaptureBaselineOpen(false)}
+      />
+
+      <ChangeOrderManager
+        open={changeOrderManagerOpen}
+        changeOrders={changeOrders}
+        selectedChangeOrderId={changeOrderEditingId}
+        onSave={(nextChangeOrders) => updateState({ changeOrders: nextChangeOrders })}
+        onClose={() => {
+          setChangeOrderManagerOpen(false)
+          setChangeOrderEditingId(null)
+        }}
+      />
+
+      <BaselineCompareModal
+        open={compareModalOpen !== null}
+        baselines={baselines}
+        baselineAId={compareModalOpen?.aId ?? null}
+        baselineBId={compareModalOpen?.bId ?? null}
+        onChangeBaselineA={(baselineId) => {
+          setCompareModalOpen((prev) => (prev ? { ...prev, aId: baselineId } : prev))
+        }}
+        onChangeBaselineB={(baselineId) => {
+          setCompareModalOpen((prev) => (prev ? { ...prev, bId: baselineId } : prev))
+        }}
+        onClose={() => setCompareModalOpen(null)}
       />
 
       {mobilePanelOpen && (
@@ -916,6 +1062,7 @@ export function App() {
             dependencies={dependencies}
             resources={resources}
             assignments={assignments}
+            changeOrders={changeOrders}
             workweek={workweek}
             holidays={holidays}
             today={today}
@@ -927,6 +1074,10 @@ export function App() {
             onRemoveAssignment={onRemoveAssignment}
             onClose={handleClosePanel}
             onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
+            onOpenChangeOrders={handleOpenChangeOrders}
+            onStartLinkChangeOrder={() => handleOpenChangeOrders()}
+            onLinkChangeOrder={onLinkChangeOrder}
+            onUnlinkChangeOrder={onUnlinkChangeOrder}
             mode="mobile"
           />
         </MobileBottomSheet>

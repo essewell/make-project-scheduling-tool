@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Baseline, GhostStyle } from '../../types'
 import { ZOOM_LEVELS } from '../../constants'
 import { EditableTitle } from './EditableTitle'
@@ -9,6 +9,7 @@ import {
   CalendarBlank,
   Camera,
   Download,
+  FileText,
   Minus,
   Path,
   Plus,
@@ -34,15 +35,18 @@ interface TopBarProps {
   onCaptureBaseline: () => void
   onSetActiveBaseline: (id: string | null) => void
   onDeleteBaseline: (id: string) => void
+  onCompareBaselines: (id?: string) => void
   onSetGhostStyle: (style: GhostStyle) => void
   onOpenWorkweek: () => void
   onOpenGroups: () => void
   onOpenParties: () => void
   onOpenResources: () => void
   onOpenQuality: () => void
+  onOpenChangeOrders: () => void
   onOpenCsvImport: () => void
   onOpenPrint: () => void
   onExportCsv: () => void
+  baselineMenuOpenSignal: number
   hasDeps: boolean
   showCriticalPath: boolean
   onToggleCriticalPath: () => void
@@ -88,15 +92,20 @@ export function TopBar({
   projectName, onRenameProject,
   zoomIndex, onZoomIn, onZoomOut,
   baselines, activeBaselineId, ghostStyle,
-  onCaptureBaseline, onSetActiveBaseline, onDeleteBaseline, onSetGhostStyle,
+  onCaptureBaseline, onSetActiveBaseline, onDeleteBaseline, onCompareBaselines, onSetGhostStyle,
   onOpenWorkweek, onOpenGroups, onOpenParties, onOpenResources,
-  onOpenQuality,
+  onOpenQuality, onOpenChangeOrders,
   onOpenCsvImport, onOpenPrint, onExportCsv,
+  baselineMenuOpenSignal,
   hasDeps, showCriticalPath, onToggleCriticalPath,
   onReset, onNewTask,
 }: TopBarProps) {
   const [baselineMenuOpen, setBaselineMenuOpen] = useState(false)
   const baselineBtnRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (baselineMenuOpenSignal <= 0) return
+    setBaselineMenuOpen(true)
+  }, [baselineMenuOpenSignal])
 
   const zoomLabel = ZOOM_LEVELS[zoomIndex]?.label ?? '—'
   const activeBaseline = baselines.find(b => b.id === activeBaselineId)
@@ -173,6 +182,7 @@ export function TopBar({
           <button onClick={onOpenGroups} style={ICON_BTN}><SquaresFour size={14} weight="regular" aria-hidden="true" />Phases</button>
           <button onClick={onOpenParties} style={ICON_BTN}><UsersThree size={14} weight="regular" aria-hidden="true" />Parties</button>
           <button onClick={onOpenResources} style={ICON_BTN}><Users size={14} weight="regular" aria-hidden="true" />Resources</button>
+          <button onClick={onOpenChangeOrders} style={ICON_BTN}><FileText size={14} weight="regular" aria-hidden="true" />Change Orders</button>
           <button onClick={onOpenQuality} style={ICON_BTN}><ShieldCheck size={14} weight="regular" aria-hidden="true" />Quality</button>
         </div>
 
@@ -228,6 +238,7 @@ export function TopBar({
           anchorRef={baselineBtnRef}
           onSetActive={id => { onSetActiveBaseline(id); setBaselineMenuOpen(false) }}
           onDelete={id => { onDeleteBaseline(id) }}
+          onCompare={id => { onCompareBaselines(id); setBaselineMenuOpen(false) }}
           onSetGhostStyle={onSetGhostStyle}
           onClose={() => setBaselineMenuOpen(false)}
         />

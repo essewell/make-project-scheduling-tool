@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { Resource, ResourceAssignment, Task, Timeline, WorkweekConfig } from '../../types'
 import { computeResourceDemand } from '../../lib/resourceDemand'
-import { HISTOGRAM_BAR_GAP, HISTOGRAM_HEIGHT, HISTOGRAM_PAD_X } from '../../constants'
+import { HISTOGRAM_BAR_GAP, HISTOGRAM_HEIGHT, HISTOGRAM_PAD_X, MAX_OVERLAY_RESOURCES } from '../../constants'
 import { ChartBar } from '../../lib/icons'
 import { ResourceSelectorPill } from './ResourceSelectorPill'
 
@@ -13,14 +13,16 @@ interface ResourceHistogramProps {
   dayPx: number
   workweek: WorkweekConfig
   holidays: string[]
-  selectedResourceId: string | null
-  onSelectResource: (resourceId: string) => void
+  selectedResourceIds: string[]
+  compareMode: boolean
+  onToggleCompareMode: () => void
+  onSelectResource: (resourceId: string, additive: boolean) => void
   isComputing?: boolean
 }
 
-function getResourceById(resources: Resource[], resourceId: string | null): Resource | null {
-  if (!resourceId) return null
-  return resources.find((resource) => resource.id === resourceId) ?? null
+function getResourcesById(resources: Resource[], resourceIds: string[]): Resource[] {
+  const set = new Set(resourceIds)
+  return resources.filter((resource) => set.has(resource.id))
 }
 
 export function ResourceHistogram({
@@ -31,26 +33,41 @@ export function ResourceHistogram({
   dayPx,
   workweek,
   holidays,
-  selectedResourceId,
+  selectedResourceIds,
+  compareMode,
+  onToggleCompareMode,
   onSelectResource,
   isComputing = false,
 }: ResourceHistogramProps) {
-  const selectedResource = getResourceById(resources, selectedResourceId)
+  const selectedResources = getResourcesById(resources, selectedResourceIds).slice(0, MAX_OVERLAY_RESOURCES)
+  const selectedResource = selectedResources[0] ?? null
 
-  const demand = useMemo(() => {
-    if (!selectedResource) return []
-    return computeResourceDemand(selectedResource.id, {
-      tasks,
-      assignments,
-      resources,
-      timeline,
-      workweek,
-      holidays,
+  const demandByResource = useMemo(() => {
+    return selectedResources.map((resource) => ({
+      resource,
+      demand: computeResourceDemand(resource.id, {
+        tasks,
+        assignments,
+        resources,
+        timeline,
+        workweek,
+        holidays,
+      }),
+    }))
+  }, [selectedResources, tasks, assignments, resources, timeline, workweek, holidays])
+
+  const stackedDemand = useMemo(() => {
+    const totals = new Array(timeline.days.length).fill(0)
+    demandByResource.forEach((entry) => {
+      entry.demand.forEach((point, index) => {
+        totals[index] += point.demand
+      })
     })
-  }, [selectedResource, tasks, assignments, resources, timeline, workweek, holidays])
+    return totals
+  }, [demandByResource, timeline.days.length])
 
-  const maxDemand = demand.reduce((max, point) => Math.max(max, point.demand), 0)
-  const denominator = selectedResource && selectedResource.category !== 'material'
+  const maxDemand = stackedDemand.reduce((max, value) => Math.max(max, value), 0)
+  const denominator = selectedResource && selectedResources.length === 1 && selectedResource.category !== 'material'
     ? Math.max(maxDemand, selectedResource.capacity, 1)
     : Math.max(maxDemand, 1)
   const chartHeight = HISTOGRAM_HEIGHT - 28
@@ -71,7 +88,9 @@ export function ResourceHistogram({
 
       <ResourceSelectorPill
         resources={resources}
-        selectedResourceId={selectedResourceId}
+        selectedResourceIds={selectedResourceIds}
+        compareMode={compareMode}
+        onToggleCompareMode={onToggleCompareMode}
         onSelectResource={onSelectResource}
       />
 
@@ -82,54 +101,87 @@ export function ResourceHistogram({
         />
       )}
 
-      {resources.length > 0 && !selectedResource && (
+      {resources.length > 0 && selectedResources.length === 0 && (
         <EmptyState
           message="No resource selected."
           hint="Choose a resource pill above to render its day-by-day demand."
         />
       )}
 
-      {selectedResource && (
+      {selectedResources.length > 0 && (
         <div style={{ position: 'relative', height: chartHeight, border: '1px solid var(--color-border-light)', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)' }}>
-          {demand.map((point, index) => {
+          {timeline.days.map((day, index) => {
             const left = timeline.days[index]?.offset ?? 0
             const barWidth = Math.max(1, dayPx - HISTOGRAM_BAR_GAP)
-            const barHeight = Math.max(1, Math.round((point.demand / denominator) * (chartHeight - 8)))
-            const overHeight = selectedResource.category === 'material'
-              ? 0
-              : Math.round((point.overAllocation / denominator) * (chartHeight - 8))
+            let runningHeight = 0
+            const segments: Array<{
+              resourceId: string
+              name: string
+              unit: string
+              color: string
+              barHeight: number
+              overHeight: number
+              start: number
+            }> = []
+            demandByResource.forEach((entry) => {
+              const point = entry.demand[index]
+              if (!point || point.demand <= 0) return
+              const barHeight = Math.max(1, Math.round((point.demand / denominator) * (chartHeight - 8)))
+              const overHeight = entry.resource.category === 'material'
+                ? 0
+                : Math.round((point.overAllocation / denominator) * (chartHeight - 8))
+              segments.push({
+                resourceId: entry.resource.id,
+                name: entry.resource.name,
+                unit: entry.resource.unit,
+                color: entry.resource.color || 'var(--histogram-bar-bg)',
+                barHeight,
+                overHeight,
+                start: runningHeight,
+              })
+              runningHeight += barHeight
+            })
 
             return (
-              <div key={`${left}-${index}`}>
-                <div
-                  title={`${point.demand.toFixed(2)} ${selectedResource.unit}`}
-                  style={{
-                    position: 'absolute',
-                    left,
-                    bottom: 0,
-                    width: barWidth,
-                    height: barHeight,
-                    background: selectedResource.color || 'var(--histogram-bar-bg)',
-                    opacity: 0.75,
-                  }}
-                />
-                {overHeight > 0 && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left,
-                      bottom: barHeight - overHeight,
-                      width: barWidth,
-                      height: overHeight,
-                      background: 'var(--histogram-over)',
-                    }}
-                  />
-                )}
+              <div key={`${day.date.toISOString()}-${index}`}>
+                {segments.map((segment) => {
+                  return (
+                    <div
+                      key={`${segment.resourceId}-${index}`}
+                      title={`${segment.name}`}
+                      style={{
+                        position: 'absolute',
+                        left,
+                        bottom: segment.start,
+                        width: barWidth,
+                        height: segment.barHeight,
+                        background: segment.color,
+                        opacity: 0.75,
+                      }}
+                    />
+                  )
+                })}
+                {segments.map((segment) => {
+                  if (segment.overHeight <= 0) return null
+                  return (
+                    <div
+                      key={`over-${segment.resourceId}-${index}`}
+                      style={{
+                        position: 'absolute',
+                        left,
+                        bottom: segment.start + (segment.barHeight - segment.overHeight),
+                        width: barWidth,
+                        height: segment.overHeight,
+                        background: 'var(--histogram-over)',
+                      }}
+                    />
+                  )
+                })}
               </div>
             )
           })}
 
-          {selectedResource.category !== 'material' && (
+          {selectedResources.length === 1 && selectedResource && selectedResource.category !== 'material' && (
             <div
               style={{
                 position: 'absolute',

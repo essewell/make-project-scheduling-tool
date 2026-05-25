@@ -60,14 +60,20 @@ test('BEI shows N/A without baseline and clears after capture baseline', async (
   await openQualityPanel(page)
   const dialog = page.getByRole('dialog', { name: /schedule quality panel/i })
   await expect(dialog).toBeVisible()
-  await expect(dialog.getByRole('button', { name: /capture a baseline first/i })).toBeVisible()
+  await expect(dialog.getByRole('button', { name: /select an active baseline/i })).toBeVisible()
 
-  await dialog.getByRole('button', { name: /capture a baseline first/i }).click()
+  await dialog.getByRole('button', { name: /select an active baseline/i }).click()
   await expect(dialog).toHaveCount(0)
+  await expect(page.getByText(/no baselines yet/i)).toBeVisible()
+
+  await page.getByRole('button', { name: /^capture$/i }).first().click()
+  const captureDialog = page.getByRole('dialog', { name: /capture baseline/i })
+  await expect(captureDialog).toBeVisible()
+  await captureDialog.getByRole('button', { name: /^capture$/i }).click()
   await expect(page.getByRole('button', { name: /baselines · baseline 1/i })).toBeVisible()
 
   await openQualityPanel(page)
   const reopened = page.getByRole('dialog', { name: /schedule quality panel/i })
   await expect(reopened).toBeVisible()
-  await expect(reopened.getByRole('button', { name: /capture a baseline first/i })).toHaveCount(0)
+  await expect(reopened.getByRole('button', { name: /select an active baseline/i })).toHaveCount(0)
 })

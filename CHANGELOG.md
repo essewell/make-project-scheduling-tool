@@ -2,6 +2,26 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.5.0] - 2026-05-25
+
+### Added
+- Multi-baseline support: capture up to N named baselines, each with reason, author, and date metadata; locked-baseline icon and BaselineMenu overlay for fast switching.
+- Baseline comparison modal (side-by-side diff) with A/B baseline selector and slip/added/removed row classification.
+- Variance trend chart: per-task finish-variance sparkline history persisted across sessions.
+- Change orders manager: modal with expandable change order rows and sidepanel section for tracking scope changes.
+- Baseline section in print preview header shows active baseline name and project-level finish variance.
+- Extended E2E coverage: variance trend, baseline metadata (reason, author, locked icon, Escape close), BaselineCompareModal axe sweep, ChangeOrderManager axe sweep, BaselineMenu overlay axe sweep.
+
+### Fixed
+- `select-name` axe violation in BaselineSelectPair: added `aria-label` to both `<select>` elements.
+- `scrollable-region-focusable` axe violation in DcmaFindingsTable: added `tabIndex={0}` to scrollable container.
+- Escape key in BaselineMenu now uses `stopPropagation()` on the document handler, preventing the window-level `useKeyboard` hook from also closing the SidePanel.
+
+### Changed
+- Design-system doc updated with v1.5 canonical icon additions and token-reuse rationale (no new color tokens needed).
+- Onboarding QA doc appended v1.5 capture-baseline-after-import recommendation.
+- Removed ephemeral Phase 0 QA scratch scripts accidentally committed to repo.
+
 ## [0.3.0] - 2026-05-23
 
 ### Added

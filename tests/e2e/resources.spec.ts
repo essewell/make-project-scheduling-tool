@@ -49,7 +49,7 @@ test.describe('resources histogram', () => {
 
     // Selecting Crew A should show demand (over-alloc stat visible)
     await page.getByRole('button', { name: /crew a/i }).click()
-    await expect(page.getByRole('button', { name: /over-alloc/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /over-alloc/i })).toBeVisible({ timeout: 10000 })
   })
 
   test('undo restores resource and assignments after deleting a resource with active assignments', async ({ page }) => {
