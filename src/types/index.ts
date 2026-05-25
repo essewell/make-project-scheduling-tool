@@ -88,6 +88,40 @@ export interface Baseline {
   tasks: Task[]
 }
 
+export interface BaselineSlippedTaskDiff {
+  taskId: string
+  name: string
+  baselineAFinish: string
+  baselineBFinish: string
+  slipDays: number
+  costDelta: number
+}
+
+export interface BaselineAddedTaskDiff {
+  taskId: string
+  name: string
+  finish: string
+  costDelta: number
+}
+
+export interface BaselineRemovedTaskDiff {
+  taskId: string
+  name: string
+  finish: string
+  costDelta: number
+}
+
+export interface BaselineDiff {
+  slipped: BaselineSlippedTaskDiff[]
+  added: BaselineAddedTaskDiff[]
+  removed: BaselineRemovedTaskDiff[]
+  totals: {
+    totalSlipDays: number
+    netTaskCountChange: number
+    totalCostDelta: number
+  }
+}
+
 // ─── Workweek / Calendar ─────────────────────────────────────────────────────
 
 export interface WorkweekConfig {
