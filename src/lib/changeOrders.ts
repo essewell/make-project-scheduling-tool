@@ -20,6 +20,17 @@ export interface ChangeOrderValidationOptions {
   previousStatus?: ChangeOrderStatus
 }
 
+export function canTransitionChangeOrderStatus(
+  previousStatus: ChangeOrderStatus,
+  nextStatus: ChangeOrderStatus,
+): boolean {
+  if (previousStatus === nextStatus) return true
+  if (previousStatus === 'draft') {
+    return nextStatus === 'approved' || nextStatus === 'rejected'
+  }
+  return false
+}
+
 export function validateChangeOrder(
   changeOrder: ChangeOrder,
   options?: ChangeOrderValidationOptions,
@@ -32,9 +43,8 @@ export function validateChangeOrder(
     errors.push('Change order name is required.')
   }
   if (options?.previousStatus) {
-    const validTransition = options.previousStatus === 'draft' &&
-      (changeOrder.status === 'approved' || changeOrder.status === 'rejected' || changeOrder.status === 'draft')
-    if (!validTransition && options.previousStatus !== changeOrder.status) {
+    const validTransition = canTransitionChangeOrderStatus(options.previousStatus, changeOrder.status)
+    if (!validTransition) {
       errors.push(`Invalid status transition: ${options.previousStatus} -> ${changeOrder.status}.`)
     }
   }

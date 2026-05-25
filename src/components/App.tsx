@@ -958,6 +958,7 @@ export function App() {
         open={changeOrderManagerOpen}
         changeOrders={changeOrders}
         selectedChangeOrderId={changeOrderEditingId}
+        onSave={(nextChangeOrders) => updateState({ changeOrders: nextChangeOrders })}
         onClose={() => {
           setChangeOrderManagerOpen(false)
           setChangeOrderEditingId(null)

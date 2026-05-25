@@ -1,11 +1,13 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeOrder, ChangeOrderStatus } from '../../types'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
+import { validateChangeOrder } from '../../lib/changeOrders'
 
 interface ChangeOrderManagerProps {
   open: boolean
   changeOrders: ChangeOrder[]
   selectedChangeOrderId?: string | null
+  onSave: (changeOrders: ChangeOrder[]) => void
   onClose: () => void
 }
 
@@ -20,16 +22,75 @@ export function ChangeOrderManager({
   open,
   changeOrders,
   selectedChangeOrderId,
+  onSave,
   onClose,
 }: ChangeOrderManagerProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const [filter, setFilter] = useState<'all' | ChangeOrderStatus>('all')
+  const [items, setItems] = useState<ChangeOrder[]>([])
+  const [errorsById, setErrorsById] = useState<Record<string, string[]>>({})
   useDialogA11y({ containerRef: dialogRef, onClose, enabled: open })
 
+  useEffect(() => {
+    if (!open) return
+    setItems(changeOrders.map((changeOrder) => ({ ...changeOrder })))
+    setErrorsById({})
+  }, [open, changeOrders])
+
   const visible = useMemo(
-    () => changeOrders.filter((changeOrder) => filter === 'all' || changeOrder.status === filter),
-    [changeOrders, filter],
+    () => items.filter((changeOrder) => filter === 'all' || changeOrder.status === filter),
+    [items, filter],
   )
+  const originalStatusById = useMemo(
+    () => new Map(changeOrders.map((changeOrder) => [changeOrder.id, changeOrder.status])),
+    [changeOrders],
+  )
+
+  const updateItem = (id: string, patch: Partial<ChangeOrder>) => {
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)))
+    setErrorsById((prev) => {
+      if (!prev[id]) return prev
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+  }
+
+  const saveItem = (id: string) => {
+    const item = items.find((changeOrder) => changeOrder.id === id)
+    if (!item) return
+    const previousStatus = originalStatusById.get(id)
+    const errors = validateChangeOrder(item, { previousStatus })
+    if (errors.length > 0) {
+      setErrorsById((prev) => ({ ...prev, [id]: errors }))
+      return
+    }
+    setErrorsById((prev) => {
+      if (!prev[id]) return prev
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+    onSave(items)
+  }
+
+  const addDraft = () => {
+    const now = new Date().toISOString()
+    const newItem: ChangeOrder = {
+      id: Math.random().toString(36).slice(2) + Date.now().toString(36),
+      number: '',
+      name: '',
+      reason: '',
+      status: 'draft',
+      createdAt: now,
+      lockedAt: now.slice(0, 10),
+      affectedTaskIds: [],
+      daysImpact: 0,
+      costImpact: 0,
+    }
+    setItems((prev) => [newItem, ...prev])
+    setFilter('all')
+  }
 
   if (!open) return null
 
@@ -70,7 +131,7 @@ export function ChangeOrderManager({
         <div style={{ padding: '18px 20px 12px', borderBottom: '1px solid var(--color-border)' }}>
           <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Change Orders</div>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
-            {visible.length} of {changeOrders.length}
+            {visible.length} of {items.length}
           </div>
         </div>
 
@@ -96,6 +157,7 @@ export function ChangeOrderManager({
             ))}
           </div>
           <button
+            onClick={addDraft}
             style={{
               height: 28,
               borderRadius: 'var(--radius)',
@@ -130,16 +192,98 @@ export function ChangeOrderManager({
                   gap: 8,
                 }}
               >
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {changeOrder.number} · {changeOrder.name}
+                <div style={{ minWidth: 0, display: 'grid', gap: 6 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                    <input
+                      type="text"
+                      value={changeOrder.number}
+                      placeholder="CO number"
+                      onChange={(event) => updateItem(changeOrder.id, { number: event.target.value })}
+                      style={{
+                        height: 28,
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-surface)',
+                        color: 'var(--color-text-primary)',
+                        fontSize: 'var(--text-xs)',
+                        padding: '0 8px',
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={changeOrder.name}
+                      placeholder="CO name"
+                      onChange={(event) => updateItem(changeOrder.id, { name: event.target.value })}
+                      style={{
+                        height: 28,
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-surface)',
+                        color: 'var(--color-text-primary)',
+                        fontSize: 'var(--text-xs)',
+                        padding: '0 8px',
+                      }}
+                    />
                   </div>
-                  <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)', marginTop: 3 }}>
-                    {changeOrder.reason || 'No reason provided'}
-                  </div>
+                  <input
+                    type="text"
+                    value={changeOrder.reason}
+                    placeholder="Reason"
+                    onChange={(event) => updateItem(changeOrder.id, { reason: event.target.value })}
+                    style={{
+                      height: 28,
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text-primary)',
+                      fontSize: 'var(--text-xs)',
+                      padding: '0 8px',
+                    }}
+                  />
+                  {(errorsById[changeOrder.id] ?? []).map((error) => (
+                    <div key={error} style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-danger)' }}>
+                      {error}
+                    </div>
+                  ))}
                 </div>
-                <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  {changeOrder.status}
+                <div style={{ display: 'grid', gap: 6, justifyItems: 'end' }}>
+                  <select
+                    value={changeOrder.status}
+                    onChange={(event) => {
+                      const value = event.target.value as ChangeOrderStatus
+                      updateItem(changeOrder.id, { status: value })
+                    }}
+                    style={{
+                      height: 28,
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text-secondary)',
+                      fontSize: 'var(--text-2xs)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                      padding: '0 6px',
+                    }}
+                  >
+                    <option value="draft">draft</option>
+                    <option value="approved">approved</option>
+                    <option value="rejected">rejected</option>
+                  </select>
+                  <button
+                    onClick={() => saveItem(changeOrder.id)}
+                    style={{
+                      height: 24,
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--color-border)',
+                      background: 'var(--color-surface-2)',
+                      color: 'var(--color-text-secondary)',
+                      fontSize: 'var(--text-2xs)',
+                      padding: '0 8px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Save
+                  </button>
                 </div>
               </div>
             ))
