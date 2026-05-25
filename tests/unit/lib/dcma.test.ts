@@ -52,6 +52,7 @@ function baseContext(input?: Partial<{
   resources: Resource[]
   assignments: ResourceAssignment[]
   baselines: Baseline[]
+  activeBaselineId: string | null
   today: string
 }>) {
   const tasks = input?.tasks ?? [
@@ -65,6 +66,7 @@ function baseContext(input?: Partial<{
     resources: input?.resources ?? [makeResource('r1')],
     assignments: input?.assignments ?? [makeAssignment('a1', 'A', 'r1'), makeAssignment('a2', 'B', 'r1')],
     baselines: input?.baselines ?? [],
+    activeBaselineId: input?.activeBaselineId ?? null,
     cpm: computeCriticalPath(tasks, dependencies),
     today: input?.today ?? '2026-01-10',
   }
@@ -208,14 +210,32 @@ describe('runDcmaAssessment', () => {
     expect(typeof cpli.score).toBe('number')
   })
 
-  it('check 14 returns N/A note when no baseline exists', () => {
-    const result = runDcmaAssessment(baseContext({ baselines: [] }))
+  it('check 14 returns N/A note when no active baseline is selected', () => {
+    const result = runDcmaAssessment(baseContext({ baselines: [], activeBaselineId: null }))
     const bei = result.checks.find((check) => check.id === 14)!
     expect(bei.passed).toBe(false)
-    expect(bei.note).toContain('capture a baseline')
+    expect(bei.note).toContain('select an active baseline')
   })
 
-  it('check 14 computes BEI against latest baseline', () => {
+  it('check 14 returns N/A when active baseline id does not resolve', () => {
+    const tasks = [
+      makeTask('A', '2026-01-01', '2026-01-02', { actualFinish: '2026-01-02', status: 'complete' }),
+    ]
+    const baseline: Baseline = {
+      id: 'b1',
+      name: 'Baseline 1',
+      date: '2026-01-01',
+      reason: '',
+      lockedAt: '2026-01-01',
+      tasks: tasks.map((task) => ({ ...task })),
+    }
+    const result = runDcmaAssessment(baseContext({ tasks, baselines: [baseline], activeBaselineId: 'missing-id' }))
+    const bei = result.checks.find((check) => check.id === 14)!
+    expect(bei.passed).toBe(false)
+    expect(bei.note).toContain('select an active baseline')
+  })
+
+  it('check 14 computes BEI against active baseline', () => {
     const tasks = [
       makeTask('A', '2026-01-01', '2026-01-02', { actualFinish: '2026-01-02', status: 'complete' }),
       makeTask('B', '2026-01-03', '2026-01-04', { actualFinish: null, status: 'in_progress' }),
@@ -224,9 +244,16 @@ describe('runDcmaAssessment', () => {
       id: 'b1',
       name: 'Baseline 1',
       date: '2026-01-01',
+      reason: '',
+      lockedAt: '2026-01-01',
       tasks: tasks.map((task) => ({ ...task })),
     }
-    const result = runDcmaAssessment(baseContext({ tasks, baselines: [baseline], today: '2026-01-10' }))
+    const result = runDcmaAssessment(baseContext({
+      tasks,
+      baselines: [baseline],
+      activeBaselineId: 'b1',
+      today: '2026-01-10',
+    }))
     const bei = result.checks.find((check) => check.id === 14)!
     expect(bei.score).toBe(0.5)
     expect(bei.passed).toBe(false)

@@ -16,6 +16,7 @@ export interface DcmaAssessmentContext {
   tasks: Task[]
   dependencies: Dependency[]
   baselines: Baseline[]
+  activeBaselineId: string | null
   resources: Resource[]
   assignments: ResourceAssignment[]
   cpm: CpmResult | null
@@ -403,7 +404,20 @@ function checkCpli(context: DcmaAssessmentContext): DcmaCheckResult {
 
 function checkBei(context: DcmaAssessmentContext): DcmaCheckResult {
   const threshold = 0.95
-  const baseline = context.baselines[context.baselines.length - 1]
+  if (!context.activeBaselineId) {
+    return {
+      id: 14,
+      name: 'BEI',
+      passed: false,
+      score: 0,
+      threshold,
+      plainEnglish: 'BEI below threshold signals execution behind baseline intent.',
+      affectedTaskIds: [],
+      note: 'N/A — select an active baseline.',
+    }
+  }
+
+  const baseline = context.baselines.find((item) => item.id === context.activeBaselineId)
   if (!baseline) {
     return {
       id: 14,
@@ -413,7 +427,7 @@ function checkBei(context: DcmaAssessmentContext): DcmaCheckResult {
       threshold,
       plainEnglish: 'BEI below threshold signals execution behind baseline intent.',
       affectedTaskIds: [],
-      note: 'N/A — capture a baseline first.',
+      note: 'N/A — select an active baseline.',
     }
   }
 
