@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect, useRef, type KeyboardEvent } from 'react'
-import type { Task, Group, Party, Note, Dependency, WorkweekConfig, Resource, ResourceAssignment } from '../../types'
+import type { Task, Group, Party, Note, Dependency, WorkweekConfig, Resource, ResourceAssignment, ChangeOrder } from '../../types'
 import { daysBetween } from '../../lib/dates'
 import { workdays } from '../../lib/workdays'
 import { ActualDatesSection } from './ActualDatesSection'
 import { ResourceAssignmentSection } from './ResourceAssignmentSection'
+import { ChangeOrderSection } from '../changeorder/ChangeOrderSection'
 import { CalendarBlank, X } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -17,6 +18,7 @@ interface SidePanelProps {
   dependencies: Dependency[]
   resources: Resource[]
   assignments: ResourceAssignment[]
+  changeOrders: ChangeOrder[]
   workweek: WorkweekConfig
   holidays: string[]
   today: string
@@ -28,6 +30,8 @@ interface SidePanelProps {
   onRemoveAssignment: (assignmentId: string) => void
   onClose: () => void
   onOpenLinkBuilder: (taskId: string) => void
+  onOpenChangeOrders: (changeOrderId?: string) => void
+  onStartLinkChangeOrder: () => void
   mode?: 'desktop' | 'mobile'
 }
 
@@ -119,6 +123,7 @@ export function SidePanel({
   dependencies,
   resources,
   assignments,
+  changeOrders,
   workweek,
   holidays,
   today: _today,
@@ -130,6 +135,8 @@ export function SidePanel({
   onRemoveAssignment,
   onClose,
   onOpenLinkBuilder,
+  onOpenChangeOrders,
+  onStartLinkChangeOrder,
   mode = 'desktop',
 }: SidePanelProps) {
   const [newNoteText, setNewNoteText] = useState('')
@@ -454,6 +461,13 @@ export function SidePanel({
           onAddAssignment={onAddAssignment}
           onUpdateAssignment={onUpdateAssignment}
           onRemoveAssignment={onRemoveAssignment}
+        />
+
+        <ChangeOrderSection
+          taskId={task.id}
+          changeOrders={changeOrders}
+          onOpenManager={onOpenChangeOrders}
+          onStartLink={onStartLinkChangeOrder}
         />
 
         {/* Dependencies preview */}

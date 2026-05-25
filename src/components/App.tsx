@@ -81,6 +81,7 @@ export function App() {
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false)
   const [captureBaselineOpen, setCaptureBaselineOpen] = useState(false)
   const [changeOrderManagerOpen, setChangeOrderManagerOpen] = useState(false)
+  const [changeOrderEditingId, setChangeOrderEditingId] = useState<string | null>(null)
 
   // ── Undo stack (transient — restore fns can't be serialized) ─────────────────
   const [undoStack, setUndoStack] = useState<UndoEntry[]>([])
@@ -624,6 +625,11 @@ export function App() {
     }
   }, [isMobile])
 
+  const handleOpenChangeOrders = useCallback((changeOrderId?: string) => {
+    setChangeOrderEditingId(changeOrderId ?? null)
+    setChangeOrderManagerOpen(true)
+  }, [])
+
   return (
     <div className="app" data-phase={onboardingPhase}>
       {showWizard && (
@@ -656,7 +662,7 @@ export function App() {
             onOpenGroups={() => setGroupsManagerOpen(true)}
             onOpenParties={() => setPartiesManagerOpen(true)}
             onOpenResources={() => setResourcesManagerOpen(true)}
-            onOpenChangeOrders={() => setChangeOrderManagerOpen(true)}
+            onOpenChangeOrders={() => handleOpenChangeOrders()}
             onOpenQuality={() => setQualityPanelOpen(true)}
             onOpenCsvImport={() => setCsvImportOpen(true)}
             onOpenPrint={() => setPrintPreviewOpen(true)}
@@ -799,6 +805,7 @@ export function App() {
                 dependencies={dependencies}
                 resources={resources}
                 assignments={assignments}
+                changeOrders={changeOrders}
                 workweek={workweek}
                 holidays={holidays}
                 today={today}
@@ -810,6 +817,8 @@ export function App() {
                 onRemoveAssignment={onRemoveAssignment}
                 onClose={handleClosePanel}
                 onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
+                onOpenChangeOrders={handleOpenChangeOrders}
+                onStartLinkChangeOrder={() => handleOpenChangeOrders()}
               />
             )}
           </div>
@@ -927,7 +936,11 @@ export function App() {
       <ChangeOrderManager
         open={changeOrderManagerOpen}
         changeOrders={changeOrders}
-        onClose={() => setChangeOrderManagerOpen(false)}
+        selectedChangeOrderId={changeOrderEditingId}
+        onClose={() => {
+          setChangeOrderManagerOpen(false)
+          setChangeOrderEditingId(null)
+        }}
       />
 
       {mobilePanelOpen && (
@@ -945,6 +958,7 @@ export function App() {
             dependencies={dependencies}
             resources={resources}
             assignments={assignments}
+            changeOrders={changeOrders}
             workweek={workweek}
             holidays={holidays}
             today={today}
@@ -956,6 +970,8 @@ export function App() {
             onRemoveAssignment={onRemoveAssignment}
             onClose={handleClosePanel}
             onOpenLinkBuilder={id => setLinkBuilderTaskId(id)}
+            onOpenChangeOrders={handleOpenChangeOrders}
+            onStartLinkChangeOrder={() => handleOpenChangeOrders()}
             mode="mobile"
           />
         </MobileBottomSheet>

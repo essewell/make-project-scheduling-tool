@@ -5,6 +5,7 @@ import { useDialogA11y } from '../../hooks/useDialogA11y'
 interface ChangeOrderManagerProps {
   open: boolean
   changeOrders: ChangeOrder[]
+  selectedChangeOrderId?: string | null
   onClose: () => void
 }
 
@@ -15,7 +16,12 @@ const STATUS_FILTERS: Array<{ value: 'all' | ChangeOrderStatus; label: string }>
   { value: 'rejected', label: 'Rejected' },
 ]
 
-export function ChangeOrderManager({ open, changeOrders, onClose }: ChangeOrderManagerProps) {
+export function ChangeOrderManager({
+  open,
+  changeOrders,
+  selectedChangeOrderId,
+  onClose,
+}: ChangeOrderManagerProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const [filter, setFilter] = useState<'all' | ChangeOrderStatus>('all')
   useDialogA11y({ containerRef: dialogRef, onClose, enabled: open })
@@ -116,6 +122,7 @@ export function ChangeOrderManager({ open, changeOrders, onClose }: ChangeOrderM
                 key={changeOrder.id}
                 style={{
                   border: '1px solid var(--color-border)',
+                  outline: selectedChangeOrderId === changeOrder.id ? '2px solid var(--accent)' : 'none',
                   borderRadius: 'var(--radius)',
                   padding: '10px',
                   display: 'grid',
