@@ -56,7 +56,7 @@ export function VarianceTrendChart({ snapshots, activeBaselineId }: VarianceTren
     return (
       <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius)', padding: 10 }}>
         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
-          Capture baseline and wait for trend to build.
+          Capture at least two snapshots to view variance trend.
         </div>
       </div>
     )
