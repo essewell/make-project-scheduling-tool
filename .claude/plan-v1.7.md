@@ -1285,3 +1285,25 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:unit` ✅
 - Notes
   - Check 16 currently computes resource-day capacity compliance directly from assignment spans and capacities for deterministic assessment.
+### Phase H — AC/CPI EVM and Executive Surface Completion
+
+- Scope
+  - Updated `EVMPreview` KPI grid from 3 to 5 metrics (PV/EV/AC/SPI/CPI).
+  - Removed deferred AC/CPI explanatory footer from EVM surface.
+  - Updated executive report preview to display combined `SPI · CPI` line with null-safe rendering.
+  - Extended executive report data model and builder to include `cpi`.
+  - Updated report-data tests and reports documentation.
+- Files touched
+  - `src/components/reports/EVMPreview.tsx`
+  - `src/components/reports/ExecutiveReportPreview.tsx`
+  - `src/types/index.ts`
+  - `src/lib/reportData.ts`
+  - `tests/unit/lib/reportData.test.ts`
+  - `docs/reports.md`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Notes
+  - CPI now flows from `computeEVM` into executive preview through report-data construction (no view-local recompute).

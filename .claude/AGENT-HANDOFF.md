@@ -195,3 +195,23 @@
 - Next 2 actions:
   1. Phase H: update EVM and executive report surfaces for AC/CPI display completion.
   2. Phase I: implement CSV WBS/Actual Cost round-trip support.
+
+## Phase H Update (2026-05-26)
+
+- Completed Phase H EVM/Executive AC+CPI close-out:
+  - Updated EVM KPI strip to five metrics: PV, EV, AC, SPI, CPI.
+  - Removed v1.6 AC/CPI deferral footer from EVM preview.
+  - Updated Executive summary SPI section to render `SPI · CPI` with null-safe fallback.
+  - Extended `ExecutiveReportData` and report-data builder to include `cpi`.
+  - Updated reportData unit tests and reports doc copy to AC/CPI-complete state.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Last 3 decisions:
+  1. Keep CPI null fallback explicit in UI (`—`) when AC is zero.
+  2. Keep AC metric always visible in EVM for stable layout/comparability.
+  3. Thread `cpi` through executive report data model instead of computing in preview.
+- Next 2 actions:
+  1. Phase I: CSV export/import WBS + Actual Cost round-trip.
+  2. Phase J: edge-state polish and post-implementation perf re-measure.

@@ -225,6 +225,7 @@ export interface ExecutiveReportData {
   statusDate: string
   healthScore: number
   spi: number | null
+  cpi: number | null
   topVariances: ExecutiveVarianceItem[]
   topRisks: ExecutiveRiskItem[]
   nextMilestones: ExecutiveMilestoneItem[]
