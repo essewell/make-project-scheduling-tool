@@ -1,0 +1,33 @@
+@media print {
+  body.report-print .app {
+    display: none !important;
+  }
+
+  body.report-print .modal-overlay {
+    position: static !important;
+    inset: auto !important;
+    background: transparent !important;
+  }
+
+  body.report-print .modal-box {
+    width: auto !important;
+    max-width: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  body.report-print .report-print-page {
+    display: block !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  body.report-print .weekly-report-page {
+    min-height: auto !important;
+  }
+}

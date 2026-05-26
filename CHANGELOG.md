@@ -2,6 +2,30 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.6.0] - 2026-05-25
+
+### Added
+- Reporting & analytics foundation:
+  - Reports modal with five report modes (S-curve, EVM, Cash Flow, Executive Summary, Weekly Progress).
+  - Pure analytics libraries: `scurve`, `evm`, `cashflow`, `reportData`, `weeklyReport`.
+  - S-curve preview and chart with planned vs actual lines and variance summary.
+  - EVM preview with PV/EV/SPI and explicit AC/CPI deferral note.
+  - Cash-flow preview with stacked monthly category bars.
+  - Executive summary preview with six owner-facing sections and report print-mode export path.
+  - Weekly progress editor with transient narrative fields and export advisory.
+- Audit-v4 carry-over closures:
+  - Quality Panel failing-only default with “Show all 14 checks” toggle.
+  - Variance trend health-line toggle and health sparkline in score breakdown.
+  - Baseline compare change-order chips on slipped rows.
+  - A3 Gantt print title now includes `Quality: NN/100`.
+- New/extended E2E coverage for reports modal and updated quality/baseline behaviors.
+
+### Changed
+- Performance close-out for Quality Panel cold-open path via deferred heavy chart mount and preprocessed baseline snapshot grouping.
+- Documentation refresh for v1.6:
+  - `CLAUDE.md` active-version/schema/design-decision updates.
+  - design-system, onboarding QA, and DCMA docs updated for reporting/quality behavior.
+
 ## [0.5.0] - 2026-05-25
 
 ### Added

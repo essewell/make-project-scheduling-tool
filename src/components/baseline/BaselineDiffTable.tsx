@@ -1,7 +1,8 @@
-import type { BaselineDiff } from '../../types'
+import type { BaselineDiff, ChangeOrder } from '../../types'
 
 interface BaselineDiffTableProps {
   diff: BaselineDiff
+  changeOrders?: ChangeOrder[]
 }
 
 const DELTA: React.CSSProperties = {
@@ -11,7 +12,15 @@ const DELTA: React.CSSProperties = {
   textAlign: 'right',
 }
 
-export function BaselineDiffTable({ diff }: BaselineDiffTableProps) {
+export function BaselineDiffTable({ diff, changeOrders = [] }: BaselineDiffTableProps) {
+  const changeOrderLabelsByTask = new Map<string, string[]>()
+  diff.slipped.forEach((row) => {
+    const labels = changeOrders
+      .filter((changeOrder) => changeOrder.affectedTaskIds.includes(row.taskId))
+      .map((changeOrder) => changeOrder.number)
+    changeOrderLabelsByTask.set(row.taskId, labels)
+  })
+
   return (
     <div style={{ display: 'grid', gap: 12 }}>
       <section>
@@ -31,6 +40,25 @@ export function BaselineDiffTable({ diff }: BaselineDiffTableProps) {
                   <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)' }}>
                     {row.baselineAFinish} → {row.baselineBFinish}
                   </div>
+                  {(changeOrderLabelsByTask.get(row.taskId) ?? []).length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 3 }}>
+                      {(changeOrderLabelsByTask.get(row.taskId) ?? []).map((label) => (
+                        <span
+                          key={`${row.taskId}-${label}`}
+                          style={{
+                            fontSize: 'var(--text-3xs)',
+                            fontFamily: 'var(--font-mono)',
+                            padding: '1px 4px',
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'var(--color-selected-bg)',
+                            color: 'var(--color-text-secondary)',
+                          }}
+                        >
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div style={DELTA}>+{row.slipDays}d</div>
                 <div style={DELTA}>{row.costDelta >= 0 ? '+' : ''}${row.costDelta.toLocaleString()}</div>

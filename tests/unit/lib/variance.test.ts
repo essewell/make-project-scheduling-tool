@@ -56,7 +56,7 @@ describe('variance lib', () => {
 
   it('appendVarianceSnapshot appends new date and replaces same-day same-baseline snapshot', () => {
     const base: VarianceSnapshot[] = [
-      { date: '2026-05-01', activeBaselineId: 'b1', projectFinishVariance: 1, criticalPathLength: 10 },
+      { date: '2026-05-01', activeBaselineId: 'b1', projectFinishVariance: 1, criticalPathLength: 10, compositeHealthScore: 76 },
     ]
 
     const appended = appendVarianceSnapshot(base, {
@@ -64,6 +64,7 @@ describe('variance lib', () => {
       activeBaselineId: 'b1',
       projectFinishVariance: 2,
       criticalPathLength: 11,
+      compositeHealthScore: 80,
     })
     expect(appended).toHaveLength(2)
 
@@ -72,9 +73,11 @@ describe('variance lib', () => {
       activeBaselineId: 'b1',
       projectFinishVariance: 3,
       criticalPathLength: 12,
+      compositeHealthScore: 82,
     })
     expect(replaced).toHaveLength(2)
     expect(replaced.find((snapshot) => snapshot.date === '2026-05-02')?.projectFinishVariance).toBe(3)
+    expect(replaced.find((snapshot) => snapshot.date === '2026-05-02')?.compositeHealthScore).toBe(82)
   })
 
   it('trimSnapshots enforces max per baseline and keeps most recent snapshots', () => {

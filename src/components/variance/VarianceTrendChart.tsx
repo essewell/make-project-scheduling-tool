@@ -3,12 +3,12 @@ import type { VarianceSnapshot } from '../../types'
 
 interface VarianceTrendChartProps {
   snapshots: VarianceSnapshot[]
-  activeBaselineId: string | null
 }
 
 interface Point {
   date: string
   variance: number
+  healthScore: number | null
 }
 
 const CHART_HEIGHT = 140
@@ -20,27 +20,29 @@ function toDate(date: string): number {
   return new Date(`${date}T00:00:00`).getTime()
 }
 
-export function VarianceTrendChart({ snapshots, activeBaselineId }: VarianceTrendChartProps) {
+export function VarianceTrendChart({ snapshots }: VarianceTrendChartProps) {
   const [hoveredDate, setHoveredDate] = useState<string | null>(null)
+  const [showHealthScore, setShowHealthScore] = useState(false)
 
   useEffect(() => {
     setHoveredDate(null)
-  }, [activeBaselineId])
+  }, [snapshots])
 
   const points = useMemo<Point[]>(() => {
-    if (!activeBaselineId) return []
-    const filtered = snapshots
-      .filter((snapshot) => snapshot.activeBaselineId === activeBaselineId)
-      .sort((left, right) => left.date.localeCompare(right.date))
-    if (filtered.length === 0) return []
-    if (filtered.length < 90) {
-      return filtered.map((snapshot) => ({ date: snapshot.date, variance: snapshot.projectFinishVariance }))
+    if (snapshots.length === 0) return []
+    if (snapshots.length < 90) {
+      return snapshots.map((snapshot) => ({
+        date: snapshot.date,
+        variance: snapshot.projectFinishVariance,
+        healthScore: typeof snapshot.compositeHealthScore === 'number' ? snapshot.compositeHealthScore : null,
+      }))
     }
-    return filtered.slice(filtered.length - 90).map((snapshot) => ({
+    return snapshots.slice(snapshots.length - 90).map((snapshot) => ({
       date: snapshot.date,
       variance: snapshot.projectFinishVariance,
+      healthScore: typeof snapshot.compositeHealthScore === 'number' ? snapshot.compositeHealthScore : null,
     }))
-  }, [snapshots, activeBaselineId])
+  }, [snapshots])
 
   const hovered = hoveredDate ? points.find((point) => point.date === hoveredDate) ?? null : null
 
@@ -77,8 +79,17 @@ export function VarianceTrendChart({ snapshots, activeBaselineId }: VarianceTren
     const ratio = (variance - minY) / ySpan
     return CHART_HEIGHT - PAD_Y - ratio * (CHART_HEIGHT - PAD_Y * 2)
   }
+  const toHealthY = (healthScore: number): number => {
+    const bounded = Math.max(0, Math.min(100, healthScore))
+    const ratio = bounded / 100
+    return CHART_HEIGHT - PAD_Y - ratio * (CHART_HEIGHT - PAD_Y * 2)
+  }
 
   const polyline = points.map((point) => `${toSvgX(point.date)},${toSvgY(point.variance)}`).join(' ')
+  const healthPolyline = points
+    .filter((point) => point.healthScore !== null)
+    .map((point) => `${toSvgX(point.date)},${toHealthY(point.healthScore ?? 0)}`)
+    .join(' ')
   const zeroY = toSvgY(0)
   const lineColor = trendDegrading ? 'var(--health-amber)' : 'var(--health-green)'
 
@@ -97,6 +108,9 @@ export function VarianceTrendChart({ snapshots, activeBaselineId }: VarianceTren
           strokeWidth="1"
         />
         <polyline fill="none" stroke={lineColor} strokeWidth="2" points={polyline} />
+        {showHealthScore && healthPolyline.length > 0 && (
+          <polyline fill="none" stroke="var(--health-sparkline)" strokeWidth="1.5" strokeDasharray="4 2" points={healthPolyline} />
+        )}
         {points.map((point) => {
           const x = toSvgX(point.date)
           const y = toSvgY(point.variance)
@@ -116,8 +130,23 @@ export function VarianceTrendChart({ snapshots, activeBaselineId }: VarianceTren
       {hovered && (
         <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-secondary)', marginTop: 4 }}>
           {hovered.date} · variance {hovered.variance >= 0 ? '+' : ''}{hovered.variance}d
+          {showHealthScore && hovered.healthScore !== null ? ` · health ${hovered.healthScore}` : ''}
         </div>
       )}
+      <button
+        onClick={() => setShowHealthScore((value) => !value)}
+        style={{
+          marginTop: 6,
+          border: 'none',
+          background: 'none',
+          padding: 0,
+          fontSize: 'var(--text-2xs)',
+          color: 'var(--accent)',
+          cursor: 'pointer',
+        }}
+      >
+        {showHealthScore ? 'Hide health score' : 'Show health score'}
+      </button>
     </div>
   )
 }

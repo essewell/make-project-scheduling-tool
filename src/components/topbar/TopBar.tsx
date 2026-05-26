@@ -8,6 +8,7 @@ import {
   Bookmarks,
   CalendarBlank,
   Camera,
+  ChartLine,
   Download,
   FileText,
   Minus,
@@ -43,6 +44,7 @@ interface TopBarProps {
   onOpenResources: () => void
   onOpenQuality: () => void
   onOpenChangeOrders: () => void
+  onOpenReports: () => void
   onOpenCsvImport: () => void
   onOpenPrint: () => void
   onExportCsv: () => void
@@ -94,7 +96,7 @@ export function TopBar({
   baselines, activeBaselineId, ghostStyle,
   onCaptureBaseline, onSetActiveBaseline, onDeleteBaseline, onCompareBaselines, onSetGhostStyle,
   onOpenWorkweek, onOpenGroups, onOpenParties, onOpenResources,
-  onOpenQuality, onOpenChangeOrders,
+  onOpenQuality, onOpenChangeOrders, onOpenReports,
   onOpenCsvImport, onOpenPrint, onExportCsv,
   baselineMenuOpenSignal,
   hasDeps, showCriticalPath, onToggleCriticalPath,
@@ -184,6 +186,7 @@ export function TopBar({
           <button onClick={onOpenResources} style={ICON_BTN}><Users size={14} weight="regular" aria-hidden="true" />Resources</button>
           <button onClick={onOpenChangeOrders} style={ICON_BTN}><FileText size={14} weight="regular" aria-hidden="true" />Change Orders</button>
           <button onClick={onOpenQuality} style={ICON_BTN}><ShieldCheck size={14} weight="regular" aria-hidden="true" />Quality</button>
+          <button onClick={onOpenReports} style={ICON_BTN}><ChartLine size={14} weight="regular" aria-hidden="true" />Reports</button>
         </div>
 
         {/* Data buttons */}

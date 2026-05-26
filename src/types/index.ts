@@ -148,6 +148,76 @@ export interface VarianceSnapshot {
   activeBaselineId: string
   projectFinishVariance: number
   criticalPathLength: number
+  compositeHealthScore?: number | null
+}
+
+// ─── Reporting / analytics ───────────────────────────────────────────────────
+
+export type SCurveBucketing = 'weekly' | 'monthly'
+
+export interface SCurvePoint {
+  date: string
+  plannedPct: number
+  actualPct: number
+}
+
+export interface SCurveSeries {
+  bucketing: SCurveBucketing
+  points: SCurvePoint[]
+  variancePct: number
+}
+
+export interface EVMResult {
+  pv: number
+  ev: number
+  ac: number | null
+  spi: number | null
+  cpi: number | null
+}
+
+export interface MonthlyCashFlowBucket {
+  month: string
+  labor: number
+  equipment: number
+  material: number
+  total: number
+}
+
+export interface ExecutiveVarianceItem {
+  taskId: string
+  name: string
+  baselineFinish: string
+  currentFinish: string
+  slipDays: number
+}
+
+export interface ExecutiveRiskItem {
+  checkId: number
+  name: string
+  severity: number
+}
+
+export interface ExecutiveMilestoneItem {
+  taskId: string
+  name: string
+  finish: string
+}
+
+export interface ExecutiveReportData {
+  statusDate: string
+  healthScore: number
+  spi: number | null
+  topVariances: ExecutiveVarianceItem[]
+  topRisks: ExecutiveRiskItem[]
+  nextMilestones: ExecutiveMilestoneItem[]
+}
+
+export interface WeeklyReportData {
+  weekEnding: string
+  completedTaskIds: string[]
+  plannedTaskIds: string[]
+  varianceTaskIds: string[]
+  recentChangeOrderIds: string[]
 }
 
 // ─── Workweek / Calendar ─────────────────────────────────────────────────────

@@ -1,15 +1,16 @@
-# Design System — v1.3 Foundation
+# Design System — v1.6 Reporting Extension
 
-Date: 2026-05-22
+Date: 2026-05-25
 
 ## Scope
 
-This document tracks foundation token and icon conventions through v1.3:
+This document tracks design-token and icon conventions through v1.6:
 - token additions in `src/styles/tokens.css`
 - radius scale tightening
 - Phosphor icon canonical usage surface
 - resource histogram tokenization
 - resource color-cycle policy
+- reporting/analytics token extensions (v1.6)
 
 ## Token Additions
 
@@ -94,3 +95,16 @@ v1.5 (multi-baseline & change management) adds no new color tokens. The plan cal
 - Baseline locked icon → `--color-text-tertiary` inline
 
 This was the correct decision: new tokens are only introduced when an existing token would be semantically misleading. The health palette maps cleanly to "on track / drifting," so no new token was needed.
+
+## v1.6 Token Additions
+
+Added in light + dark mode for reporting and carry-over surfaces:
+- S-curve lines: `--scurve-planned`, `--scurve-actual`
+- EVM lines: `--evm-line-pv`, `--evm-line-ev`
+- Cash-flow stacks: `--cashflow-labor`, `--cashflow-equipment`, `--cashflow-material`
+- Health overlay line: `--health-sparkline`
+
+## v1.6 Icon Additions
+
+Added to canonical export list in `src/lib/icons.ts`:
+- `ChartLine`

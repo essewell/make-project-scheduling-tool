@@ -220,6 +220,7 @@ export function PrintPreviewModal({
                   groupMap={groupMap}
                   partyMap={partyMap}
                   projectName={projectName}
+                  healthScore={healthScore}
                   minDate={minDate}
                   dayPx={dayPx}
                   today={today}
@@ -273,6 +274,7 @@ interface GanttPrintLayoutProps {
   groupMap: Map<string, Group>
   partyMap: Map<string, Party>
   projectName: string
+  healthScore: number
   minDate: string
   dayPx: number
   today: string
@@ -280,7 +282,7 @@ interface GanttPrintLayoutProps {
   projectFinishVariance?: number | null
 }
 
-function GanttPrintLayout({ tasks, groupMap, projectName, minDate, dayPx, today, activeBaselineName, projectFinishVariance }: GanttPrintLayoutProps) {
+function GanttPrintLayout({ tasks, groupMap, projectName, healthScore, minDate, dayPx, today, activeBaselineName, projectFinishVariance }: GanttPrintLayoutProps) {
   const ganttW = A3_W - PRINT_TL_W
 
   // Today line offset
@@ -297,6 +299,9 @@ function GanttPrintLayout({ tasks, groupMap, projectName, minDate, dayPx, today,
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 7, color: '#7ca9cc', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Printed</div>
           <div style={{ fontSize: 9, color: '#fff', fontFamily: 'monospace' }}>{prettyDate(today)}</div>
+          <div style={{ fontSize: 8, color: '#fff', fontFamily: 'monospace', marginTop: 1 }}>
+            Quality: {healthScore}/100
+          </div>
           {activeBaselineName && (
             <div style={{ fontSize: 7, color: '#7ca9cc', fontFamily: 'monospace', marginTop: 1 }}>
               Baseline: {activeBaselineName}{typeof projectFinishVariance === 'number' ? ` · variance ${projectFinishVariance >= 0 ? '+' : ''}${projectFinishVariance}d` : ''}

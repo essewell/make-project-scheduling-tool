@@ -28,3 +28,7 @@ Phase 0.2 documentation is prepared and awaiting human-executed device results t
 ## v1.5 Defer Reaffirmation (2026-05-23)
 
 v1.5 scope is desktop-first (multi-baseline, change orders, variance trend, and comparison surfaces), with no mobile-only UI additions planned in this version. Real-device mobile QA remains intentionally deferred in v1.5 and will be revisited when a version introduces new mobile interactions that require physical gesture validation.
+
+## v1.6 Defer Reaffirmation (2026-05-25)
+
+v1.6 starts desktop-first reporting and analytics implementation (reports modal, S-curve/EVM/cashflow previews, and print-focused report surfaces). No new touch-first interaction model is introduced in Phase 0, so physical-device QA remains intentionally deferred for this phase while the desktop reporting foundation is built.

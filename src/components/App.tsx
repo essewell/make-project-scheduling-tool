@@ -11,6 +11,11 @@ import { computeResourceDemand } from '../lib/resourceDemand'
 import { runDcmaAssessment } from '../lib/dcma'
 import { buildFloatDistribution } from '../lib/floatDistribution'
 import { computeScheduleHealth } from '../lib/health'
+import { computeSCurve } from '../lib/scurve'
+import { computeEVM } from '../lib/evm'
+import { computeMonthlyCashFlow } from '../lib/cashflow'
+import { buildExecutiveReport } from '../lib/reportData'
+import { buildWeeklyReport } from '../lib/weeklyReport'
 import { linkChangeOrderToTask, unlinkChangeOrderFromTask } from '../lib/changeOrders'
 import { findBaselineById } from '../lib/baselines'
 import { appendVarianceSnapshot, computeProjectFinishVariance, trimSnapshots } from '../lib/variance'
@@ -42,6 +47,13 @@ import { QualityPanel } from './modals/QualityPanel'
 import { CaptureBaselineModal, type CaptureBaselineValues } from './modals/CaptureBaselineModal'
 import { ChangeOrderManager } from './modals/ChangeOrderManager'
 import { BaselineCompareModal } from './modals/BaselineCompareModal'
+import { ReportsModal } from './modals/ReportsModal'
+import type { ReportType } from './reports/ReportTypeList'
+import { SCurvePreview } from './reports/SCurvePreview'
+import { EVMPreview } from './reports/EVMPreview'
+import { CashFlowPreview } from './reports/CashFlowPreview'
+import { ExecutiveReportPreview } from './reports/ExecutiveReportPreview'
+import { WeeklyReportEditor } from './reports/WeeklyReportEditor'
 import { StatBar } from './StatBar'
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -90,6 +102,13 @@ export function App() {
   const [changeOrderManagerOpen, setChangeOrderManagerOpen] = useState(false)
   const [changeOrderEditingId, setChangeOrderEditingId] = useState<string | null>(null)
   const [compareModalOpen, setCompareModalOpen] = useState<{ aId: string | null; bId: string | null } | null>(null)
+  const [reportsModalOpen, setReportsModalOpen] = useState(false)
+  const [reportsModalSelectedType, setReportsModalSelectedType] = useState<ReportType>('s-curve')
+  const [weeklyNarrative, setWeeklyNarrative] = useState({
+    highlights: '',
+    concerns: '',
+    lookAhead: '',
+  })
 
   // ── Undo stack (transient — restore fns can't be serialized) ─────────────────
   const [undoStack, setUndoStack] = useState<UndoEntry[]>([])
@@ -109,6 +128,7 @@ export function App() {
       activeBaselineId,
       projectFinishVariance: computeProjectFinishVariance(enrichedTasks, activeBaseline),
       criticalPathLength: qualityCpm?.criticalIds.size ?? 0,
+      compositeHealthScore: scheduleHealth.score,
     })
     updateState({ varianceSnapshots: trimSnapshots(next) })
   })
@@ -269,6 +289,76 @@ export function App() {
       weights: HEALTH_WEIGHTS,
     })
   }, [dcmaAssessment, enrichedTasks, overAllocatedResourceCount, resources.length, floatDistribution])
+
+  const activeBaseline = useMemo(
+    () => (activeBaselineId ? findBaselineById(baselines, activeBaselineId) : null),
+    [baselines, activeBaselineId],
+  )
+
+  const scurveSeries = useMemo(
+    () => computeSCurve(enrichedTasks, activeBaseline, 'monthly'),
+    [enrichedTasks, activeBaseline],
+  )
+
+  const evmResult = useMemo(
+    () => computeEVM(enrichedTasks, activeBaseline, assignments, resources, today),
+    [enrichedTasks, activeBaseline, assignments, resources, today],
+  )
+
+  const cashFlowBuckets = useMemo(
+    () => computeMonthlyCashFlow(enrichedTasks, assignments, resources),
+    [enrichedTasks, assignments, resources],
+  )
+
+  const executiveReport = useMemo(
+    () => buildExecutiveReport({
+      tasks: enrichedTasks,
+      baseline: activeBaseline,
+      assessment: dcmaAssessment,
+      healthScore: scheduleHealth.score,
+      evm: evmResult,
+      statusDate: today,
+    }),
+    [enrichedTasks, activeBaseline, dcmaAssessment, scheduleHealth.score, evmResult, today],
+  )
+
+  const weeklyReport = useMemo(
+    () => buildWeeklyReport({
+      tasks: enrichedTasks,
+      changeOrders,
+      weekEnding: today,
+    }),
+    [enrichedTasks, changeOrders, today],
+  )
+
+  const varianceSnapshotsByBaseline = useMemo(() => {
+    const grouped = new Map<string, typeof varianceSnapshots>()
+    varianceSnapshots.forEach((snapshot) => {
+      const list = grouped.get(snapshot.activeBaselineId)
+      if (list) {
+        list.push(snapshot)
+      } else {
+        grouped.set(snapshot.activeBaselineId, [snapshot])
+      }
+    })
+    grouped.forEach((snapshotsForBaseline) => {
+      snapshotsForBaseline.sort((left, right) => left.date.localeCompare(right.date))
+    })
+    return grouped
+  }, [varianceSnapshots])
+
+  const activeBaselineSnapshots = useMemo(() => {
+    if (!activeBaselineId) return []
+    return varianceSnapshotsByBaseline.get(activeBaselineId) ?? []
+  }, [activeBaselineId, varianceSnapshotsByBaseline])
+
+  const healthHistory = useMemo(
+    () =>
+      activeBaselineSnapshots
+        .map((snapshot) => snapshot.compositeHealthScore)
+        .filter((score): score is number => typeof score === 'number'),
+    [activeBaselineSnapshots],
+  )
 
   useEffect(() => {
     if (resources.length === 0) {
@@ -712,6 +802,21 @@ export function App() {
     setCompareModalOpen({ aId: first?.id ?? null, bId: second?.id ?? null })
   }, [baselines])
 
+  const handleExportReportPdf = useCallback(() => {
+    const body = document.body
+    const className = 'report-print'
+    const cleanup = () => {
+      body.classList.remove(className)
+      window.removeEventListener('afterprint', cleanup)
+    }
+    body.classList.add(className)
+    window.addEventListener('afterprint', cleanup)
+    window.requestAnimationFrame(() => {
+      window.print()
+      window.setTimeout(cleanup, 500)
+    })
+  }, [])
+
   return (
     <div className="app" data-phase={onboardingPhase}>
       {showWizard && (
@@ -746,6 +851,7 @@ export function App() {
             onOpenResources={() => setResourcesManagerOpen(true)}
             onOpenChangeOrders={() => handleOpenChangeOrders()}
             onOpenQuality={() => setQualityPanelOpen(true)}
+            onOpenReports={() => setReportsModalOpen(true)}
             onOpenCsvImport={() => setCsvImportOpen(true)}
             onOpenPrint={() => setPrintPreviewOpen(true)}
             onExportCsv={handleExportCsv}
@@ -1009,8 +1115,8 @@ export function App() {
         assessment={dcmaAssessment}
         health={scheduleHealth}
         floatDistribution={floatDistribution}
-        varianceSnapshots={varianceSnapshots}
-        activeBaselineId={activeBaselineId}
+        activeBaselineSnapshots={activeBaselineSnapshots}
+        healthHistory={healthHistory}
         onOpenBaselineMenu={handleOpenBaselineMenuFromQuality}
         onClose={() => setQualityPanelOpen(false)}
       />
@@ -1038,6 +1144,7 @@ export function App() {
         baselines={baselines}
         baselineAId={compareModalOpen?.aId ?? null}
         baselineBId={compareModalOpen?.bId ?? null}
+        changeOrders={changeOrders}
         onChangeBaselineA={(baselineId) => {
           setCompareModalOpen((prev) => (prev ? { ...prev, aId: baselineId } : prev))
         }}
@@ -1045,6 +1152,44 @@ export function App() {
           setCompareModalOpen((prev) => (prev ? { ...prev, bId: baselineId } : prev))
         }}
         onClose={() => setCompareModalOpen(null)}
+      />
+
+      <ReportsModal
+        open={reportsModalOpen}
+        hasTasks={enrichedTasks.length > 0}
+        selectedType={reportsModalSelectedType}
+        onSelectType={setReportsModalSelectedType}
+        onClose={() => setReportsModalOpen(false)}
+        preview={(
+          <div
+            style={{
+              margin: 0,
+              fontSize: 'var(--text-2xs)',
+              color: 'var(--color-text-secondary)',
+            }}
+          >
+            {reportsModalSelectedType === 's-curve' && <SCurvePreview series={scurveSeries} statusDate={today} />}
+            {reportsModalSelectedType === 'evm' && <EVMPreview evm={evmResult} hasBaseline={activeBaseline !== null} />}
+            {reportsModalSelectedType === 'cash-flow' && <CashFlowPreview buckets={cashFlowBuckets} />}
+            {reportsModalSelectedType === 'executive-summary' && (
+              <ExecutiveReportPreview
+                report={executiveReport}
+                scurve={scurveSeries}
+                hasBaseline={activeBaseline !== null}
+                hasCostData={cashFlowBuckets.some((bucket) => bucket.total > 0)}
+                onExportPdf={handleExportReportPdf}
+              />
+            )}
+            {reportsModalSelectedType === 'weekly-progress' && (
+              <WeeklyReportEditor
+                report={weeklyReport}
+                narrative={weeklyNarrative}
+                onChange={setWeeklyNarrative}
+                onExportPdf={handleExportReportPdf}
+              />
+            )}
+          </div>
+        )}
       />
 
       {mobilePanelOpen && (
