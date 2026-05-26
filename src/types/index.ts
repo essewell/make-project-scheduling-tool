@@ -287,7 +287,7 @@ export interface PersistedState {
 // ─── Visible rows (task list rendering) ──────────────────────────────────────
 
 export type VisibleRow =
-  | { kind: 'group'; groupId: string; name: string; color: string; count: number; collapsed: boolean }
+  | { kind: 'group'; groupId: string; name: string; color: string; count: number; collapsed: boolean; depth?: number; wbsCode?: string }
   | { kind: 'task'; task: Task }
 
 // ─── Gantt timeline ──────────────────────────────────────────────────────────

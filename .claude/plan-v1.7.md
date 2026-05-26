@@ -1178,3 +1178,31 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:unit` ✅
 - Notes
   - Migration remains additive and round-trip safe for legacy payloads exercised in storage unit suite.
+### Phase C — App Wiring and Tree-Ordered Visible Rows
+
+- Scope
+  - Implemented App-level derived hierarchy/cost state:
+    - `groupNodes` via `walkGroupTree(groups)`
+    - memoized group rollups map via `computeGroupRollup`
+    - memoized `totalActualCost` via `computeTotalActualCost`
+  - Replaced flat `visibleRows` builder with hierarchy-driven tree order:
+    - renders groups in depth order from `groupNodes`
+    - carries `depth` + `wbsCode` metadata on group rows
+    - preserves collapse behavior
+    - appends orphan/un-grouped tasks defensively
+  - Updated EVM integration path:
+    - `computeEVM` now accepts `totalActualCost`
+    - returns `ac` numeric and `cpi` when AC > 0
+    - updated EVM unit tests accordingly
+- Files touched
+  - `src/components/App.tsx`
+  - `src/lib/evm.ts`
+  - `src/types/index.ts`
+  - `tests/unit/lib/evm.test.ts`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Notes
+  - Group rollups are memoized in App and intentionally staged for Phase D UI consumption.

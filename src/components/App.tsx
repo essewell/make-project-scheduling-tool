@@ -16,6 +16,9 @@ import { computeEVM } from '../lib/evm'
 import { computeMonthlyCashFlow } from '../lib/cashflow'
 import { buildExecutiveReport } from '../lib/reportData'
 import { buildWeeklyReport } from '../lib/weeklyReport'
+import { computeTotalActualCost } from '../lib/actualCost'
+import { computeGroupRollup } from '../lib/rollups'
+import { getDescendantTaskIds, walkGroupTree } from '../lib/wbs'
 import { linkChangeOrderToTask, unlinkChangeOrderFromTask } from '../lib/changeOrders'
 import { findBaselineById } from '../lib/baselines'
 import { appendVarianceSnapshot, computeProjectFinishVariance, trimSnapshots } from '../lib/variance'
@@ -159,32 +162,55 @@ export function App() {
     })
   }, [enrichedTasks, searchTerm, filterState])
 
+  const groupNodes = useMemo(() => walkGroupTree(groups), [groups])
+
   const visibleRows = useMemo(() => {
-    const filtered = filteredTasks
-
     const rows: import('../types').VisibleRow[] = []
-    const seenGroups = new Set<string>()
-
-    for (const task of filtered) {
-      if (!seenGroups.has(task.group)) {
-        seenGroups.add(task.group)
-        const group = groups.find(g => g.id === task.group)
-        const count = filtered.filter(t => t.group === task.group).length
-        rows.push({
-          kind: 'group',
-          groupId: task.group,
-          name: group?.name ?? task.group,
-          color: group?.color ?? '#378ADD',
-          count,
-          collapsed: collapsedGroups.includes(task.group),
-        })
+    const tasksByGroup = new Map<string, Task[]>()
+    filteredTasks.forEach((task) => {
+      const bucket = tasksByGroup.get(task.group)
+      if (bucket) {
+        bucket.push(task)
+      } else {
+        tasksByGroup.set(task.group, [task])
       }
-      if (!collapsedGroups.includes(task.group)) {
+    })
+
+    const groupById = new Map(groups.map((group) => [group.id, group]))
+
+    groupNodes.forEach((node) => {
+      const group = groupById.get(node.id)
+      if (!group) return
+
+      const descendantTaskIds = new Set(getDescendantTaskIds(node.id, groups, filteredTasks))
+      if (descendantTaskIds.size === 0) return
+
+      const directTasks = tasksByGroup.get(node.id) ?? []
+      const collapsed = collapsedGroups.includes(node.id)
+      rows.push({
+        kind: 'group',
+        groupId: node.id,
+        name: group.name,
+        color: group.color,
+        count: descendantTaskIds.size,
+        collapsed,
+        depth: node.depth,
+        wbsCode: node.wbsCode,
+      })
+
+      if (collapsed) return
+      directTasks.forEach((task) => rows.push({ kind: 'task', task }))
+    })
+
+    const groupedTaskIds = new Set(rows.filter((row) => row.kind === 'task').map((row) => row.task.id))
+    filteredTasks.forEach((task) => {
+      if (!groupById.has(task.group) && !groupedTaskIds.has(task.id)) {
         rows.push({ kind: 'task', task })
       }
-    }
+    })
+
     return rows
-  }, [filteredTasks, groups, collapsedGroups])
+  }, [filteredTasks, groups, collapsedGroups, groupNodes])
 
   const visibleTaskIds = useMemo(
     () => visibleRows.filter(r => r.kind === 'task').map(r => (r as { kind: 'task'; task: Task }).task.id),
@@ -225,6 +251,18 @@ export function App() {
   )
 
   const projectCost = useMemo(() => computeProjectTotalCost(taskCosts), [taskCosts])
+  const totalActualCost = useMemo(() => computeTotalActualCost(enrichedTasks), [enrichedTasks])
+
+  const _groupRollups = useMemo(
+    () =>
+      new Map(
+        groups.map((group) => [
+          group.id,
+          computeGroupRollup(group.id, groups, enrichedTasks, taskCosts, assignments),
+        ]),
+      ),
+    [groups, enrichedTasks, taskCosts, assignments],
+  )
 
   const overAllocationByResource = useMemo(() => {
     return resources.map((resource) => {
@@ -301,8 +339,8 @@ export function App() {
   )
 
   const evmResult = useMemo(
-    () => computeEVM(enrichedTasks, activeBaseline, assignments, resources, today),
-    [enrichedTasks, activeBaseline, assignments, resources, today],
+    () => computeEVM(enrichedTasks, activeBaseline, assignments, resources, today, totalActualCost),
+    [enrichedTasks, activeBaseline, assignments, resources, today, totalActualCost],
   )
 
   const cashFlowBuckets = useMemo(

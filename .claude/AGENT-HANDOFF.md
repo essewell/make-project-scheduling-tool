@@ -94,3 +94,24 @@
 - Next 2 actions:
   1. Start Phase C App.tsx wiring for WBS-aware derived state and rollup integration.
   2. Begin TaskList WBS column + group indentation integration in Phase D.
+## Phase C Update (2026-05-26)
+
+- Completed Phase C App wiring:
+  - Added App-level memoized hierarchy derivations:
+    - `groupNodes = walkGroupTree(groups)`
+    - `groupRollups` map (memoized, ready for Phase D surface wiring)
+    - `totalActualCost = computeTotalActualCost(enrichedTasks)`
+  - Rewrote `visibleRows` to tree-order traversal based on group hierarchy depth instead of flat task-first grouping.
+  - Preserved collapsed-group behavior while rendering depth/WBS metadata on group rows.
+  - Wired EVM memo to consume `totalActualCost` and updated `computeEVM` to accept AC input and compute CPI.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Last 3 decisions:
+  1. Keep group rollups memoized in App even before TaskList consumption (Phase D).
+  2. Keep orphaned tasks visible by appending ungroupped rows after tree render.
+  3. Move AC/CPI compute hook-up earlier to remove fake dependencies and keep lint strict.
+- Next 2 actions:
+  1. Phase D: TaskList WBS column and group indentation/rollup pill rendering.
+  2. Phase E: SidePanel actual-cost input section wiring.

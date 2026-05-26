@@ -7,10 +7,12 @@ function makeTask(id: string, start: string, end: string, pct: number): Task {
     id,
     name: id,
     group: 'g1',
+    wbsCode: '',
     s: start,
     e: end,
     actualStart: null,
     actualFinish: null,
+    actualCost: 0,
     pct,
     status: 'not_started',
     party: null,
@@ -45,6 +47,7 @@ describe('computeEVM', () => {
     const result = computeEVM([], null, assignments, resources, '2026-01-01')
     expect(result.spi).toBeNull()
     expect(result.pv).toBe(0)
+    expect(result.ac).toBe(0)
   })
 
   it('computes PV/EV and SPI', () => {
@@ -62,5 +65,13 @@ describe('computeEVM', () => {
     const result = computeEVM([currentTask], makeBaseline([baselineTask]), assignments, resources, '2026-01-01')
     expect(result.pv).toBe(0)
     expect(result.spi).toBeNull()
+  })
+
+  it('computes CPI when actual cost is provided', () => {
+    const baselineTask = makeTask('t1', '2026-01-01', '2026-01-10', 0)
+    const currentTask = makeTask('t1', '2026-01-01', '2026-01-10', 50)
+    const result = computeEVM([currentTask], makeBaseline([baselineTask]), assignments, resources, '2026-01-05', 1000)
+    expect(result.ac).toBe(1000)
+    expect(result.cpi).not.toBeNull()
   })
 })
