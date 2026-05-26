@@ -1326,3 +1326,19 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:unit` ✅
 - Notes
   - Import now preserves explicit WBS/AC values from CSV mappings; WBS restamping behavior on persistence remains in storage flow.
+### Phase J — Edge States and Post-Implementation Perf Re-Verify
+
+- Scope
+  - Added explicit zero-task group rollup label: `0 tasks · — · — · —`.
+  - Verified AC disabled advisory and EVM AC/CPI null fallbacks remain correct.
+  - Appended post-implementation baseline/perf notes to `docs/perf-v1.7-baseline.md`.
+- Files touched
+  - `src/components/task-list/TaskList.tsx`
+  - `docs/perf-v1.7-baseline.md`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Notes
+  - J.2/J.3/J.4 required no additional code changes beyond prior phase implementations.

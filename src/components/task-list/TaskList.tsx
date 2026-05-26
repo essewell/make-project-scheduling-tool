@@ -47,6 +47,12 @@ function formatCompactCurrency(value: number): string {
   }).format(value)
 }
 
+function formatRollupLabel(rollup: GroupRollup | undefined): string {
+  const taskCount = rollup?.taskCount ?? 0
+  if (taskCount === 0) return '0 tasks · — · — · —'
+  return `${taskCount} tasks · ${rollup?.completionPct ?? 0}% · ${formatCompactCurrency(rollup?.totalCost ?? 0)} · ${rollup?.resourceCount ?? 0} res`
+}
+
 /** Days remaining until planned end (negative = overdue). Hide for complete tasks. */
 function floatDays(task: Task, today: string): number | null {
   if (task.status === 'complete') return null
@@ -573,7 +579,7 @@ export function TaskList({
                 wbs={row.wbsCode ?? ''}
                 depth={row.depth ?? 0}
                 completionPct={groupRollups.get(row.groupId)?.completionPct ?? 0}
-                rollupLabel={`${groupRollups.get(row.groupId)?.taskCount ?? 0} tasks · ${groupRollups.get(row.groupId)?.completionPct ?? 0}% · ${formatCompactCurrency(groupRollups.get(row.groupId)?.totalCost ?? 0)} · ${groupRollups.get(row.groupId)?.resourceCount ?? 0} res`}
+                rollupLabel={formatRollupLabel(groupRollups.get(row.groupId))}
                 showCostColumn={showCostColumn}
                 onToggle={() => onToggleGroup(row.groupId)}
               />

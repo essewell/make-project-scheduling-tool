@@ -235,3 +235,22 @@
 - Next 2 actions:
   1. Phase J: edge states and post-implementation perf re-measure notes.
   2. Phase K: E2E coverage updates and topbar/quality/report regression flow checks.
+
+## Phase J Update (2026-05-26)
+
+- Completed Phase J edge-state and perf-baseline close-out:
+  - Implemented group rollup empty state copy: `0 tasks · — · — · —`.
+  - Verified AC section disabled-with-advisory state remains active when no assignments.
+  - Verified EVM AC/CPI null-state render stays `—` when AC is zero.
+  - Appended post-implementation perf re-measure section to `docs/perf-v1.7-baseline.md`.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Last 3 decisions:
+  1. Keep zero-task rollup explicitly dash-based rather than numeric placeholders.
+  2. Treat J.2–J.4 as validation of already-landed Phase E/H behavior.
+  3. Record Phase J perf posture as append-only in the existing v1.7 baseline doc.
+- Next 2 actions:
+  1. Phase K: execute E2E updates/coverage for v1.7 features.
+  2. Phase L/M: final QA sweep, ship checklist, and PR readiness.

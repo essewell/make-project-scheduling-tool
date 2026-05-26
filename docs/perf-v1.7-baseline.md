@@ -40,3 +40,33 @@ Branch: `v1.7`
 
 - No baseline performance regression identified from Phase 0.1 restructuring.
 - Phase A capability work can proceed.
+
+## Phase J Post-Implementation Re-Measure (2026-05-26)
+
+### Scope
+
+- Confirm edge-state polish landed for v1.7 reporting and hierarchy surfaces.
+- Re-check baseline perf posture after Phases A–I capability wiring.
+
+### Edge-State Checklist
+
+- J.1 Group rollup empty state: `0 tasks · — · — · —` ✅
+- J.2 Actual cost input disabled advisory (no assignments) ✅
+- J.3 EVM AC cell fallback (`—` when AC=0 via KPI null-state handling) ✅
+- J.4 EVM CPI cell fallback (`—` when AC=0) ✅
+
+### Verification Gates
+
+- `npm.cmd run lint` ✅
+- `npm.cmd run type-check` ✅
+- `npm.cmd run test:unit` ✅
+
+### Perf Baseline Notes
+
+- No regressions observed in gate/runtime behavior compared to early v1.7 baseline runs.
+- Quality Panel heavy-path benchmark reference remains `docs/perf-v1.6-quality-panel.md` (mean 72.1 ms, target <100 ms), with no algorithmic changes in v1.7 that would increase that path beyond added check evaluations.
+- TopBar density closure remains within target from Phase 0 (`docs/topbar-density-v1.7.md`).
+
+### Verdict
+
+- Post-implementation baseline is acceptable for continuing into E2E/ship phases.
