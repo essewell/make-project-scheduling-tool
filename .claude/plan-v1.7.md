@@ -1156,3 +1156,25 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:unit` ✅
 - Notes
   - WBS computation currently treats orphan-parent groups as top-level for deterministic output; DCMA integrity checks land in Phase G.
+### Phase B — Schema Migration v3 to v4
+
+- Scope
+  - Implemented `storage.ts` migration/update path for v1.7 schema:
+    - Added normalization helpers for groups/tasks (`parentId`, `wbsCode`, `actualCost`).
+    - Added WBS stamping helper that computes and stamps group/task `wbsCode` deterministically.
+    - Applied normalization + WBS stamping during `loadState` migration flow.
+    - Applied deterministic WBS stamping during `saveState` for both current tasks and baseline snapshot tasks.
+  - Expanded migration regression tests in `storage.test.ts`:
+    - v3 payload parentId defaulting + WBS stamp assertions.
+    - Save-path WBS restamp assertions.
+    - Updated v4 schema expectations and round-trip naming.
+- Files touched
+  - `src/lib/storage.ts`
+  - `tests/unit/lib/storage.test.ts`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Notes
+  - Migration remains additive and round-trip safe for legacy payloads exercised in storage unit suite.

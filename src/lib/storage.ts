@@ -1,6 +1,7 @@
-import type { PersistedState, Task, Dependency, Baseline } from '../types'
+import type { PersistedState, Task, Dependency, Baseline, Group } from '../types'
 import { PERSISTED_SCHEMA_VERSION } from '../types'
 import { STORAGE_KEY } from '../constants'
+import { computeWbsCodes } from './wbs'
 
 // ─── Default state ────────────────────────────────────────────────────────────
 
@@ -26,6 +27,40 @@ export function makeDefaultState(projectName = 'My Project'): PersistedState {
     changeOrders: [],
     varianceSnapshots: [],
   }
+}
+
+function normalizeGroups(groups: Group[]): Group[] {
+  return groups.map((group) => ({
+    ...group,
+    parentId: group.parentId ?? null,
+    wbsCode: group.wbsCode ?? '',
+  }))
+}
+
+function normalizeTasks(tasks: Task[]): Task[] {
+  return tasks.map((task) => ({
+    ...task,
+    wbsCode: task.wbsCode ?? '',
+    actualCost: Number.isFinite(task.actualCost) ? task.actualCost : 0,
+  }))
+}
+
+function stampWbs(groups: Group[], tasks: Task[]): { groups: Group[]; tasks: Task[] } {
+  const normalizedGroups = normalizeGroups(groups)
+  const normalizedTasks = normalizeTasks(tasks)
+  const { groupCodes, taskCodes } = computeWbsCodes(normalizedGroups, normalizedTasks)
+
+  const stampedGroups = normalizedGroups.map((group) => ({
+    ...group,
+    wbsCode: groupCodes.get(group.id) ?? '',
+  }))
+
+  const stampedTasks = normalizedTasks.map((task) => ({
+    ...task,
+    wbsCode: taskCodes.get(task.id) ?? '',
+  }))
+
+  return { groups: stampedGroups, tasks: stampedTasks }
 }
 
 // Migrate old persisted payloads to the current schema version
@@ -80,6 +115,25 @@ function migrateState(parsed: Record<string, unknown>): PersistedState {
     }
   }
 
+  if (version <= 3) {
+    base.groups = normalizeGroups(Array.isArray(base.groups) ? (base.groups as Group[]) : [])
+    base.tasks = normalizeTasks(Array.isArray(base.tasks) ? (base.tasks as Task[]) : [])
+  }
+
+  const stamped = stampWbs(base.groups as Group[], base.tasks as Task[])
+  base.groups = stamped.groups
+  base.tasks = stamped.tasks
+
+  if (Array.isArray(base.baselines)) {
+    base.baselines = (base.baselines as Baseline[]).map((baseline) => {
+      const baselineStamped = stampWbs(stamped.groups, normalizeTasks(baseline.tasks as Task[]))
+      return {
+        ...baseline,
+        tasks: baselineStamped.tasks,
+      }
+    })
+  }
+
   // Stamp the current schema version so downstream code can rely on the field.
   base.persistedSchemaVersion = PERSISTED_SCHEMA_VERSION
   return base as PersistedState
@@ -104,7 +158,18 @@ export function loadState(): PersistedState {
 export function saveState(state: PersistedState): boolean {
   try {
     // Always stamp the current schema version on save, regardless of caller.
-    const out: PersistedState = { ...state, persistedSchemaVersion: PERSISTED_SCHEMA_VERSION }
+    const stamped = stampWbs(state.groups, state.tasks)
+    const baselines = state.baselines.map((baseline) => {
+      const baselineStamped = stampWbs(stamped.groups, baseline.tasks)
+      return { ...baseline, tasks: baselineStamped.tasks }
+    })
+    const out: PersistedState = {
+      ...state,
+      groups: stamped.groups,
+      tasks: stamped.tasks,
+      baselines,
+      persistedSchemaVersion: PERSISTED_SCHEMA_VERSION,
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(out))
     return true
   } catch {

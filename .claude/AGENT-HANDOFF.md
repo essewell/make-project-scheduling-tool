@@ -74,3 +74,23 @@
 - Next 2 actions:
   1. Start Phase B migration wiring in `storage.ts` (v3->v4 defaulting + WBS stamping).
   2. Add migration regression tests for round-trip safety.
+## Phase B Update (2026-05-26)
+
+- Completed Phase B migration wiring:
+  - Added v3->v4 normalization in storage load path:
+    - `Group.parentId` defaulting
+    - `Task.actualCost` defaulting
+    - WBS stamp for groups/tasks
+  - Added deterministic WBS stamping in save path for current tasks and baseline snapshot tasks.
+  - Added/updated storage migration tests for v4 behavior and round-trip safety.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Last 3 decisions:
+  1. Recompute and stamp WBS on both `loadState` and `saveState` to guarantee consistency.
+  2. Keep baseline task WBS synchronized by stamping baseline task arrays using the same group tree.
+  3. Normalize legacy payloads defensively before stamping to prevent `undefined` drift.
+- Next 2 actions:
+  1. Start Phase C App.tsx wiring for WBS-aware derived state and rollup integration.
+  2. Begin TaskList WBS column + group indentation integration in Phase D.
