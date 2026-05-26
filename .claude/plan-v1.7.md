@@ -1087,3 +1087,35 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
 ---
 
 **Plan ready for Codex implementation starting at Phase 0.−2 (pre-flight verification).**
+### Phase 0.−2 through 0.3 — Pre-flight, Branch Setup, TopBar Debt Close-Out, and Carry-Over Docs
+
+- Scope
+  - Verified `origin/main` contains v1.6 merge commit (`53e28cf`) and `package.json` at `0.6.0`.
+  - Created and pushed missing `v0.6.0` tag.
+  - Confirmed/accepted working-tree noise policy (`playwright-report/index.html` only).
+  - Verified branch `v1.7`, set upstream with `git push -u origin v1.7`.
+  - Implemented blocking TopBar overflow restructure:
+    - Demoted `Phases`, `Parties`, `Resources`, and `Change Orders` behind `More`.
+    - Kept `Baselines`, `Quality`, `Reports` in-line.
+    - Added outside-click and `Escape` close behavior with focus return.
+  - Documented topbar density close-out and captured screenshot.
+  - Refreshed Phase 0 carry-over docs (`mobile-qa` defer, perf baseline note).
+  - Refreshed `.claude` continuity docs for v1.6 shipped / v1.7 active state.
+- Files touched
+  - `src/components/topbar/TopBar.tsx`
+  - `src/lib/icons.ts`
+  - `docs/topbar-density-v1.7.md`
+  - `docs/v1.7-screenshots-topbar-1280.png`
+  - `docs/mobile-qa.md`
+  - `docs/perf-v1.7-baseline.md`
+  - `.claude/CLAUDE.md`
+  - `.claude/version-status.md`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run build` ✅
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - 1280px density measurement doc recorded (`71.18%` on full-topbar basis).
+- Notes
+  - Pre-flight S13 blockers were closed before capability work proceeded.
+  - Remaining known noise file (`playwright-report/index.html`) stayed unstaged.

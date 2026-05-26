@@ -12,6 +12,7 @@ export {
   CircleHalf,
   Clock,
   Download,
+  DotsThree,
   FileText,
   FileArrowUp,
   Funnel,

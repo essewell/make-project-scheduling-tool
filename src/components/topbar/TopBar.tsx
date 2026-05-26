@@ -9,7 +9,9 @@ import {
   CalendarBlank,
   Camera,
   ChartLine,
+  CaretDown,
   Download,
+  DotsThree,
   FileText,
   Minus,
   Path,
@@ -103,7 +105,10 @@ export function TopBar({
   onReset, onNewTask,
 }: TopBarProps) {
   const [baselineMenuOpen, setBaselineMenuOpen] = useState(false)
+  const [overflowMenuOpen, setOverflowMenuOpen] = useState(false)
   const baselineBtnRef = useRef<HTMLButtonElement>(null)
+  const overflowMenuBtnRef = useRef<HTMLButtonElement>(null)
+  const overflowMenuRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (baselineMenuOpenSignal <= 0) return
     setBaselineMenuOpen(true)
@@ -112,8 +117,38 @@ export function TopBar({
   const zoomLabel = ZOOM_LEVELS[zoomIndex]?.label ?? '—'
   const activeBaseline = baselines.find(b => b.id === activeBaselineId)
 
+  useEffect(() => {
+    if (!overflowMenuOpen) return
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null
+      if (!target) return
+      if (overflowMenuRef.current?.contains(target)) return
+      if (overflowMenuBtnRef.current?.contains(target)) return
+      setOverflowMenuOpen(false)
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setOverflowMenuOpen(false)
+      overflowMenuBtnRef.current?.focus()
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [overflowMenuOpen])
+
+  const handleOverflowAction = (action: () => void) => {
+    action()
+    setOverflowMenuOpen(false)
+  }
+
   return (
-    <div style={{
+    <div data-testid="topbar" style={{
       background: 'var(--brand)',
       display: 'flex', alignItems: 'center',
       padding: '0 16px', height: '100%',
@@ -134,7 +169,7 @@ export function TopBar({
       <div style={{ flex: 1 }} />
 
       {/* Utility groups */}
-      <div style={GROUP}>
+      <div data-testid="topbar-actions" style={GROUP}>
         {/* Zoom controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
         <button
@@ -181,12 +216,20 @@ export function TopBar({
         {/* Settings buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <button onClick={onOpenWorkweek} style={ICON_BTN}><CalendarBlank size={14} weight="regular" aria-hidden="true" />Calendar</button>
-          <button onClick={onOpenGroups} style={ICON_BTN}><SquaresFour size={14} weight="regular" aria-hidden="true" />Phases</button>
-          <button onClick={onOpenParties} style={ICON_BTN}><UsersThree size={14} weight="regular" aria-hidden="true" />Parties</button>
-          <button onClick={onOpenResources} style={ICON_BTN}><Users size={14} weight="regular" aria-hidden="true" />Resources</button>
-          <button onClick={onOpenChangeOrders} style={ICON_BTN}><FileText size={14} weight="regular" aria-hidden="true" />Change Orders</button>
           <button onClick={onOpenQuality} style={ICON_BTN}><ShieldCheck size={14} weight="regular" aria-hidden="true" />Quality</button>
           <button onClick={onOpenReports} style={ICON_BTN}><ChartLine size={14} weight="regular" aria-hidden="true" />Reports</button>
+          <button
+            ref={overflowMenuBtnRef}
+            onClick={() => setOverflowMenuOpen((value) => !value)}
+            style={ICON_BTN}
+            aria-expanded={overflowMenuOpen}
+            aria-haspopup="menu"
+            title="More tools"
+          >
+            <DotsThree size={14} weight="regular" aria-hidden="true" />
+            More
+            <CaretDown size={12} weight="regular" aria-hidden="true" />
+          </button>
         </div>
 
         {/* Data buttons */}
@@ -246,8 +289,52 @@ export function TopBar({
           onClose={() => setBaselineMenuOpen(false)}
         />
       )}
+
+      {overflowMenuOpen && (
+        <div
+          ref={overflowMenuRef}
+          role="menu"
+          aria-label="Top bar overflow"
+          style={{
+            position: 'absolute',
+            top: 'calc(100% - 4px)',
+            right: 120,
+            zIndex: 'var(--z-popover)',
+            minWidth: 184,
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius)',
+            boxShadow: 'var(--shadow-2)',
+            padding: 6,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
+          <button onClick={() => handleOverflowAction(onOpenGroups)} style={OVERFLOW_ITEM} role="menuitem"><SquaresFour size={14} weight="regular" aria-hidden="true" />Phases</button>
+          <button onClick={() => handleOverflowAction(onOpenParties)} style={OVERFLOW_ITEM} role="menuitem"><UsersThree size={14} weight="regular" aria-hidden="true" />Parties</button>
+          <button onClick={() => handleOverflowAction(onOpenResources)} style={OVERFLOW_ITEM} role="menuitem"><Users size={14} weight="regular" aria-hidden="true" />Resources</button>
+          <button onClick={() => handleOverflowAction(onOpenChangeOrders)} style={OVERFLOW_ITEM} role="menuitem"><FileText size={14} weight="regular" aria-hidden="true" />Change Orders</button>
+        </div>
+      )}
     </div>
   )
+}
+
+const OVERFLOW_ITEM: React.CSSProperties = {
+  height: 30,
+  border: 'none',
+  borderRadius: 'var(--radius-sm)',
+  background: 'transparent',
+  color: 'var(--color-text-primary)',
+  fontSize: 'var(--text-xs)',
+  fontFamily: 'var(--font-sans)',
+  padding: '0 8px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  cursor: 'pointer',
+  textAlign: 'left',
 }
 
 // ─── NewTaskButton ────────────────────────────────────────────────────────────

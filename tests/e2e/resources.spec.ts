@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test'
 import path from 'path'
+import { clickTopbarOverflowAction } from './helpers'
 
 test.describe('resources histogram', () => {
   async function importResourceFixtures(page: import('@playwright/test').Page) {
-    await page.getByRole('button', { name: /resources/i }).first().click()
+    await clickTopbarOverflowAction(page, /resources/i)
     const dialog = page.getByRole('dialog', { name: /manage resources/i })
     await expect(dialog).toBeVisible()
 
@@ -21,7 +22,7 @@ test.describe('resources histogram', () => {
     await page.getByRole('button', { name: /load example data/i }).click()
     await expect(page.locator('.app')).toHaveAttribute('data-phase', 'complete')
 
-    await page.getByRole('button', { name: /resources/i }).click()
+    await clickTopbarOverflowAction(page, /resources/i)
     await expect(page.getByRole('dialog', { name: /manage resources/i })).toBeVisible()
     await page.getByRole('button', { name: /save/i }).click()
 
@@ -37,7 +38,7 @@ test.describe('resources histogram', () => {
     await importResourceFixtures(page)
 
     // Resource "Crew A" should appear in the manager list after import
-    await page.getByRole('button', { name: /resources/i }).first().click()
+    await clickTopbarOverflowAction(page, /resources/i)
     const dialog = page.getByRole('dialog', { name: /manage resources/i })
     await expect(dialog).toBeVisible()
     await expect(dialog.locator('input[value="Crew A"]')).toBeVisible()
@@ -69,7 +70,7 @@ test.describe('resources histogram', () => {
     await expect(page.getByRole('button', { name: /over-alloc/i })).toBeVisible()
 
     // Re-open ResourcesManager, delete Crew A (has 2 assignments; stubbed confirm accepts)
-    await page.getByRole('button', { name: /resources/i }).first().click()
+    await clickTopbarOverflowAction(page, /resources/i)
     const dialog = page.getByRole('dialog', { name: /manage resources/i })
     await expect(dialog).toBeVisible()
     await dialog.getByRole('button', { name: /remove crew a/i }).click()
