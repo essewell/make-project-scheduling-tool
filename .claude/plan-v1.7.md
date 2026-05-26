@@ -1247,3 +1247,20 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:unit` ✅
 - Notes
   - AC commits through existing `onUpdateTask` flow on blur only; invalid numeric input resets to persisted task value.
+### Phase F — GroupsManager Parent Picker and Nesting Guards
+
+- Scope
+  - Extended `GroupsManager` with per-group parent selection (`Top level` + valid group options).
+  - Added cycle prevention by excluding current group and all descendants from parent options.
+  - Added depth advisory when nesting reaches configured threshold (`GROUP_NEST_DEPTH_WARN`).
+  - Updated new-group defaults to v1.7 schema shape (`parentId`, `wbsCode`).
+- Files touched
+  - `src/components/modals/GroupsManager.tsx`
+  - `src/constants.ts`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Notes
+  - Parent picker constraints are enforced in UI selection options and avoid self/descendant cycles before save.

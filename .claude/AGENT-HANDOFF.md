@@ -154,3 +154,23 @@
 - Next 2 actions:
   1. Phase F: extend GroupsManager with parent picker, cycle prevention, and depth advisory.
   2. Phase G: implement DCMA checks 15/16 and unit coverage.
+
+## Phase F Update (2026-05-26)
+
+- Completed Phase F GroupsManager hierarchy controls:
+  - Added parent-phase picker for each group row.
+  - Added cycle prevention by excluding self and descendants from parent options.
+  - Added depth advisory warning when selected nesting reaches configured threshold.
+  - Added schema-safe defaults for newly created groups (`parentId: null`, `wbsCode: ''`).
+  - Added shared constant `GROUP_NEST_DEPTH_WARN = 6`.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Last 3 decisions:
+  1. Enforce cycle prevention at selection time rather than post-save validation.
+  2. Keep depth warning advisory-only, not blocking, per plan intent.
+  3. Keep hierarchy logic local to GroupsManager (no new runtime deps).
+- Next 2 actions:
+  1. Phase G: implement DCMA checks 15/16 in `dcma.ts`.
+  2. Extend `dcma.test.ts` with pass/fail fixtures for new checks.
