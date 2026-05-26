@@ -135,3 +135,22 @@
 - Next 2 actions:
   1. Phase E: add SidePanel actual-cost section with blur-save behavior.
   2. Phase F: extend GroupsManager for parent picker and cycle prevention.
+
+## Phase E Update (2026-05-26)
+
+- Completed Phase E SidePanel WBS + AC surface:
+  - Added `SidePanelWbsBreadcrumb` component to render task WBS code + group path context.
+  - Added `SidePanelActualCostSection` component with local draft state, blur-save commit, and parse guard (`NaN`/negative rejected with field reset).
+  - Wired both into `SidePanel.tsx` header/body and connected AC commits through existing `onUpdateTask` patch flow.
+  - Enforced disabled-with-advisory state when no resource assignments exist.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Last 3 decisions:
+  1. Keep AC editing local until blur to avoid EVM recompute churn on each keystroke.
+  2. Disable AC entry when assignments are absent and show explicit advisory copy.
+  3. Keep WBS breadcrumb read-only and derived from persisted task/group hierarchy.
+- Next 2 actions:
+  1. Phase F: extend GroupsManager with parent picker, cycle prevention, and depth advisory.
+  2. Phase G: implement DCMA checks 15/16 and unit coverage.

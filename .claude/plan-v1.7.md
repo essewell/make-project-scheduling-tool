@@ -1229,3 +1229,21 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:unit` ✅
 - Notes
   - Rollup data is consumed from App memoization; no per-row recompute in list render path.
+### Phase E — SidePanel WBS Breadcrumb and Actual Cost Input
+
+- Scope
+  - Added `SidePanelWbsBreadcrumb` to show task WBS code and derived group path context in the SidePanel header.
+  - Added `SidePanelActualCostSection` for per-task AC entry with local draft, blur-save commit, and numeric guardrails.
+  - Wired breadcrumb + AC section into `SidePanel.tsx`.
+  - Implemented disabled AC input advisory when no assignments exist (`Assign resources first to enable cost tracking.`).
+- Files touched
+  - `src/components/SidePanelWbsBreadcrumb.tsx`
+  - `src/components/SidePanelActualCostSection.tsx`
+  - `src/components/panels/SidePanel.tsx`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Notes
+  - AC commits through existing `onUpdateTask` flow on blur only; invalid numeric input resets to persisted task value.
