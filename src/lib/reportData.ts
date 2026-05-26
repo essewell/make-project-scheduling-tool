@@ -66,6 +66,7 @@ export function buildExecutiveReport(input: ExecutiveReportInput): ExecutiveRepo
     statusDate: input.statusDate,
     healthScore: input.healthScore,
     spi: input.evm.spi,
+    cpi: input.evm.cpi,
     topVariances: buildTopVariances(input.tasks, input.baseline),
     topRisks: buildTopRisks(input.assessment),
     nextMilestones: buildNextMilestones(input.tasks, input.statusDate),

@@ -1,16 +1,17 @@
-# Design System — v1.6 Reporting Extension
+# Design System — v1.7 WBS + Cost Tracking
 
-Date: 2026-05-25
+Date: 2026-05-26
 
 ## Scope
 
-This document tracks design-token and icon conventions through v1.6:
+This document tracks design-token and icon conventions through v1.7:
 - token additions in `src/styles/tokens.css`
 - radius scale tightening
 - Phosphor icon canonical usage surface
 - resource histogram tokenization
 - resource color-cycle policy
 - reporting/analytics token extensions (v1.6)
+- hierarchy/cost-tracking surface conventions (v1.7)
 
 ## Token Additions
 
@@ -108,3 +109,21 @@ Added in light + dark mode for reporting and carry-over surfaces:
 
 Added to canonical export list in `src/lib/icons.ts`:
 - `ChartLine`
+
+## v1.7 Surface Notes
+
+v1.7 did not add new color tokens; it intentionally reused existing semantic tokens for hierarchy and cost-tracking surfaces:
+
+- WBS code text uses existing mono + tertiary text tokens:
+  - `font-family: var(--font-mono)`
+  - `color: var(--color-text-dim)` / `var(--color-text-tertiary)`
+- Group hierarchy connector rule uses `--color-border-light`.
+- Group rollup pill uses existing capsule treatment:
+  - border: `1px solid var(--color-border)`
+  - text: `var(--color-text-secondary)`
+  - mono numeric alignment (`var(--font-mono)`).
+- Actual Cost input in SidePanel reuses standard input tokens:
+  - background `--color-surface`
+  - border `--color-border`
+  - disabled advisory text `--color-text-dim`.
+- EVM AC/CPI metrics reuse report metric cards and existing text tokens; no special color coding was introduced for AC/CPI values.

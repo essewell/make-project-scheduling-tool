@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { startBlankProject } from './helpers'
+import { clickTopbarOverflowAction, startBlankProject } from './helpers'
 
 async function expectNoSeriousOrCriticalViolations(page: Page, context: string) {
   const results = await new AxeBuilder({ page })
@@ -27,6 +27,26 @@ async function openModalAndScan(page: Page, buttonName: RegExp, context: string)
   await expect(page.getByRole('dialog')).toHaveCount(0)
 }
 
+async function openOverflowModalAndScan(page: Page, buttonName: RegExp, context: string) {
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await clickTopbarOverflowAction(page, buttonName)
+  const dialog = page.getByRole('dialog').last()
+  await expect(dialog).toBeVisible()
+  await expectNoSeriousOrCriticalViolations(page, context)
+  const dismiss = dialog.getByRole('button', { name: /cancel|close/i }).first()
+  await dismiss.click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+}
+
+async function openOverflowMenuAndScan(page: Page) {
+  await page.getByRole('button', { name: /^more$/i }).click()
+  const menu = page.getByRole('menu')
+  await expect(menu).toBeVisible()
+  await expectNoSeriousOrCriticalViolations(page, 'TopBar overflow menu')
+  await page.keyboard.press('Escape')
+  await expect(menu).toHaveCount(0)
+}
+
 test('axe sweep: wizard, main app, and desktop modals', async ({ page }) => {
   test.setTimeout(90_000)
   await page.setViewportSize({ width: 1680, height: 980 })
@@ -45,10 +65,11 @@ test('axe sweep: wizard, main app, and desktop modals', async ({ page }) => {
   await expect(page.getByRole('button', { name: /baselines · baseline 1/i })).toBeVisible()
 
   await openModalAndScan(page, /calendar/i, 'Workweek modal')
-  await openModalAndScan(page, /phases/i, 'Groups modal')
-  await openModalAndScan(page, /parties/i, 'Parties modal')
+  await openOverflowMenuAndScan(page)
+  await openOverflowModalAndScan(page, /phases/i, 'Groups modal')
+  await openOverflowModalAndScan(page, /parties/i, 'Parties modal')
   await openModalAndScan(page, /import/i, 'CSV import modal')
-  await openModalAndScan(page, /^change orders$/i, 'Change order manager modal')
+  await openOverflowModalAndScan(page, /^change orders$/i, 'Change order manager modal')
 
   await page.getByRole('button', { name: /baselines · baseline 1/i }).click()
   await expect(page.getByText('Compare baselines…')).toBeVisible()
@@ -86,12 +107,11 @@ test('axe sweep: wizard, main app, and desktop modals', async ({ page }) => {
   await reportsDialog.getByRole('button', { name: /close reports modal/i }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
 
-  await openModalAndScan(page, /^links$/i, 'Link builder modal')
   await openModalAndScan(page, /print/i, 'Print preview modal')
 
   // ResourcesManager: toolbar may render multiple "Resources" buttons; use .first()
   await expect(page.getByRole('dialog')).toHaveCount(0)
-  await page.getByRole('button', { name: /resources/i }).first().click()
+  await clickTopbarOverflowAction(page, /resources/i)
   const resourcesDialog = page.getByRole('dialog').last()
   await expect(resourcesDialog).toBeVisible()
   await expectNoSeriousOrCriticalViolations(page, 'Resources manager modal')

@@ -5,6 +5,7 @@ import type {
   DcmaCheckId,
   DcmaCheckResult,
   Dependency,
+  Group,
   Resource,
   ResourceAssignment,
   Task,
@@ -14,6 +15,7 @@ import { addDays, daysBetween } from './dates'
 
 export interface DcmaAssessmentContext {
   tasks: Task[]
+  groups: Group[]
   dependencies: Dependency[]
   baselines: Baseline[]
   activeBaselineId: string | null
@@ -457,6 +459,96 @@ function checkBei(context: DcmaAssessmentContext): DcmaCheckResult {
   }
 }
 
+function checkWbsCompleteness(context: DcmaAssessmentContext): DcmaCheckResult {
+  const threshold = 100
+  const groupById = new Map(context.groups.map((group) => [group.id, group]))
+  const taskCountByGroup = new Map<string, number>()
+  const childGroupCountByParent = new Map<string, number>()
+
+  context.tasks.forEach((task) => {
+    if (!task.group) return
+    taskCountByGroup.set(task.group, (taskCountByGroup.get(task.group) ?? 0) + 1)
+  })
+  context.groups.forEach((group) => {
+    if (!group.parentId) return
+    childGroupCountByParent.set(group.parentId, (childGroupCountByParent.get(group.parentId) ?? 0) + 1)
+  })
+
+  const invalidTaskIds = context.tasks
+    .filter((task) => !task.group || !groupById.has(task.group))
+    .map((task) => task.id)
+  const orphanGroupIds = context.groups
+    .filter((group) => group.parentId !== null && !groupById.has(group.parentId))
+    .map((group) => group.id)
+  const emptyGroupIds = context.groups
+    .filter((group) => (taskCountByGroup.get(group.id) ?? 0) === 0 && (childGroupCountByParent.get(group.id) ?? 0) === 0)
+    .map((group) => group.id)
+
+  const totalChecks = context.tasks.length + context.groups.length
+  const invalidCount = invalidTaskIds.length + orphanGroupIds.length + emptyGroupIds.length
+  const score = totalChecks > 0 ? Math.max(0, ((totalChecks - invalidCount) / totalChecks) * 100) : 100
+  const affectedTaskIds = Array.from(new Set([...invalidTaskIds, ...orphanGroupIds, ...emptyGroupIds]))
+
+  return {
+    id: 15,
+    name: 'WBS Completeness',
+    passed: score >= threshold,
+    score,
+    threshold,
+    plainEnglish: 'All tasks should belong to valid groups, and group hierarchy should be structurally complete.',
+    affectedTaskIds,
+  }
+}
+
+function checkResourceOverAllocation(context: DcmaAssessmentContext): DcmaCheckResult {
+  const threshold = 100
+  const taskById = new Map(context.tasks.map((task) => [task.id, task]))
+  const resourceById = new Map(context.resources.map((resource) => [resource.id, resource]))
+  const demandByResourceDay = new Map<string, number>()
+
+  context.assignments.forEach((assignment) => {
+    if (assignment.quantity <= 0) return
+    const task = taskById.get(assignment.taskId)
+    if (!task) return
+
+    const spanDays = daysBetween(task.s, task.e)
+    for (let offset = 0; offset <= spanDays; offset += 1) {
+      const day = addDays(task.s, offset)
+      const key = `${assignment.resourceId}::${day}`
+      demandByResourceDay.set(key, (demandByResourceDay.get(key) ?? 0) + assignment.quantity)
+    }
+  })
+
+  let totalDemandDays = 0
+  let compliantDays = 0
+  const overAllocatedResourceIds = new Set<string>()
+
+  demandByResourceDay.forEach((demand, key) => {
+    const [resourceId] = key.split('::')
+    if (!resourceId) return
+    const resource = resourceById.get(resourceId)
+    if (!resource || resource.category === 'material') return
+    totalDemandDays += 1
+    const capacity = Math.max(0, resource.capacity)
+    if (demand > capacity) {
+      overAllocatedResourceIds.add(resourceId)
+      return
+    }
+    compliantDays += 1
+  })
+
+  const score = totalDemandDays > 0 ? (compliantDays / totalDemandDays) * 100 : 100
+  return {
+    id: 16,
+    name: 'Resource Over-Allocation',
+    passed: score >= threshold,
+    score,
+    threshold,
+    plainEnglish: 'Resources should fit within declared capacity; over-allocation indicates the plan is not executable as written.',
+    affectedTaskIds: Array.from(overAllocatedResourceIds),
+  }
+}
+
 export const DCMA_CHECKS: DcmaCheckDefinition[] = [
   {
     id: 1,
@@ -555,6 +647,20 @@ export const DCMA_CHECKS: DcmaCheckDefinition[] = [
     threshold: 0.95,
     plainEnglish: 'BEI below threshold signals execution behind baseline intent.',
     run: checkBei,
+  },
+  {
+    id: 15,
+    name: 'WBS Completeness',
+    threshold: 100,
+    plainEnglish: 'All tasks should belong to valid groups, and group hierarchy should be structurally complete.',
+    run: checkWbsCompleteness,
+  },
+  {
+    id: 16,
+    name: 'Resource Over-Allocation',
+    threshold: 100,
+    plainEnglish: 'Resources should fit within declared capacity; over-allocation indicates the plan is not executable as written.',
+    run: checkResourceOverAllocation,
   },
 ]
 

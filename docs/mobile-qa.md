@@ -32,3 +32,7 @@ v1.5 scope is desktop-first (multi-baseline, change orders, variance trend, and 
 ## v1.6 Defer Reaffirmation (2026-05-25)
 
 v1.6 starts desktop-first reporting and analytics implementation (reports modal, S-curve/EVM/cashflow previews, and print-focused report surfaces). No new touch-first interaction model is introduced in Phase 0, so physical-device QA remains intentionally deferred for this phase while the desktop reporting foundation is built.
+
+## v1.7 Defer Reaffirmation (2026-05-26)
+
+v1.7 Phase 0 adds a desktop TopBar overflow restructure and `.claude`/release carry-over close-out only. No new mobile interaction model or gesture surface was introduced in this phase, so physical-device mobile QA remains intentionally deferred while desktop-first WBS and cost-tracking implementation proceeds.

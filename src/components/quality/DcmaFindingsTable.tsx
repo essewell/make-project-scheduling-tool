@@ -17,7 +17,7 @@ export function DcmaFindingsTable({ checks, hasResources, onOpenBaselineMenu }: 
     return (
       <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius)', padding: 'var(--space-3)' }}>
         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-          All 14 checks passing.
+          All 16 checks passing.
         </div>
       </div>
     )
@@ -114,7 +114,7 @@ export function DcmaFindingsTable({ checks, hasResources, onOpenBaselineMenu }: 
               fontSize: 'var(--text-2xs)',
             }}
           >
-            {showAllChecks ? `Show failing checks (${failingChecks.length})` : `Show all 14 checks`}
+            {showAllChecks ? `Show failing checks (${failingChecks.length})` : `Show all 16 checks`}
           </button>
         </div>
       )}

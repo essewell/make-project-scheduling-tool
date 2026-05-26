@@ -19,6 +19,8 @@ function makeTask(id: string, end: string, milestone = false): Task {
     manualStatus: false,
     manualPct: false,
     deps: [],
+    wbsCode: '1.1',
+    actualCost: 0,
   }
 }
 
@@ -29,7 +31,7 @@ function makeBaseline(tasks: Task[]): Baseline {
 function makeAssessment(): DcmaAssessmentResult {
   return {
     generatedAt: new Date().toISOString(),
-    checks: Array.from({ length: 14 }, (_, index) => ({
+    checks: Array.from({ length: 16 }, (_, index) => ({
       id: (index + 1) as never,
       name: `Check ${index + 1}`,
       passed: index % 3 === 0,
@@ -50,11 +52,12 @@ describe('buildExecutiveReport', () => {
       baseline: makeBaseline(baselineTasks),
       assessment: makeAssessment(),
       healthScore: 77,
-      evm: { pv: 100, ev: 90, ac: null, spi: 0.9, cpi: null },
+      evm: { pv: 100, ev: 90, ac: 80, spi: 0.9, cpi: 1.12 },
       statusDate: '2026-01-01',
     })
     expect(report.topVariances).toHaveLength(3)
     expect(report.topVariances[0]!.taskId).toBe('a')
+    expect(report.cpi).toBe(1.12)
   })
 
   it('returns next five future milestones and preserves spi null fallback', () => {
@@ -71,10 +74,11 @@ describe('buildExecutiveReport', () => {
       baseline: null,
       assessment: makeAssessment(),
       healthScore: 70,
-      evm: { pv: 0, ev: 0, ac: null, spi: null, cpi: null },
+      evm: { pv: 0, ev: 0, ac: 0, spi: null, cpi: null },
       statusDate: '2026-01-10',
     })
     expect(report.nextMilestones).toHaveLength(5)
     expect(report.spi).toBeNull()
+    expect(report.cpi).toBeNull()
   })
 })

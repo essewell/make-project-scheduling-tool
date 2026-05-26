@@ -69,7 +69,9 @@ export function ExecutiveReportPreview({ report, scurve, hasBaseline, hasCostDat
               </div>
             ))}
           </Section>
-          <Section title="SPI">{report.spi === null ? 'N/A' : report.spi.toFixed(2)}</Section>
+          <Section title="SPI / CPI">
+            {report.spi === null ? 'SPI —' : `SPI ${report.spi.toFixed(2)}`} · {report.cpi === null ? 'CPI —' : `CPI ${report.cpi.toFixed(2)}`}
+          </Section>
         </div>
       </div>
     </div>

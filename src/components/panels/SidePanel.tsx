@@ -5,6 +5,8 @@ import { workdays } from '../../lib/workdays'
 import { ActualDatesSection } from './ActualDatesSection'
 import { ResourceAssignmentSection } from './ResourceAssignmentSection'
 import { ChangeOrderSection } from '../changeorder/ChangeOrderSection'
+import { SidePanelWbsBreadcrumb } from '../SidePanelWbsBreadcrumb'
+import { SidePanelActualCostSection } from '../SidePanelActualCostSection'
 import { CalendarBlank, X } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -221,30 +223,34 @@ export function SidePanel({
       {/* ── Header ── */}
       <div style={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: 8,
         padding: '12px 16px',
         borderBottom: '1px solid var(--color-border)',
         flexShrink: 0,
       }}>
-        <input
-          type="text"
-          aria-label="Task name"
-          value={task.name}
-          onChange={e => update({ name: e.target.value })}
-          style={{
-            flex: 1,
-            height: 32,
-            borderRadius: 'var(--radius)',
-            border: '1px solid var(--color-border)',
-            padding: '0 10px',
-            fontSize: 'var(--text-sm)',
-            fontWeight: 'var(--weight-semibold)',
-            fontFamily: 'var(--font-sans)',
-            background: 'var(--color-surface)',
-            color: 'var(--color-text-primary)',
-          }}
-        />
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <input
+            type="text"
+            aria-label="Task name"
+            value={task.name}
+            onChange={e => update({ name: e.target.value })}
+            style={{
+              width: '100%',
+              height: 32,
+              borderRadius: 'var(--radius)',
+              border: '1px solid var(--color-border)',
+              padding: '0 10px',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--weight-semibold)',
+              fontFamily: 'var(--font-sans)',
+              background: 'var(--color-surface)',
+              color: 'var(--color-text-primary)',
+              boxSizing: 'border-box',
+            }}
+          />
+          <SidePanelWbsBreadcrumb task={task} groups={groups} />
+        </div>
         <button
           onClick={onClose}
           aria-label="Close task details"
@@ -465,6 +471,11 @@ export function SidePanel({
           onAddAssignment={onAddAssignment}
           onUpdateAssignment={onUpdateAssignment}
           onRemoveAssignment={onRemoveAssignment}
+        />
+        <SidePanelActualCostSection
+          task={task}
+          assignments={assignments}
+          onCommitActualCost={(actualCost) => update({ actualCost })}
         />
 
         <ChangeOrderSection

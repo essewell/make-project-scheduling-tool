@@ -6,10 +6,12 @@ export interface Task {
   id: string
   name: string
   group: string
+  wbsCode: string
   s: string         // planned start — YYYY-MM-DD
   e: string         // planned end   — YYYY-MM-DD
   actualStart: string | null
   actualFinish: string | null
+  actualCost: number
   pct: number       // 0–100
   status: TaskStatus
   party: string | null
@@ -61,6 +63,22 @@ export interface Group {
   id: string
   name: string
   color: string
+  parentId: string | null
+  wbsCode: string
+}
+
+export interface GroupNode {
+  id: string
+  depth: number
+  parentId: string | null
+  wbsCode: string
+}
+
+export interface GroupRollup {
+  taskCount: number
+  completionPct: number
+  totalCost: number
+  resourceCount: number
 }
 
 export interface Party {
@@ -170,7 +188,7 @@ export interface SCurveSeries {
 export interface EVMResult {
   pv: number
   ev: number
-  ac: number | null
+  ac: number
   spi: number | null
   cpi: number | null
 }
@@ -207,6 +225,7 @@ export interface ExecutiveReportData {
   statusDate: string
   healthScore: number
   spi: number | null
+  cpi: number | null
   topVariances: ExecutiveVarianceItem[]
   topRisks: ExecutiveRiskItem[]
   nextMilestones: ExecutiveMilestoneItem[]
@@ -243,7 +262,7 @@ export type GhostStyle = 'stripe' | 'solid' | 'outline'
 // ─── Persisted state (localStorage) ─────────────────────────────────────────
 
 /** Current persisted-state schema version. Bump in lockstep with `migrateState` in storage.ts. */
-export const PERSISTED_SCHEMA_VERSION = 3
+export const PERSISTED_SCHEMA_VERSION = 4
 
 export interface PersistedState {
   /** Stamped on save by storage.ts. Absent on legacy (v0) payloads. */
@@ -269,7 +288,7 @@ export interface PersistedState {
 // ─── Visible rows (task list rendering) ──────────────────────────────────────
 
 export type VisibleRow =
-  | { kind: 'group'; groupId: string; name: string; color: string; count: number; collapsed: boolean }
+  | { kind: 'group'; groupId: string; name: string; color: string; count: number; collapsed: boolean; depth?: number; wbsCode?: string }
   | { kind: 'task'; task: Task }
 
 // ─── Gantt timeline ──────────────────────────────────────────────────────────
@@ -310,6 +329,7 @@ export interface CpmResult {
 export type DcmaCheckId =
   | 1 | 2 | 3 | 4 | 5 | 6 | 7
   | 8 | 9 | 10 | 11 | 12 | 13 | 14
+  | 15 | 16
 
 export interface DcmaCheckResult {
   id: DcmaCheckId

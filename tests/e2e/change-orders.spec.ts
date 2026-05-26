@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test'
-import { startBlankProject } from './helpers'
+import { clickTopbarOverflowAction, startBlankProject } from './helpers'
 
 test('create change order, show it on task panel, then unlink', async ({ page }) => {
   await startBlankProject(page)
 
-  await page.getByRole('button', { name: /^change orders$/i }).click()
+  await clickTopbarOverflowAction(page, /^change orders$/i)
   const manager = page.getByRole('dialog', { name: /change order manager/i })
   await expect(manager).toBeVisible()
 

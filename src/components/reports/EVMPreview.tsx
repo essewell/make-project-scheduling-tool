@@ -21,15 +21,14 @@ export function EVMPreview({ evm, hasBaseline }: EVMPreviewProps) {
 
   return (
     <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 'var(--space-2)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 'var(--space-2)' }}>
         <Metric label="PV" value={money(evm.pv)} />
         <Metric label="EV" value={money(evm.ev)} />
-        <Metric label="SPI" value={evm.spi === null ? 'N/A' : evm.spi.toFixed(2)} />
+        <Metric label="AC" value={money(evm.ac)} />
+        <Metric label="SPI" value={evm.spi === null ? '—' : evm.spi.toFixed(2)} />
+        <Metric label="CPI" value={evm.cpi === null ? '—' : evm.cpi.toFixed(2)} />
       </div>
       <EVMChart evm={evm} />
-      <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-tertiary)' }}>
-        AC (Actual Cost) tracking is not yet implemented; CPI will appear when actuals are available.
-      </div>
     </div>
   )
 }

@@ -16,6 +16,8 @@ const DCMA_NAMES = [
   'Critical Path Test',
   'CPLI',
   'BEI',
+  'WBS Completeness',
+  'Resource Over-Allocation',
 ]
 
 async function openQualityPanel(page: Page) {
@@ -37,8 +39,8 @@ test('opens quality panel from stat bar and renders checks + histogram', async (
   await expect(dialog).toBeVisible()
   await expect(dialog.getByText('Schedule Quality Report')).toBeVisible()
 
-  await expect(dialog.getByRole('button', { name: /show all 14 checks/i })).toBeVisible()
-  await dialog.getByRole('button', { name: /show all 14 checks/i }).click()
+  await expect(dialog.getByRole('button', { name: /show all 16 checks/i })).toBeVisible()
+  await dialog.getByRole('button', { name: /show all 16 checks/i }).click()
   for (const name of DCMA_NAMES) {
     await expect(dialog.getByText(name, { exact: true }).first()).toBeVisible()
   }

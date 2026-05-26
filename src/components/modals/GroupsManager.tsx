@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import type { Group } from '../../types'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
+import { GROUP_NEST_DEPTH_WARN } from '../../constants'
 
 interface GroupsManagerProps {
   groups: Group[]
@@ -37,6 +38,45 @@ const PRESET_COLORS = ['#378ADD','#27AAE1','#2ECC71','#F39C12','#E74C3C','#9B59B
 
 function genId() { return Math.random().toString(36).slice(2, 10) }
 
+function collectDescendantIds(groups: Group[], parentId: string): Set<string> {
+  const childrenByParent = new Map<string, string[]>()
+  groups.forEach((group) => {
+    if (!group.parentId) return
+    const bucket = childrenByParent.get(group.parentId) ?? []
+    bucket.push(group.id)
+    childrenByParent.set(group.parentId, bucket)
+  })
+
+  const descendants = new Set<string>()
+  const queue = [...(childrenByParent.get(parentId) ?? [])]
+  while (queue.length > 0) {
+    const id = queue.shift()
+    if (!id || descendants.has(id)) continue
+    descendants.add(id)
+    const children = childrenByParent.get(id)
+    if (children) queue.push(...children)
+  }
+  return descendants
+}
+
+function computeDepth(groups: Group[], groupId: string): number {
+  const byId = new Map(groups.map((group) => [group.id, group]))
+  let depth = 0
+  let cursor = byId.get(groupId)
+  const visited = new Set<string>()
+
+  while (cursor?.parentId) {
+    if (visited.has(cursor.id)) break
+    visited.add(cursor.id)
+    const parent = byId.get(cursor.parentId)
+    if (!parent) break
+    depth += 1
+    cursor = parent
+  }
+
+  return depth
+}
+
 export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
@@ -58,7 +98,7 @@ export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
   const add = () => {
     const name = newName.trim()
     if (!name) return
-    setItems(prev => [...prev, { id: genId(), name, color: newColor }])
+    setItems(prev => [...prev, { id: genId(), name, color: newColor, parentId: null, wbsCode: '' }])
     setNewName('')
   }
 
@@ -84,8 +124,15 @@ export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
 
         {/* List */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {items.map(g => (
-            <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {items.map(g => {
+            const descendants = collectDescendantIds(items, g.id)
+            const parentOptions = items.filter((candidate) => candidate.id !== g.id && !descendants.has(candidate.id))
+            const selectedParentDepth = g.parentId ? computeDepth(items, g.parentId) : -1
+            const nextDepth = selectedParentDepth + 1
+            const showDepthWarning = g.parentId !== null && nextDepth >= GROUP_NEST_DEPTH_WARN
+            return (
+            <div key={g.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
                 type="color"
                 value={g.color}
@@ -99,13 +146,35 @@ export function GroupsManager({ groups, onSave, onClose }: GroupsManagerProps) {
                 onChange={e => update(g.id, { name: e.target.value })}
                 style={{ ...INPUT, flex: 1 }}
               />
+              <select
+                value={g.parentId ?? ''}
+                aria-label={`Parent phase for ${g.name || 'unnamed phase'}`}
+                onChange={(event) => {
+                  update(g.id, { parentId: event.target.value || null })
+                }}
+                style={{ ...INPUT, width: 140 }}
+              >
+                <option value="">Top level</option>
+                {parentOptions.map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {candidate.name}
+                  </option>
+                ))}
+              </select>
               <button
                 onClick={() => remove(g.id)}
                 aria-label={`Remove ${g.name || 'phase'}`}
                 style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-dim)', fontSize: 16, flexShrink: 0 }}
               >×</button>
             </div>
-          ))}
+              {showDepthWarning && (
+                <div style={{ marginLeft: 36, fontSize: 'var(--text-2xs)', color: 'var(--color-warning)' }}>
+                  Depth advisory: this nesting reaches level {nextDepth + 1}. Consider flattening for readability.
+                </div>
+              )}
+            </div>
+            )
+          })}
         </div>
 
         {/* Add form */}

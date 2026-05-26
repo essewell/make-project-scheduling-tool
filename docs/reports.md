@@ -8,10 +8,10 @@ This document defines the five report surfaces introduced by the v1.6 reporting 
 - Uses week/month bucketing depending on report context.
 - Output source: `src/lib/scurve.ts`.
 
-## 2. EVM (PV/EV/SPI)
+## 2. EVM (PV/EV/AC/SPI/CPI)
 
-- Computes planned value (PV), earned value (EV), and schedule performance index (SPI).
-- AC/CPI remain deferred in base v1.6 scope.
+- Computes planned value (PV), earned value (EV), actual cost (AC), schedule performance index (SPI), and cost performance index (CPI).
+- AC is sourced from per-task actual-cost entry in the SidePanel.
 - Output source: `src/lib/evm.ts`.
 
 ## 3. Cash flow forecast

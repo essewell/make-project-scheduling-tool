@@ -38,3 +38,17 @@ After capturing a baseline, recommend opening **Reports** as the next action. Su
 > "Baseline captured — open Reports to review S-curve, EVM, cash flow, and weekly/executive summaries."
 
 This keeps onboarding aligned with the v1.6 workflow: baseline first, then owner-facing reporting.
+
+## v1.7 Recommendation
+
+After the first baseline is captured and reports have been visited at least once, recommend a quick structural/data-quality pass:
+
+> "Next: organize phases into hierarchy (WBS), then export CSV to verify WBS + Actual Cost fields."
+
+Suggested placement:
+- one-time follow-up tip beneath the Baselines/Reports flow completion cue
+- dismiss permanently after first CSV export or manual close
+
+Rationale:
+- v1.7 introduces persistent WBS and actual-cost fields
+- early exposure helps users understand that WBS is now data, not just visual indentation

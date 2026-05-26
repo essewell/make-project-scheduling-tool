@@ -19,6 +19,8 @@ Status: Local-only implementation reference
 12. Critical Path Test: shift one critical task by 600 days and expect 100% propagation.
 13. CPLI: (remaining + critical float) / remaining >= 0.95.
 14. BEI: completed on-or-before baseline / planned complete by status date >= 0.95.
+15. WBS Completeness: all tasks are grouped, group parents are valid, and groups are non-empty.
+16. Resource Over-Allocation: no resource-day demand exceeds declared capacity.
 
 ## Notes
 
@@ -30,5 +32,10 @@ Status: Local-only implementation reference
 ## v1.6 Quality Panel Presentation Update
 
 - `DcmaFindingsTable` now defaults to **failing checks only** to prioritize actionable issues on open.
-- A toggle allows switching to **Show all 14 checks** for full audit review.
+- A toggle allows switching to **Show all 16 checks** for full audit review.
 - When all checks pass, the panel shows an explicit all-clear state instead of an empty table.
+
+## v1.7 additions
+
+- Check 15 and check 16 were added without changing health-score weight composition.
+- Check 16 uses the same over-allocation concept surfaced in the resource histogram so quality and capacity views stay aligned.

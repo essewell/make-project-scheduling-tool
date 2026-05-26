@@ -1,12 +1,13 @@
 import { memo, type RefObject } from 'react'
-import type { Group, Party, VisibleRow, Task, Dependency } from '../../types'
+import type { Group, Party, VisibleRow, Task, Dependency, GroupRollup } from '../../types'
 import { daysBetween, shortDate } from '../../lib/dates'
 import { ROW_HEIGHT, GANTT_HEADER_HEIGHT } from '../../constants'
 import { StatusBadge } from './StatusBadge'
 import { CaretDown, CaretRight, Funnel, Warning } from '../../lib/icons'
 import { findExcessiveLagDependencies, findNegativeFloatTaskIds, findOrphanTaskIds } from '../../lib/logicValidation'
 
-const WBS_COL_WIDTH = 24
+const WBS_COL_WIDTH = 48
+const GROUP_INDENT_PX = 16
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -22,6 +23,7 @@ interface TaskListProps {
   completionFlashId: string | null
   showCostColumn?: boolean
   taskCosts?: Map<string, number>
+  groupRollups?: Map<string, GroupRollup>
   dependencies: Dependency[]
   today: string
   onSelectTask: (id: string) => void
@@ -35,23 +37,20 @@ interface TaskListProps {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Compute WBS info for visible rows (group numbers + task indices within group). */
-function computeWbs(rows: VisibleRow[]): Map<string, string> {
-  const map = new Map<string, string>()
-  let groupNum = 0
-  let taskNum = 0
+function formatCompactCurrency(value: number): string {
+  if (value <= 0) return '$0'
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value)
+}
 
-  for (const row of rows) {
-    if (row.kind === 'group') {
-      groupNum++
-      taskNum = 0
-      map.set('group:' + row.groupId, String(groupNum))
-    } else {
-      taskNum++
-      map.set('task:' + row.task.id, `${groupNum}.${taskNum}`)
-    }
-  }
-  return map
+function formatRollupLabel(rollup: GroupRollup | undefined): string {
+  const taskCount = rollup?.taskCount ?? 0
+  if (taskCount === 0) return '0 tasks · — · — · —'
+  return `${taskCount} tasks · ${rollup?.completionPct ?? 0}% · ${formatCompactCurrency(rollup?.totalCost ?? 0)} · ${rollup?.resourceCount ?? 0} res`
 }
 
 /** Days remaining until planned end (negative = overdue). Hide for complete tasks. */
@@ -73,7 +72,9 @@ interface GroupRowProps {
   count: number
   collapsed: boolean
   wbs: string
+  depth: number
   completionPct: number
+  rollupLabel: string
   showCostColumn: boolean
   onToggle: () => void
 }
@@ -85,7 +86,9 @@ const GroupRow = memo(function GroupRow({
   count,
   collapsed,
   wbs,
+  depth,
   completionPct,
+  rollupLabel,
   showCostColumn,
   onToggle,
 }: GroupRowProps) {
@@ -107,12 +110,21 @@ const GroupRow = memo(function GroupRow({
     >
       {/* Task column */}
       <div style={{
+        position: 'relative',
         display: 'flex',
         alignItems: 'center',
         gap: 4,
-        paddingLeft: 8,
+        paddingLeft: 8 + depth * GROUP_INDENT_PX,
         overflow: 'hidden',
       }}>
+        <div style={{
+          position: 'absolute',
+          left: 8 + Math.max(0, depth - 1) * GROUP_INDENT_PX,
+          top: 0,
+          bottom: 0,
+          width: depth > 0 ? 1 : 0,
+          background: 'var(--color-border-light)',
+        }} />
         {collapsed ? (
           <CaretRight size={12} weight="regular" aria-hidden="true" color="var(--color-text-tertiary)" />
         ) : (
@@ -146,6 +158,18 @@ const GroupRow = memo(function GroupRow({
           flexShrink: 0,
         }}>
           ({count})
+        </span>
+        <span style={{
+          fontSize: 'var(--text-3xs)',
+          color: 'var(--color-text-secondary)',
+          border: '1px solid var(--color-border)',
+          borderRadius: '999px',
+          padding: '1px 6px',
+          fontFamily: 'var(--font-mono)',
+          whiteSpace: 'nowrap',
+          marginLeft: 4,
+        }}>
+          {rollupLabel}
         </span>
       </div>
       {/* Party / Dates columns — empty for group rows */}
@@ -184,7 +208,7 @@ const GroupRow = memo(function GroupRow({
 
 interface TaskRowProps {
   task: Task
-  wbs: string
+  depth: number
   party: Party | undefined
   groupColor: string
   isSelected: boolean
@@ -203,7 +227,7 @@ interface TaskRowProps {
 
 const TaskRow = memo(function TaskRow({
   task,
-  wbs,
+  depth,
   party,
   groupColor,
   isSelected,
@@ -255,6 +279,7 @@ const TaskRow = memo(function TaskRow({
         alignItems: 'center',
         gap: 5,
         paddingLeft: isKbFocused ? 9 : 8,   // account for 2px outline border swap
+        marginLeft: depth * GROUP_INDENT_PX,
         paddingRight: 6,
         overflow: 'hidden',
         minWidth: 0,
@@ -267,7 +292,7 @@ const TaskRow = memo(function TaskRow({
           flexShrink: 0,
           width: WBS_COL_WIDTH,
         }}>
-          {wbs}
+          {task.wbsCode}
         </span>
 
         {/* Milestone diamond */}
@@ -455,6 +480,7 @@ export function TaskList({
   completionFlashId,
   showCostColumn = false,
   taskCosts = new Map<string, number>(),
+  groupRollups = new Map<string, GroupRollup>(),
   dependencies,
   today,
   onSelectTask,
@@ -466,9 +492,13 @@ export function TaskList({
   onScroll,
 }: TaskListProps) {
   const columns = showCostColumn ? '1fr 52px 80px 48px 90px 16px' : '1fr 52px 80px 48px 16px'
-  const wbsMap = computeWbs(visibleRows)
   const partyMap = new Map(parties.map(p => [p.id, p]))
   const groupColorMap = new Map(groups.map(g => [g.id, g.color]))
+  const groupDepthMap = new Map(
+    visibleRows
+      .filter((row): row is Extract<VisibleRow, { kind: 'group' }> => row.kind === 'group')
+      .map((row) => [row.groupId, row.depth ?? 0] as const),
+  )
   const orphanTaskIds = new Set(findOrphanTaskIds(filteredTasks, dependencies))
   const negativeFloatTaskIds = new Set(findNegativeFloatTaskIds(filteredTasks, new Map(
     filteredTasks
@@ -477,22 +507,6 @@ export function TaskList({
   const excessiveLagTaskIds = new Set(
     findExcessiveLagDependencies(filteredTasks, dependencies, 0.5).flatMap((pair) => [pair.fromId, pair.toId]),
   )
-  const groupStats = new Map<string, { totalPct: number; count: number }>()
-  for (const task of filteredTasks) {
-    const current = groupStats.get(task.group) ?? { totalPct: 0, count: 0 }
-    current.totalPct += task.pct
-    current.count += 1
-    groupStats.set(task.group, current)
-  }
-  const groupCompletionMap = new Map<string, number>(
-    groups.map(group => {
-      const stats = groupStats.get(group.id)
-      if (!stats || stats.count === 0) return [group.id, 0]
-      const avgPct = Math.round(stats.totalPct / stats.count)
-      return [group.id, Math.max(0, Math.min(100, avgPct))]
-    }),
-  )
-
   // Determine which groups belong to visible tasks (for coloring task rows)
   const taskGroupColor = (task: Task): string =>
     groupColorMap.get(task.group) ?? '#378ADD'
@@ -562,8 +576,10 @@ export function TaskList({
                 color={row.color}
                 count={row.count}
                 collapsed={row.collapsed}
-                wbs={wbsMap.get('group:' + row.groupId) ?? ''}
-                completionPct={groupCompletionMap.get(row.groupId) ?? 0}
+                wbs={row.wbsCode ?? ''}
+                depth={row.depth ?? 0}
+                completionPct={groupRollups.get(row.groupId)?.completionPct ?? 0}
+                rollupLabel={formatRollupLabel(groupRollups.get(row.groupId))}
                 showCostColumn={showCostColumn}
                 onToggle={() => onToggleGroup(row.groupId)}
               />
@@ -576,7 +592,7 @@ export function TaskList({
             <TaskRow
               key={task.id + i}
               task={task}
-              wbs={wbsMap.get('task:' + task.id) ?? ''}
+              depth={(groupDepthMap.get(task.group) ?? 0) + 1}
               party={party}
               groupColor={taskGroupColor(task)}
               isSelected={task.id === selectedTaskId}

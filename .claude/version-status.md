@@ -1,6 +1,6 @@
 # Version Status — MAKE Scheduling Tool
 
-**Last updated:** 2026-05-25 (v1.6 implementation complete on branch `v1.6`; awaiting PR merge/tag)
+**Last updated:** 2026-05-26 (v1.6 merged/tagged as `v0.6.0`; v1.7 active)
 **Maintainer:** Any agent that ships a version. Update this file when a version ships.
 
 ---
@@ -32,8 +32,8 @@ When a version ships (code merged, tested, verified):
 | **v1.4** | Schedule quality | ✅ shipped | [plan-v1.4.md](./plan-v1.4.md) | — | 2026-05-25 |
 | **v1.5** | Multi-baseline & change | ✅ shipped | [plan-v1.5.md](./plan-v1.5.md) | [pm-audit-v4.md](./pm-audit-v4.md) | 2026-05-25 |
 | | *⚖ PM Audit Checkpoint 2* | ✅ pass with one condition (6.7/10 holistic) | — | [pm-audit-v4.md](./pm-audit-v4.md) | 2026-05-25 |
-| **v1.6** | Reporting & analytics | ⏳ active | [plan-v1.6.md](./plan-v1.6.md) | — | — |
-| **v1.7** | WBS deepening | ⬜ pending | — | — | — |
+| **v1.6** | Reporting & analytics | ✅ shipped | [plan-v1.6.md](./plan-v1.6.md) | — | 2026-05-26 |
+| **v1.7** | WBS deepening | ⏳ active | [plan-v1.7.md](./plan-v1.7.md) | — | — |
 | **v1.8** | Calendar & delays | ⬜ pending | — | — | — |
 | | *⚖ PM Audit Checkpoint 3* | ⬜ pending | — | — | — |
 | **v1.9** | Data integration | ⬜ pending | — | — | — |
@@ -53,8 +53,8 @@ When a version ships (code merged, tested, verified):
 
 ## Current Focus
 
-**Active work:** v1.6 implementation complete on branch `v1.6` (commit `e2517cb`), with lint/type-check/build/e2e gates passing; pending human PR merge and `v0.6.0` tag.
-**Just shipped:** v1.5 (multi-baseline & change management) on 2026-05-25 (`v0.5.0`)
+**Active work:** v1.7 (WBS deepening + AC/CPI close-out), starting with Phase 0 pre-flight, TopBar overflow debt close-out, and `.claude` continuity refresh.
+**Just shipped:** v1.6 (reporting & analytics) on 2026-05-26 (`v0.6.0`)
 **Latest audit:** [pm-audit-v4.md](./pm-audit-v4.md) — 2026-05-25, Checkpoint 2, **6.7/10 holistic (6.3 equal-weight)** — pass with one condition (Quality Panel cold-open perf must close in v1.6 Phase 0). Checkpoint 3 (post-v1.8) is the next gate.
 **Roadmap:** [pm-roadmap.md](./pm-roadmap.md)
 
@@ -72,6 +72,7 @@ Each plan file has a build changelog section at the bottom. This table links to 
 | v1.4 | [plan-v1.4.md §17 — Build Changelog](./plan-v1.4.md) |
 | v1.5 | [plan-v1.5.md §17 — Build Changelog](./plan-v1.5.md) |
 | v1.6 | [plan-v1.6.md §17 — Build Changelog](./plan-v1.6.md) |
+| v1.7 | [plan-v1.7.md §17 — Build Changelog](./plan-v1.7.md) |
 
 ---
 

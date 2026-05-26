@@ -35,6 +35,8 @@ const FIELD_OPTIONS: Array<{ value: MappableField; label: string }> = [
   { value: 'milestone',    label: 'Milestone' },
   { value: 'notes',        label: 'Notes' },
   { value: 'id',           label: 'ID' },
+  { value: 'wbsCode',      label: 'WBS Code' },
+  { value: 'actualCost',   label: 'Actual Cost' },
 ]
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -69,7 +71,8 @@ const INPUT: React.CSSProperties = {
 function guessField(header: string): MappableField {
   const h = header.toLowerCase().replace(/[^a-z]/g, '')
   if (h.includes('name') || h === 'task') return 'name'
-  if (h.includes('phase') || h.includes('group') || h.includes('wbs')) return 'group'
+  if (h === 'wbscode' || h === 'wbs') return 'wbsCode'
+  if (h.includes('phase') || h.includes('group')) return 'group'
   if (h === 'start' || h === 'startdate' || h === 's') return 's'
   if (h === 'end' || h === 'finish' || h === 'enddate' || h === 'e') return 'e'
   if (h.includes('actualstart')) return 'actualStart'
@@ -79,6 +82,7 @@ function guessField(header: string): MappableField {
   if (h.includes('party') || h.includes('responsible') || h.includes('owner')) return 'party'
   if (h.includes('milestone')) return 'milestone'
   if (h.includes('note') || h.includes('comment') || h.includes('description')) return 'notes'
+  if (h === 'actualcost' || h === 'costactual' || h === 'ac') return 'actualCost'
   if (h === 'id') return 'id'
   return 'skip'
 }

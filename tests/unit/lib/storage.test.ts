@@ -10,10 +10,12 @@ function makeMinimalTask(id: string, extraDeps: string[] = []) {
     id,
     name: `Task ${id}`,
     group: '',
+    wbsCode: '',
     s: '2024-01-01',
     e: '2024-01-05',
     actualStart: null,
     actualFinish: null,
+    actualCost: 0,
     pct: 0,
     status: 'not_started',
     party: null,
@@ -187,7 +189,7 @@ describe('loadState — v0 migration', () => {
       onboardingPhase: 'complete',
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(v0))
-    expect(loadState().persistedSchemaVersion).toBe(3)
+    expect(loadState().persistedSchemaVersion).toBe(4)
   })
 
   it('adds empty resources and assignments arrays on migration', () => {
@@ -211,10 +213,10 @@ describe('loadState — v0 migration', () => {
     const loaded = loadState()
     expect(loaded.resources).toEqual([])
     expect(loaded.assignments).toEqual([])
-    expect(loaded.persistedSchemaVersion).toBe(3)
+    expect(loaded.persistedSchemaVersion).toBe(4)
   })
 
-  it('migrates v2 payload to v3 additively with baseline defaults', () => {
+  it('migrates v2 payload to v4 additively with baseline defaults', () => {
     const v2 = {
       persistedSchemaVersion: 2,
       projectName: 'v2 payload',
@@ -237,14 +239,15 @@ describe('loadState — v0 migration', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(v2))
 
     const loaded = loadState()
-    expect(loaded.persistedSchemaVersion).toBe(3)
+    expect(loaded.persistedSchemaVersion).toBe(4)
     expect(loaded.changeOrders).toEqual([])
     expect(loaded.varianceSnapshots).toEqual([])
     expect(loaded.baselines[0]?.reason).toBe('')
     expect(loaded.baselines[0]?.lockedAt).toBe('2026-05-20')
+    expect(loaded.tasks[0]?.actualCost).toBe(0)
   })
 
-  it('v2 -> v3 round-trip save/load remains equivalent', () => {
+  it('v2 -> v4 round-trip save/load remains equivalent', () => {
     const v2 = {
       persistedSchemaVersion: 2,
       projectName: 'round-trip',
@@ -270,6 +273,43 @@ describe('loadState — v0 migration', () => {
     saveState(firstLoad)
     const secondLoad = loadState()
     expect(secondLoad).toEqual(firstLoad)
+  })
+
+  it('adds parentId=null and stamps WBS on migrated groups/tasks', () => {
+    const v3 = {
+      persistedSchemaVersion: 3,
+      projectName: 'wbs-migrate',
+      tasks: [{ ...makeMinimalTask('t1'), group: 'g1' }],
+      groups: [{ id: 'g1', name: 'Group 1', color: '#1c3048' }],
+      parties: [],
+      notes: [],
+      dependencies: [],
+      collapsedGroups: [],
+      baselines: [],
+      workweek: DEFAULT_WORKWEEK,
+      holidays: [],
+      onboardingPhase: 'complete',
+      ghostStyle: 'stripe',
+      resources: [],
+      assignments: [],
+      changeOrders: [],
+      varianceSnapshots: [],
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v3))
+    const loaded = loadState()
+    expect(loaded.groups[0]?.parentId).toBeNull()
+    expect(loaded.groups[0]?.wbsCode).toBe('1')
+    expect(loaded.tasks[0]?.wbsCode).toBe('1.1')
+  })
+
+  it('saveState re-stamps WBS codes deterministically', () => {
+    const state = makeDefaultState('stamp')
+    state.groups = [{ id: 'g1', name: 'Group 1', color: '#1c3048', parentId: null, wbsCode: 'wrong' }]
+    state.tasks = [{ ...makeMinimalTask('t1'), group: 'g1', wbsCode: 'wrong' }]
+    saveState(state)
+    const loaded = loadState()
+    expect(loaded.groups[0]?.wbsCode).toBe('1')
+    expect(loaded.tasks[0]?.wbsCode).toBe('1.1')
   })
 
   it('persists mixed variance snapshots with and without compositeHealthScore', () => {

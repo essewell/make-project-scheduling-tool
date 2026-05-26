@@ -38,8 +38,9 @@ export function computeEVM(
   assignments: ResourceAssignment[],
   resources: Resource[],
   statusDate: string,
+  totalActualCost = 0,
 ): EVMResult {
-  if (!baseline) return { pv: 0, ev: 0, ac: null, spi: null, cpi: null }
+  if (!baseline) return { pv: 0, ev: 0, ac: totalActualCost, spi: null, cpi: null }
 
   const resourceMap = new Map(resources.map((resource) => [resource.id, resource]))
   const currentById = new Map(tasks.map((task) => [task.id, task]))
@@ -55,5 +56,6 @@ export function computeEVM(
   })
 
   const spi = pv > 0 ? ev / pv : null
-  return { pv, ev, ac: null, spi, cpi: null }
+  const cpi = totalActualCost > 0 ? ev / totalActualCost : null
+  return { pv, ev, ac: totalActualCost, spi, cpi }
 }
