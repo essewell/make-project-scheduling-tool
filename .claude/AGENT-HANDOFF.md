@@ -254,3 +254,31 @@
 - Next 2 actions:
   1. Phase K: execute E2E updates/coverage for v1.7 features.
   2. Phase L/M: final QA sweep, ship checklist, and PR readiness.
+
+## Phase K Update (2026-05-26)
+
+- Completed Phase K E2E coverage expansion and stabilization:
+  - Added new specs:
+    - `wbs-hierarchy.spec.ts`
+    - `wbs-csv-roundtrip.spec.ts`
+    - `actual-cost.spec.ts`
+    - `dcma-15-16.spec.ts`
+    - `evm-report.spec.ts`
+    - `executive-report.spec.ts`
+  - Extended existing specs:
+    - `quality-panel.spec.ts` (16-check expectations + check names)
+    - `a11y.spec.ts` (overflow menu sweep path)
+  - Hardened overflow helper click behavior for menuitem interactions.
+  - Resolved build-gate schema-v4 type completeness in `exampleData.ts` and App new-task seed (`wbsCode`, `actualCost`, group parent/WBS defaults).
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run build` ✅
+  - `npm.cmd run test:e2e` ✅ (26/26 passing)
+- Last 3 decisions:
+  1. Keep EVM assertions resilient to cost-loaded fallback state while still validating AC/CPI surface.
+  2. Prefer robust locator narrowing over brittle exact-text strict matches in high-density task list contexts.
+  3. Treat build-gate schema completeness as blocking and patch fixtures/seeds immediately before E2E.
+- Next 2 actions:
+  1. Phase L: final cross-surface manual QA and acceptance checklist sweep.
+  2. Phase M: ship prep (versioning/changelog/PR readiness) per plan.

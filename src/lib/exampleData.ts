@@ -2,13 +2,19 @@ import type { Group, Party, Task } from '../types'
 
 // ─── Example project data — residential construction workflow ─────────────────
 
-export const EXAMPLE_GROUPS: Group[] = [
+const EXAMPLE_GROUP_SEED: Array<Omit<Group, 'parentId' | 'wbsCode'>> = [
   { id: 'g-site',     name: 'Site Preparation',  color: '#7C5CBF' },
   { id: 'g-found',   name: 'Foundation',          color: '#E0862A' },
   { id: 'g-frame',   name: 'Framing',             color: '#2E8B57' },
   { id: 'g-mep',     name: 'MEP Rough-In',        color: '#27aae1' },
   { id: 'g-finish',  name: 'Finishes',            color: '#BF3B2E' },
 ]
+
+export const EXAMPLE_GROUPS: Group[] = EXAMPLE_GROUP_SEED.map((group) => ({
+  ...group,
+  parentId: null,
+  wbsCode: '',
+}))
 
 export const EXAMPLE_PARTIES: Party[] = [
   { id: 'p-gc',   name: 'General Contractor', abbr: 'GC',  color: '#1c3048' },
@@ -17,7 +23,7 @@ export const EXAMPLE_PARTIES: Party[] = [
   { id: 'p-mep',  name: 'MEP Contractor',     abbr: 'MEP', color: '#27aae1' },
 ]
 
-export const EXAMPLE_TASKS: Task[] = [
+const EXAMPLE_TASK_SEED: Array<Omit<Task, 'wbsCode' | 'actualCost'>> = [
   // Site Preparation
   {
     id: 't-01', name: 'Site survey & stakeout',
@@ -136,3 +142,9 @@ export const EXAMPLE_TASKS: Task[] = [
     party: 'p-gc', notes: '', milestone: true, manualStatus: false, manualPct: false, deps: ['t-15'],
   },
 ]
+
+export const EXAMPLE_TASKS: Task[] = EXAMPLE_TASK_SEED.map((task) => ({
+  ...task,
+  wbsCode: '',
+  actualCost: 0,
+}))

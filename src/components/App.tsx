@@ -630,6 +630,8 @@ export function App() {
       manualStatus: false,
       manualPct: false,
       deps: [],
+      wbsCode: '',
+      actualCost: 0,
     }
     lastCreatedEmptyTaskId.current = id
     setTasks([...tasks, newTask])

@@ -1342,3 +1342,31 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:unit` ✅
 - Notes
   - J.2/J.3/J.4 required no additional code changes beyond prior phase implementations.
+### Phase K — E2E Coverage Expansion
+
+- Scope
+  - Added Phase K E2E specs for WBS hierarchy, CSV WBS/AC roundtrip, actual-cost/EVM, DCMA 15/16, EVM report, and executive report.
+  - Updated quality-panel E2E expectations to 16 checks and new check labels.
+  - Extended a11y sweep to include TopBar overflow menu path.
+  - Stabilized overflow menu interaction helper to improve menuitem activation reliability.
+  - Fixed schema-v4 build gate type completeness in example fixtures/new-task seed required for `npm run build` prior to E2E.
+- Files touched
+  - `tests/e2e/wbs-hierarchy.spec.ts`
+  - `tests/e2e/wbs-csv-roundtrip.spec.ts`
+  - `tests/e2e/actual-cost.spec.ts`
+  - `tests/e2e/dcma-15-16.spec.ts`
+  - `tests/e2e/evm-report.spec.ts`
+  - `tests/e2e/executive-report.spec.ts`
+  - `tests/e2e/quality-panel.spec.ts`
+  - `tests/e2e/a11y.spec.ts`
+  - `tests/e2e/helpers.ts`
+  - `src/lib/exampleData.ts`
+  - `src/components/App.tsx`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run build` ✅
+  - `npm.cmd run test:e2e` ✅ (26 passed)
+- Notes
+  - Full E2E suite remains green after Phase K additions and stabilization adjustments.

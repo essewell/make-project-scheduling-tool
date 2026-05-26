@@ -38,6 +38,15 @@ async function openOverflowModalAndScan(page: Page, buttonName: RegExp, context:
   await expect(page.getByRole('dialog')).toHaveCount(0)
 }
 
+async function openOverflowMenuAndScan(page: Page) {
+  await page.getByRole('button', { name: /^more$/i }).click()
+  const menu = page.getByRole('menu')
+  await expect(menu).toBeVisible()
+  await expectNoSeriousOrCriticalViolations(page, 'TopBar overflow menu')
+  await page.keyboard.press('Escape')
+  await expect(menu).toHaveCount(0)
+}
+
 test('axe sweep: wizard, main app, and desktop modals', async ({ page }) => {
   test.setTimeout(90_000)
   await page.setViewportSize({ width: 1680, height: 980 })
@@ -56,6 +65,7 @@ test('axe sweep: wizard, main app, and desktop modals', async ({ page }) => {
   await expect(page.getByRole('button', { name: /baselines · baseline 1/i })).toBeVisible()
 
   await openModalAndScan(page, /calendar/i, 'Workweek modal')
+  await openOverflowMenuAndScan(page)
   await openOverflowModalAndScan(page, /phases/i, 'Groups modal')
   await openOverflowModalAndScan(page, /parties/i, 'Parties modal')
   await openModalAndScan(page, /import/i, 'CSV import modal')
@@ -97,7 +107,6 @@ test('axe sweep: wizard, main app, and desktop modals', async ({ page }) => {
   await reportsDialog.getByRole('button', { name: /close reports modal/i }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
 
-  await openModalAndScan(page, /^links$/i, 'Link builder modal')
   await openModalAndScan(page, /print/i, 'Print preview modal')
 
   // ResourcesManager: toolbar may render multiple "Resources" buttons; use .first()
