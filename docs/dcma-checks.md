@@ -26,3 +26,9 @@ Status: Local-only implementation reference
 - Check 14 (BEI) in v1.4 currently computes against the most-recent captured baseline and returns N/A when no baseline exists.
 - v1.5 Phase G will rebind BEI to `activeBaselineId` so the quality engine compares against the user-selected active baseline instead of implicit most-recent baseline selection.
 - Unit coverage is in `tests/unit/lib/dcma.test.ts`.
+
+## v1.6 Quality Panel Presentation Update
+
+- `DcmaFindingsTable` now defaults to **failing checks only** to prioritize actionable issues on open.
+- A toggle allows switching to **Show all 14 checks** for full audit review.
+- When all checks pass, the panel shows an explicit all-clear state instead of an empty table.

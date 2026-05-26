@@ -11,6 +11,8 @@ A Gantt-style scheduling tool for construction PM workflows, built with Vite + R
 - Multi-baseline capture with ghost overlays, variance tracking, and named baseline comparison (side-by-side diff modal)
 - Variance trend chart: per-task finish-variance sparkline history
 - Change orders manager: modal + sidepanel section for tracking scope changes
+- Reports modal with S-curve, EVM (PV/EV/SPI), cash flow, executive summary, and weekly progress report surfaces
+- Print-oriented executive and weekly report previews with browser PDF export flow
 - CSV import/export with append/replace flows and undo support
 - Mobile bottom-sheet task details workflow
 - Accessibility-focused keyboard and dialog behavior

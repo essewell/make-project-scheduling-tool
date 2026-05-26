@@ -37,11 +37,13 @@ test('opens quality panel from stat bar and renders checks + histogram', async (
   await expect(dialog).toBeVisible()
   await expect(dialog.getByText('Schedule Quality Report')).toBeVisible()
 
+  await expect(dialog.getByRole('button', { name: /show all 14 checks/i })).toBeVisible()
+  await dialog.getByRole('button', { name: /show all 14 checks/i }).click()
   for (const name of DCMA_NAMES) {
     await expect(dialog.getByText(name, { exact: true }).first()).toBeVisible()
   }
-
   await expect(dialog.locator('svg[aria-label="Float distribution histogram"]')).toBeVisible()
+  await expect(dialog.getByRole('button', { name: /show failing checks/i })).toBeVisible()
 })
 
 test('shows orphan warning icon and opens link builder from task list', async ({ page }) => {

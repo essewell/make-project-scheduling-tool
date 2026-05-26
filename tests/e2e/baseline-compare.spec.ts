@@ -34,7 +34,43 @@ test('compare modal renders slipped, added, removed rows and footer totals', asy
   await page.getByRole('button', { name: /capture/i }).click()
   const captureAgain = page.getByRole('dialog', { name: /capture baseline/i })
   await captureAgain.getByRole('button', { name: /^capture$/i }).click()
-  const baselinesButton = page.getByRole('button', { name: /baselines · /i })
+
+  await page.evaluate(() => {
+    const key = 'schedule-tool-v1'
+    const raw = localStorage.getItem(key)
+    if (!raw) return
+    const state = JSON.parse(raw) as {
+      tasks?: Array<{ id: string }>
+      changeOrders?: Array<{
+        id: string
+        number: string
+        name: string
+        reason: string
+        status: 'draft' | 'approved' | 'rejected'
+        createdAt: string
+        lockedAt: string
+        affectedTaskIds: string[]
+        daysImpact: number
+      }>
+    }
+    const taskId = state.tasks?.find((task) => task.id)?.id
+    if (!taskId) return
+    state.changeOrders = [{
+      id: 'co-test',
+      number: 'CO-007',
+      name: 'Delay directive',
+      reason: 'Owner direction',
+      status: 'approved',
+      createdAt: new Date().toISOString(),
+      lockedAt: new Date().toISOString(),
+      affectedTaskIds: [taskId],
+      daysImpact: 4,
+    }]
+    localStorage.setItem(key, JSON.stringify(state))
+  })
+  await page.reload()
+
+  const baselinesButton = page.getByRole('button', { name: /baselines/i }).first()
   await expect(baselinesButton).toBeVisible()
   await baselinesButton.click()
   await page.getByRole('button', { name: /compare baselines/i }).click()
@@ -53,4 +89,5 @@ test('compare modal renders slipped, added, removed rows and footer totals', asy
   await expect(compareDialog.getByText(/Slip \+\d+d/)).toBeVisible()
   await expect(compareDialog.getByText(/Net Tasks [+-]\d+/)).toBeVisible()
   await expect(compareDialog.getByText(/Cost [+-]\$/)).toBeVisible()
+  await expect(compareDialog.getByText('CO-007')).toBeVisible()
 })

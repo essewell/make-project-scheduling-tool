@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { DcmaAssessmentResult, VarianceSnapshot } from '../../types'
 import type { FloatBucketCount } from '../../lib/floatDistribution'
 import type { ScheduleHealthResult } from '../../lib/health'
@@ -17,8 +17,8 @@ interface QualityPanelProps {
   assessment: DcmaAssessmentResult
   health: ScheduleHealthResult
   floatDistribution: FloatBucketCount[]
-  varianceSnapshots: VarianceSnapshot[]
-  activeBaselineId: string | null
+  activeBaselineSnapshots: VarianceSnapshot[]
+  healthHistory: number[]
   onOpenBaselineMenu: () => void
   onClose: () => void
 }
@@ -31,14 +31,26 @@ export function QualityPanel({
   assessment,
   health,
   floatDistribution,
-  varianceSnapshots,
-  activeBaselineId,
+  activeBaselineSnapshots,
+  healthHistory,
   onOpenBaselineMenu,
   onClose,
 }: QualityPanelProps) {
   const panelRef = useRef<HTMLDivElement | null>(null)
   const closeBtnRef = useRef<HTMLButtonElement | null>(null)
+  const [showHeavyPanels, setShowHeavyPanels] = useState(false)
   useDialogA11y({ containerRef: panelRef, initialFocusRef: closeBtnRef, onClose })
+
+  useEffect(() => {
+    if (!open) {
+      setShowHeavyPanels(false)
+      return
+    }
+    const rafId = window.requestAnimationFrame(() => {
+      setShowHeavyPanels(true)
+    })
+    return () => window.cancelAnimationFrame(rafId)
+  }, [open])
 
   if (!open) return null
 
@@ -100,9 +112,25 @@ export function QualityPanel({
             <>
               <DcmaFindingsTable checks={assessment.checks} hasResources={hasResources} onOpenBaselineMenu={onOpenBaselineMenu} />
               <div style={{ display: 'grid', gap: 12, alignContent: 'start' }}>
-                <HealthScoreBreakdown health={health} />
-                <FloatDistributionChart buckets={floatDistribution} />
-                <VarianceTrendChart snapshots={varianceSnapshots} activeBaselineId={activeBaselineId} />
+                <HealthScoreBreakdown health={health} history={healthHistory} />
+                {showHeavyPanels ? (
+                  <>
+                    <FloatDistributionChart buckets={floatDistribution} />
+                    <VarianceTrendChart snapshots={activeBaselineSnapshots} />
+                  </>
+                ) : (
+                  <div
+                    style={{
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius)',
+                      padding: 'var(--space-3)',
+                      fontSize: 'var(--text-xs)',
+                      color: 'var(--color-text-tertiary)',
+                    }}
+                  >
+                    Loading charts…
+                  </div>
+                )}
               </div>
             </>
           )}

@@ -272,6 +272,19 @@ describe('loadState — v0 migration', () => {
     expect(secondLoad).toEqual(firstLoad)
   })
 
+  it('persists mixed variance snapshots with and without compositeHealthScore', () => {
+    const base = makeDefaultState('snapshots')
+    base.varianceSnapshots = [
+      { date: '2026-05-20', activeBaselineId: 'b1', projectFinishVariance: 2, criticalPathLength: 10 },
+      { date: '2026-05-21', activeBaselineId: 'b1', projectFinishVariance: 1, criticalPathLength: 9, compositeHealthScore: 81 },
+    ]
+    saveState(base)
+    const loaded = loadState()
+    expect(loaded.varianceSnapshots).toHaveLength(2)
+    expect(loaded.varianceSnapshots[0]?.compositeHealthScore).toBeUndefined()
+    expect(loaded.varianceSnapshots[1]?.compositeHealthScore).toBe(81)
+  })
+
   it('sets ghostStyle to "stripe" when missing', () => {
     const v0 = {
       projectName: 'Legacy',

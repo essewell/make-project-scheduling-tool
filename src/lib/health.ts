@@ -72,6 +72,19 @@ function normalizeWeights(subscores: HealthSubscores, weights: HealthWeights): H
   }
 }
 
+export function computeCompositeHealthScore(
+  subscores: HealthSubscores,
+  normalizedWeights: HealthWeights,
+): number {
+  return clamp100(Math.round(
+    (normalizedWeights.logic * (subscores.logicSubscore ?? 0)) +
+    (normalizedWeights.resource * (subscores.resourceSubscore ?? 0)) +
+    (normalizedWeights.baseline * (subscores.baselineSubscore ?? 0)) +
+    (normalizedWeights.float * (subscores.floatSubscore ?? 0)) +
+    (normalizedWeights.completeness * (subscores.completenessSubscore ?? 0)),
+  ))
+}
+
 function getCheckScore(assessment: DcmaAssessmentResult, checkId: number): number | null {
   const check = assessment.checks.find((candidate) => candidate.id === checkId)
   if (!check) return null
@@ -142,13 +155,7 @@ export function computeScheduleHealth(input: BuildHealthInput): ScheduleHealthRe
   }
 
   const normalizedWeights = normalizeWeights(subscores, weights)
-  const score = clamp100(Math.round(
-    (normalizedWeights.logic * (subscores.logicSubscore ?? 0)) +
-    (normalizedWeights.resource * (subscores.resourceSubscore ?? 0)) +
-    (normalizedWeights.baseline * (subscores.baselineSubscore ?? 0)) +
-    (normalizedWeights.float * (subscores.floatSubscore ?? 0)) +
-    (normalizedWeights.completeness * (subscores.completenessSubscore ?? 0)),
-  ))
+  const score = computeCompositeHealthScore(subscores, normalizedWeights)
 
   return { score, normalizedWeights, subscores }
 }

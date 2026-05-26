@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Baseline, BaselineDiff } from '../../types'
+import type { Baseline, BaselineDiff, ChangeOrder } from '../../types'
 import { useDialogA11y } from '../../hooks/useDialogA11y'
 import { compareBaselines } from '../../lib/baselines'
 import { BaselineSelectPair } from '../baseline/BaselineSelectPair'
@@ -10,6 +10,7 @@ interface BaselineCompareModalProps {
   baselines: Baseline[]
   baselineAId: string | null
   baselineBId: string | null
+  changeOrders?: ChangeOrder[]
   onChangeBaselineA: (baselineId: string) => void
   onChangeBaselineB: (baselineId: string) => void
   onClose: () => void
@@ -20,6 +21,7 @@ export function BaselineCompareModal({
   baselines,
   baselineAId,
   baselineBId,
+  changeOrders = [],
   onChangeBaselineA,
   onChangeBaselineB,
   onClose,
@@ -132,7 +134,7 @@ export function BaselineCompareModal({
               Capture at least two baselines to compare.
             </div>
           ) : diff ? (
-            <BaselineDiffTable diff={diff} />
+            <BaselineDiffTable diff={diff} changeOrders={changeOrders} />
           ) : (
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-dim)' }}>
               Select two baselines to compare.

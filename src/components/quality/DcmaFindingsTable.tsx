@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import type { DcmaCheckResult } from '../../types'
 import { Check, WarningCircle } from '../../lib/icons'
 
@@ -8,6 +9,20 @@ interface DcmaFindingsTableProps {
 }
 
 export function DcmaFindingsTable({ checks, hasResources, onOpenBaselineMenu }: DcmaFindingsTableProps) {
+  const [showAllChecks, setShowAllChecks] = useState(false)
+  const failingChecks = useMemo(() => checks.filter((check) => !check.passed), [checks])
+  const visibleChecks = showAllChecks ? checks : failingChecks
+
+  if (checks.length > 0 && failingChecks.length === 0) {
+    return (
+      <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius)', padding: 'var(--space-3)' }}>
+        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+          All 14 checks passing.
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
       <div
@@ -26,7 +41,7 @@ export function DcmaFindingsTable({ checks, hasResources, onOpenBaselineMenu }: 
         <span style={{ textAlign: 'right' }}>Score</span>
       </div>
       <div style={{ maxHeight: 380, overflow: 'auto' }} tabIndex={0}>
-        {checks.map((check) => {
+        {visibleChecks.map((check) => {
           const score = check.id === 13 || check.id === 14
             ? check.score.toFixed(2)
             : `${Math.round(check.score)}${check.id === 2 || check.id === 7 || check.id === 9 ? '' : '%'}`
@@ -86,6 +101,23 @@ export function DcmaFindingsTable({ checks, hasResources, onOpenBaselineMenu }: 
           )
         })}
       </div>
+      {checks.length > 0 && (
+        <div style={{ borderTop: '1px solid var(--color-border-light)', padding: '8px 10px' }}>
+          <button
+            onClick={() => setShowAllChecks((value) => !value)}
+            style={{
+              padding: 0,
+              border: 'none',
+              background: 'none',
+              color: 'var(--accent)',
+              cursor: 'pointer',
+              fontSize: 'var(--text-2xs)',
+            }}
+          >
+            {showAllChecks ? `Show failing checks (${failingChecks.length})` : `Show all 14 checks`}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

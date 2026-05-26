@@ -30,3 +30,11 @@ After CSV import, prompt the PM to capture a baseline before editing dates. Sugg
 > "CSV imported — capture a baseline to track variance from this plan."
 
 The banner should auto-dismiss on first baseline capture and never re-appear (persisted flag). This is not yet implemented; logged here for the v1.6 onboarding pass.
+
+## v1.6 Recommendation
+
+After capturing a baseline, recommend opening **Reports** as the next action. Suggested guidance copy:
+
+> "Baseline captured — open Reports to review S-curve, EVM, cash flow, and weekly/executive summaries."
+
+This keeps onboarding aligned with the v1.6 workflow: baseline first, then owner-facing reporting.
