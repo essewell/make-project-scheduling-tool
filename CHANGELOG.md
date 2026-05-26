@@ -2,6 +2,31 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.7.0] - 2026-05-26
+
+### Added
+- Persistent WBS and hierarchy deepening:
+  - `Task.wbsCode` and `Group.wbsCode` persisted in schema v4.
+  - `Group.parentId` support with parent-picker controls and cycle-prevention in GroupsManager.
+  - Tree-ordered TaskList rendering with depth indentation and connector rule.
+  - Group rollup summaries (tasks, completion, cost, resource count) on group rows.
+- DCMA quality expansion:
+  - Check 15: WBS Completeness.
+  - Check 16: Resource Over-Allocation.
+  - Quality panel copy updated to 16-check mode and failing-first workflow.
+- Cost-tracking completion:
+  - SidePanel actual-cost section with blur-save numeric validation and assignment-aware advisory state.
+  - EVM now surfaces PV/EV/AC/SPI/CPI and removes v1.6 AC/CPI deferral messaging.
+  - Executive summary preview now includes CPI alongside SPI.
+- CSV surface expansion:
+  - Task CSV export includes `WBS Code` and `Actual Cost` columns.
+  - Task CSV import supports mapping/parsing for WBS and actual cost values.
+- Expanded E2E coverage for v1.7 surfaces (WBS hierarchy, CSV WBS/AC roundtrip, AC/EVM, DCMA 15/16, EVM, executive report, a11y/overflow paths).
+
+### Changed
+- Unit test runner hardened to prevent recurring worker-hang issues by running per-file Vitest execution via `scripts/run-unit-tests.mjs`.
+- Example data and new-task seed paths aligned with schema v4 strict typing defaults (`wbsCode`, `actualCost`, group hierarchy fields).
+
 ## [0.6.0] - 2026-05-25
 
 ### Added

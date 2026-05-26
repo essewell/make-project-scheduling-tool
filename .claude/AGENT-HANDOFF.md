@@ -299,3 +299,27 @@
 - Next 2 actions:
   1. Phase M: release hygiene updates (`CHANGELOG`, version bump, README).
   2. Run full gates sequence required by M.4.
+
+## Phase M Update (2026-05-26)
+
+- Completed implementation-owned release hygiene:
+  - Added `0.7.0` entry to `CHANGELOG.md`.
+  - Bumped `package.json` + `package-lock.json` to `0.7.0`.
+  - Updated `README.md` feature list for v1.7 (WBS hierarchy, AC/CPI, CSV WBS/AC columns).
+  - Ran full gate suite in required order:
+    - `npm.cmd run lint` ✅
+    - `npm.cmd run type-check` ✅
+    - `npm.cmd run test:unit` ✅
+    - `npm.cmd run build` ✅
+    - `npm.cmd run test:e2e` ✅ (26/26)
+- Pending human-owned release actions:
+  1. Open/merge PR `v1.7 -> main` (M.5)
+  2. Tag `v0.7.0` on merge commit (M.6)
+  3. Mark `.claude/version-status.md` as shipped post-merge/tag (M.7)
+- Last 3 decisions:
+  1. Keep shipped-state metadata deferred until merge/tag are real (no premature status flip).
+  2. Preserve strict gate order with `build` immediately preceding E2E.
+  3. Include test-runner stability note in changelog since it directly impacts release execution reliability.
+- Next 2 actions:
+  1. Human executes PR merge + tag on main.
+  2. After merge/tag, finalize ship metadata updates and handoff to planning lane for `plan-v1.8.md`.

@@ -1385,3 +1385,25 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run type-check` ✅
 - Notes
   - No additional token additions were needed for v1.7; guidance explicitly documents token reuse decisions.
+### Phase M — Release Hygiene (Implementation-Owned Slice)
+
+- Scope
+  - Added `0.7.0` changelog entry.
+  - Bumped package version metadata to `0.7.0`.
+  - Updated README feature surface for v1.7 capabilities.
+  - Executed full gate suite (`lint`, `type-check`, `test:unit`, `build`, `test:e2e`) with all passing.
+  - Deferred human-owned release operations (PR merge/tag/status flip) until post-merge state exists.
+- Files touched
+  - `CHANGELOG.md`
+  - `package.json`
+  - `package-lock.json`
+  - `README.md`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+  - `npm.cmd run build` ✅
+  - `npm.cmd run test:e2e` ✅ (26 passed)
+- Notes
+  - M.5/M.6/M.7 remain pending human release actions tied to main-branch merge/tag state.
