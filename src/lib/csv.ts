@@ -88,6 +88,8 @@ export function csvRowsToTasks(
       manualStatus: false,
       manualPct: false,
       deps: [],
+      wbsCode: '',
+      actualCost: 0,
     }
 
     for (const [csvHeader, field] of Object.entries(columnMap)) {
@@ -159,6 +161,19 @@ export function csvRowsToTasks(
         case 'id':
           task.id = value
           break
+        case 'wbsCode':
+          task.wbsCode = value.trim()
+          break
+        case 'actualCost': {
+          if (value.trim() === '') break
+          const amount = Number(value)
+          if (Number.isFinite(amount) && amount >= 0) {
+            task.actualCost = amount
+          } else {
+            rowErrors.push({ row: rowNum, field: csvHeader, reason: `Invalid actual cost "${value}" (expected number >= 0)` })
+          }
+          break
+        }
         default:
           break
       }
@@ -196,9 +211,9 @@ export function csvRowsToTasks(
 /** Generate CSV text from a task list. */
 export function generateCSV(tasks: Task[]): string {
   const headers = [
-    'ID', 'Name', 'Group', 'Start', 'End',
+    'ID', 'WBS Code', 'Name', 'Group', 'Start', 'End',
     'Actual Start', 'Actual Finish', 'Progress %',
-    'Status', 'Party', 'Milestone', 'Notes',
+    'Status', 'Party', 'Milestone', 'Notes', 'Actual Cost',
   ]
 
   const lines = [headers.join(',')]
@@ -206,6 +221,7 @@ export function generateCSV(tasks: Task[]): string {
   for (const t of tasks) {
     const row = [
       t.id,
+      t.wbsCode ?? '',
       escapeCsv(t.name),
       escapeCsv(t.group),
       t.s,
@@ -217,6 +233,7 @@ export function generateCSV(tasks: Task[]): string {
       t.party ?? '',
       t.milestone ? 'Yes' : 'No',
       escapeCsv(t.notes),
+      String(t.actualCost ?? 0),
     ]
     lines.push(row.join(','))
   }

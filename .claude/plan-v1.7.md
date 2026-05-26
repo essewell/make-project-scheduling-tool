@@ -1307,3 +1307,22 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:unit` ✅
 - Notes
   - CPI now flows from `computeEVM` into executive preview through report-data construction (no view-local recompute).
+### Phase I — CSV WBS/Actual Cost Round-Trip Support
+
+- Scope
+  - Extended CSV export schema with `WBS Code` and `Actual Cost` columns.
+  - Extended task CSV import conversion to accept `wbsCode` and `actualCost` mappings.
+  - Added validation for imported actual cost (must be finite and non-negative).
+  - Updated CSV import dialog field options and header auto-detection for WBS/AC columns.
+  - Extended CSV unit tests for WBS/AC mapping and updated header/column assertions.
+- Files touched
+  - `src/lib/csv.ts`
+  - `src/components/modals/CsvImportDialog.tsx`
+  - `tests/unit/lib/csv.test.ts`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Notes
+  - Import now preserves explicit WBS/AC values from CSV mappings; WBS restamping behavior on persistence remains in storage flow.

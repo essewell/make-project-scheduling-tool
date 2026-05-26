@@ -215,3 +215,23 @@
 - Next 2 actions:
   1. Phase I: CSV export/import WBS + Actual Cost round-trip.
   2. Phase J: edge-state polish and post-implementation perf re-measure.
+
+## Phase I Update (2026-05-26)
+
+- Completed Phase I CSV WBS/AC plumbing:
+  - Export now includes `WBS Code` (after `ID`) and `Actual Cost` (trailing column).
+  - Import mapping now supports `wbsCode` and `actualCost` fields.
+  - CSV row conversion now parses and validates non-negative `actualCost` and stores imported `wbsCode`.
+  - CsvImportDialog mapping options/auto-guess updated for WBS + Actual Cost headers.
+  - CSV unit suite extended for WBS/Actual Cost mapping and header/column expectations.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Last 3 decisions:
+  1. Add WBS/AC as mappable fields without changing import workflow structure.
+  2. Keep actual-cost parsing strict (`number >= 0`) with row-level validation errors.
+  3. Preserve existing CSV ordering patterns while inserting WBS near identifiers and AC at tail.
+- Next 2 actions:
+  1. Phase J: edge states and post-implementation perf re-measure notes.
+  2. Phase K: E2E coverage updates and topbar/quality/report regression flow checks.

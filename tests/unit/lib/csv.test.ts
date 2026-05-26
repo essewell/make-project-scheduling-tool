@@ -88,7 +88,7 @@ describe('csvRowsToTasks', () => {
     const existing: Task[] = [
       { id: 'abc', name: 'Existing', group: '', s: '2024-01-01', e: '2024-01-05',
         actualStart: null, actualFinish: null, pct: 0, status: 'not_started',
-        party: null, notes: '', milestone: false, manualStatus: false, manualPct: false, deps: [] },
+        party: null, notes: '', milestone: false, manualStatus: false, manualPct: false, deps: [], wbsCode: '', actualCost: 0 },
     ]
     const rows = parseCSVText('id,Name\nabc,New Task')
     const { tasks } = csvRowsToTasks(rows, { id: 'id', Name: 'name' }, existing)
@@ -165,6 +165,14 @@ describe('csvRowsToTasks', () => {
     expect(tasks).toHaveLength(3)    // all rows imported (bad date is non-fatal)
     expect(errors).toHaveLength(1)   // one date error
   })
+
+  it('maps WBS and Actual Cost fields when provided', () => {
+    const rows = parseCSVText('Name,WBS,Actual Cost\nAlpha,1.2.3,1250.5')
+    const { tasks, errors } = csvRowsToTasks(rows, { Name: 'name', WBS: 'wbsCode', 'Actual Cost': 'actualCost' }, [])
+    expect(errors).toHaveLength(0)
+    expect(tasks[0]!.wbsCode).toBe('1.2.3')
+    expect(tasks[0]!.actualCost).toBe(1250.5)
+  })
 })
 
 // ─── generateCSV ──────────────────────────────────────────────────────────────
@@ -173,15 +181,17 @@ describe('generateCSV', () => {
   const task: Task = {
     id: 'abc', name: 'My Task', group: 'Phase 1', s: '2024-01-01', e: '2024-01-10',
     actualStart: null, actualFinish: null, pct: 50, status: 'in_progress',
-    party: 'Design', notes: '', milestone: false, manualStatus: false, manualPct: false, deps: [],
+    party: 'Design', notes: '', milestone: false, manualStatus: false, manualPct: false, deps: [], wbsCode: '1.2', actualCost: 500,
   }
 
   it('produces a header row as the first line', () => {
     const csv = generateCSV([task])
     const header = csv.split('\n')[0]!
     expect(header).toContain('Name')
+    expect(header).toContain('WBS Code')
     expect(header).toContain('Start')
     expect(header).toContain('Progress %')
+    expect(header).toContain('Actual Cost')
   })
 
   it('produces one data row per task', () => {
@@ -207,9 +217,9 @@ describe('generateCSV', () => {
     // actualStart and actualFinish are null — they should appear as empty fields
     const row = csv.split('\n')[1]!
     const cols = row.split(',')
-    // Actual Start is column 6 (0-indexed 5) and Actual Finish is column 7
-    expect(cols[5]).toBe('')
+    // Actual Start is column 7 (0-indexed 6) and Actual Finish is column 8
     expect(cols[6]).toBe('')
+    expect(cols[7]).toBe('')
   })
 })
 
@@ -277,6 +287,8 @@ describe('assignment CSV helpers', () => {
         manualStatus: false,
         manualPct: false,
         deps: [],
+        wbsCode: '',
+        actualCost: 0,
       }],
       [{ id: 'r1', name: 'Crew', category: 'labor', unit: 'hours', capacity: 8, costRate: 100, color: '#111111' }],
     )
