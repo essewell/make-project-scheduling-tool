@@ -1264,3 +1264,24 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:unit` ✅
 - Notes
   - Parent picker constraints are enforced in UI selection options and avoid self/descendant cycles before save.
+### Phase G — DCMA Checks 15 and 16
+
+- Scope
+  - Added DCMA check 15 (`WBS Completeness`) and check 16 (`Resource Over-Allocation`) to `DCMA_CHECKS`.
+  - Extended `DcmaAssessmentContext` with `groups` and wired from App quality assessment callsite.
+  - Updated findings-table check-count copy from 14 to 16.
+  - Extended unit coverage for new checks (invalid hierarchy and over-allocation failure fixtures).
+  - Updated `docs/dcma-checks.md` with v1.7 checks and presentation copy.
+- Files touched
+  - `src/lib/dcma.ts`
+  - `src/components/App.tsx`
+  - `tests/unit/lib/dcma.test.ts`
+  - `src/components/quality/DcmaFindingsTable.tsx`
+  - `docs/dcma-checks.md`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Notes
+  - Check 16 currently computes resource-day capacity compliance directly from assignment spans and capacities for deterministic assessment.

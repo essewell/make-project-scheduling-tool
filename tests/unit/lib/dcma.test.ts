@@ -4,6 +4,7 @@ import { runDcmaAssessment } from '../../../src/lib/dcma'
 import type {
   Baseline,
   Dependency,
+  Group,
   Resource,
   ResourceAssignment,
   Task,
@@ -26,6 +27,8 @@ function makeTask(id: string, start: string, end: string, patch: Partial<Task> =
     manualStatus: false,
     manualPct: false,
     deps: [],
+    wbsCode: '1.1',
+    actualCost: 0,
     ...patch,
   }
 }
@@ -51,6 +54,7 @@ function baseContext(input?: Partial<{
   dependencies: Dependency[]
   resources: Resource[]
   assignments: ResourceAssignment[]
+  groups: Group[]
   baselines: Baseline[]
   activeBaselineId: string | null
   today: string
@@ -62,6 +66,7 @@ function baseContext(input?: Partial<{
   const dependencies = input?.dependencies ?? [{ fromId: 'A', toId: 'B', type: 'FS', lag: 0 as const }]
   return {
     tasks,
+    groups: input?.groups ?? [{ id: 'g1', name: 'Phase 1', color: '#378ADD', parentId: null, wbsCode: '1' }],
     dependencies,
     resources: input?.resources ?? [makeResource('r1')],
     assignments: input?.assignments ?? [makeAssignment('a1', 'A', 'r1'), makeAssignment('a2', 'B', 'r1')],
@@ -73,9 +78,9 @@ function baseContext(input?: Partial<{
 }
 
 describe('runDcmaAssessment', () => {
-  it('returns all 14 checks', () => {
+  it('returns all 16 checks', () => {
     const result = runDcmaAssessment(baseContext())
-    expect(result.checks).toHaveLength(14)
+    expect(result.checks).toHaveLength(16)
     expect(result.generatedAt.length).toBeGreaterThan(0)
   })
 
@@ -257,5 +262,31 @@ describe('runDcmaAssessment', () => {
     const bei = result.checks.find((check) => check.id === 14)!
     expect(bei.score).toBe(0.5)
     expect(bei.passed).toBe(false)
+  })
+
+  it('check 15 fails when task/group hierarchy is invalid', () => {
+    const groups: Group[] = [{ id: 'g1', name: 'Phase 1', color: '#378ADD', parentId: 'missing', wbsCode: '1' }]
+    const tasks = [makeTask('A', '2026-01-01', '2026-01-02', { group: 'missing-group' })]
+    const result = runDcmaAssessment(baseContext({ tasks, groups, dependencies: [] }))
+    const check = result.checks.find((item) => item.id === 15)!
+    expect(check.passed).toBe(false)
+    expect(check.affectedTaskIds).toContain('A')
+    expect(check.affectedTaskIds).toContain('g1')
+  })
+
+  it('check 16 fails when demand exceeds resource capacity', () => {
+    const tasks = [
+      makeTask('A', '2026-01-01', '2026-01-03'),
+      makeTask('B', '2026-01-01', '2026-01-03'),
+    ]
+    const resources = [makeResource('r1')]
+    const assignments: ResourceAssignment[] = [
+      { id: 'a1', taskId: 'A', resourceId: 'r1', quantity: 2, notes: '' },
+      { id: 'a2', taskId: 'B', resourceId: 'r1', quantity: 2, notes: '' },
+    ]
+    const result = runDcmaAssessment(baseContext({ tasks, resources, assignments, dependencies: [] }))
+    const check = result.checks.find((item) => item.id === 16)!
+    expect(check.passed).toBe(false)
+    expect(check.affectedTaskIds).toContain('r1')
   })
 })

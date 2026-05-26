@@ -174,3 +174,24 @@
 - Next 2 actions:
   1. Phase G: implement DCMA checks 15/16 in `dcma.ts`.
   2. Extend `dcma.test.ts` with pass/fail fixtures for new checks.
+
+## Phase G Update (2026-05-26)
+
+- Completed Phase G DCMA expansion:
+  - Added DCMA check 15: WBS Completeness (task-group validity, orphan parent detection, empty-group detection).
+  - Added DCMA check 16: Resource Over-Allocation (resource-day capacity compliance).
+  - Extended `DcmaAssessmentContext` to include `groups` and wired from `App.tsx`.
+  - Updated findings table copy to 16 checks.
+  - Extended DCMA unit suite to 19 tests with dedicated check 15/16 fail fixtures.
+  - Updated `docs/dcma-checks.md` for v1.7 additions and unchanged health-weight composition.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Last 3 decisions:
+  1. Keep check 15/16 additive with no health-weight rebalancing.
+  2. Reuse existing task/dependency/resource surfaces instead of introducing new dependencies.
+  3. Surface check 16 affected entities as resource IDs for direct linkage with capacity views.
+- Next 2 actions:
+  1. Phase H: update EVM and executive report surfaces for AC/CPI display completion.
+  2. Phase I: implement CSV WBS/Actual Cost round-trip support.

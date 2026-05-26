@@ -303,6 +303,7 @@ export function App() {
   const dcmaAssessment = useMemo(() => {
     return runDcmaAssessment({
       tasks: enrichedTasks,
+      groups,
       dependencies,
       baselines,
       activeBaselineId,
@@ -311,7 +312,7 @@ export function App() {
       cpm: qualityCpm,
       today,
     })
-  }, [enrichedTasks, dependencies, baselines, activeBaselineId, resources, assignments, qualityCpm, today])
+  }, [enrichedTasks, groups, dependencies, baselines, activeBaselineId, resources, assignments, qualityCpm, today])
 
   const floatDistribution = useMemo(() => {
     return buildFloatDistribution(enrichedTasks, qualityCpm?.totalFloat ?? new Map())
