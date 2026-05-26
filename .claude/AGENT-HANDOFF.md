@@ -115,3 +115,23 @@
 - Next 2 actions:
   1. Phase D: TaskList WBS column and group indentation/rollup pill rendering.
   2. Phase E: SidePanel actual-cost input section wiring.
+## Phase D Update (2026-05-26)
+
+- Completed Phase D TaskList structural UI work:
+  - WBS column width widened from 24px to 48px.
+  - Switched WBS rendering from transient `computeWbs` helper to persisted `row.wbsCode` / `task.wbsCode`.
+  - Added depth-based indentation for group/task rows.
+  - Added group indentation connector rule.
+  - Added monospaced rollup pill on group rows (`tasks · % · cost · resources`).
+  - Wired App-provided `groupRollups` into TaskList.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Last 3 decisions:
+  1. Keep rollup pill compact and text-only (no icon/RAG treatments).
+  2. Derive task indentation depth from visible group depth map to match tree state.
+  3. Preserve orphan-task rendering fallback after tree pass.
+- Next 2 actions:
+  1. Phase E: add SidePanel actual-cost section with blur-save behavior.
+  2. Phase F: extend GroupsManager for parent picker and cycle prevention.

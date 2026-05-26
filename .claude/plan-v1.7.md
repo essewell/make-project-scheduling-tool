@@ -1206,3 +1206,26 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:unit` ✅
 - Notes
   - Group rollups are memoized in App and intentionally staged for Phase D UI consumption.
+### Phase D — TaskList WBS Column, Depth Indentation, and Rollup Pill
+
+- Scope
+  - Updated App -> TaskList wiring to pass memoized group rollups.
+  - TaskList structural updates:
+    - widened WBS column (`48px`)
+    - removed transient WBS computation helper
+    - rendered persisted WBS values from state (`row.wbsCode`, `task.wbsCode`)
+    - added hierarchy indentation for group + task rows
+    - added group indent connector rule
+    - rendered single-line monospaced rollup pill per group row
+  - Extended `VisibleRow` group shape to include optional `depth` / `wbsCode` metadata for list rendering.
+- Files touched
+  - `src/components/App.tsx`
+  - `src/components/task-list/TaskList.tsx`
+  - `src/types/index.ts`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Notes
+  - Rollup data is consumed from App memoization; no per-row recompute in list render path.

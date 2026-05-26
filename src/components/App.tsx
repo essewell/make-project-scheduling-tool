@@ -972,6 +972,7 @@ export function App() {
               completionFlashId={completionFlashId}
               showCostColumn={showCostColumn}
               taskCosts={taskCosts}
+              groupRollups={_groupRollups}
               dependencies={dependencies}
               listRef={listRef}
               onScroll={handleListScroll}
