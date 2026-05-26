@@ -325,10 +325,10 @@ The biggest risk is scope creep. Ship v1.3 (resources) before v1.4 (quality). Sh
 | **v1.4** | Schedule quality | 5.5 → 6.0 (shipped 2026-05-25) | DCMA assessment, health score, logic validation |
 | **v1.5** | Multi-baseline & change | 6.0 → **6.7** (target 6.8) ✅ | Multiple baselines, change orders, variance trends |
 | | **⚖ PM Audit Checkpoint 2** | ✅ pass w/ one condition — [pm-audit-v4.md](./pm-audit-v4.md) | Platform coherence verified; v1.6 Phase 0 must close Quality Panel cold-open perf debt |
-| **v1.6** | Reporting & analytics | 6.8 → 7.5 | S-curve, EVM, cash flow, executive reports |
-| **v1.7** | WBS deepening | 7.5 → 8.0 | Standard WBS coding, roll-ups, hierarchy validation |
-| **v1.8** | Calendar & delays | 8.0 → 8.5 | Project calendar, delay tracking, excusable classification |
-| | **⚖ PM Audit Checkpoint 3** | | Validate single-user maturity before cloud investment |
+| **v1.6** | Reporting & analytics | 6.8 → 7.5 (shipped 2026-05-26, `v0.6.0`) ✅ | S-curve, EVM, cash flow, executive reports |
+| **v1.7** | WBS deepening + AC/CPI close-out | 7.5 → 8.0 (shipped 2026-05-26 via PR #16; `v0.7.0` tag pending human action) ✅ | Standard WBS coding, roll-ups, hierarchy validation, AC/CPI complete, DCMA-15/16 |
+| **v1.8** | Calendar & delays | 8.0 → 8.5 (⏳ active — plan-v1.8.md) | Project calendar overlay, delay log with reconciliation, excusable classification, DCMA-17, variance-by-cause attribution |
+| | **⚖ PM Audit Checkpoint 3** | (next gate — runs post-v1.8 ship) | Validate single-user maturity before cloud investment |
 | **v1.9** | Data integration | 8.5 → 9.0 | P6/MPP import/export, Procore integration |
 | **v2.0** | Collaboration | 9.0 → 9.5 | Cloud sync, multi-user, audit trail, comments |
 | | **⚖ PM Audit Checkpoint 4** | | Validate instrument feel survived cloud transition |

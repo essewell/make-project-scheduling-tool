@@ -55,8 +55,8 @@ All colors via `var(--token)` from `src/styles/tokens.css`. Dark mode via `@medi
 ## Persistence
 
 - **Key:** `schedule-tool-v1` in localStorage
-- **Schema version:** `persistedSchemaVersion: 3` stamped on every save
-- **Migration:** `storage.ts` handles legacy payload migration up to v3
+- **Schema version:** `persistedSchemaVersion: 4` stamped on every save (v1.8 will introduce v5 for project calendar + delays)
+- **Migration:** `storage.ts` handles legacy payload migration up to v4
 - **Schema changes:** Update `types/index.ts` + `storage.ts` together. Add migration on load.
 
 ## Multi-page Vite build
@@ -83,15 +83,17 @@ Two entry points: `index.html` → app, `marketing.html` → landing page. Confi
 
 ## Current implementation state
 
-> Not duplicated here. See `.claude/version-status.md` for the version tracker, `.claude/AGENT-HANDOFF.md` for the freshest "what just landed / what's next," and the active plan's Build Changelog (currently `plan-v1.6.md §17`) for detailed history.
+> Not duplicated here. See `.claude/version-status.md` for the version tracker, `.claude/AGENT-HANDOFF.md` for the freshest "what just landed / what's next," and the active plan's Build Changelog (currently `plan-v1.8.md §17`) for detailed history.
 
 ## Authoritative references
 
 | File | Purpose |
 |------|---------|
 | `.claude/CLAUDE.md` | Project conventions, architecture, code style |
-| `.claude/plan-v1.6.md` | **Active implementation plan** — reporting & analytics (Build Changelog in §17) |
-| `.claude/plan-v1.5.md` | ✅ Shipped 2026-05-25 (`v0.5.0`). Prior build changelog reference. |
+| `.claude/plan-v1.8.md` | **Active implementation plan** — calendar & delays (Build Changelog in §17) |
+| `.claude/plan-v1.7.md` | ✅ Shipped 2026-05-26 (PR #16 merged; `v0.7.0` tag pending). Prior build changelog reference. |
+| `.claude/plan-v1.6.md` | ✅ Shipped 2026-05-26 (`v0.6.0`). Reporting & analytics. |
+| `.claude/plan-v1.5.md` | ✅ Shipped 2026-05-25 (`v0.5.0`). Multi-baseline & change management. |
 | `.claude/taste-audit-swiss.md` | Swiss design audit (items 1-8 applied in v1.0; 9-12 in v1.1; structural items roll into v1.2) |
 | `handoff/README.md` | Full implementation spec (gitignored — design reference) |
 | `handoff/*.html` | Interactive prototypes (gitignored — behavioral source of truth) |

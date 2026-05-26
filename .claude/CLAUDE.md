@@ -8,7 +8,7 @@ This file is updated by Claude (planning agent) when a design decision changes o
 
 ## What This Is
 
-**MAKE Scheduling Tool** — A Gantt-style project scheduling application for construction PMs managing institutional-scale builds (hospitals, community centres, civil infrastructure). v1.0 shipped 2026-05-21; v1.1 shipped 2026-05-22 (`v0.1.0`); v1.2 shipped 2026-05-22 (`v0.2.0`); v1.3 shipped 2026-05-23 (`v0.3.0`); v1.4 shipped 2026-05-25 (`v0.4.0`); v1.5 shipped 2026-05-25 (`v0.5.0`); **v1.6 shipped 2026-05-26 (`v0.6.0`)**. **v1.7 (WBS deepening) is the active implementation plan.**
+**MAKE Scheduling Tool** — A Gantt-style project scheduling application for construction PMs managing institutional-scale builds (hospitals, community centres, civil infrastructure). v1.0 shipped 2026-05-21; v1.1 shipped 2026-05-22 (`v0.1.0`); v1.2 shipped 2026-05-22 (`v0.2.0`); v1.3 shipped 2026-05-23 (`v0.3.0`); v1.4 shipped 2026-05-25 (`v0.4.0`); v1.5 shipped 2026-05-25 (`v0.5.0`); v1.6 shipped 2026-05-26 (`v0.6.0`); **v1.7 shipped 2026-05-26 — PR #16 merged to `main` (merge commit `0eac6b6`); `v0.7.0` tag pending human action**. **v1.8 (Calendar & Delays) is the active implementation plan.**
 
 The buyer is institutional (municipal procurement, healthcare authorities). The user is a tradesperson PM who has been on jobsites for 20 years. The output (printed A3, exported PDF) is a defensible deliverable, not a marketing brochure. Every design decision falls out of this.
 
@@ -24,7 +24,7 @@ The buyer is institutional (municipal procurement, healthcare authorities). The 
 | State | `useState` + `useCallback` + `useMemo` — no Redux/Zustand/etc |
 | Styling | CSS custom properties (design tokens) in `src/styles/tokens.css` |
 | Fonts | Plus Jakarta Sans 400/500/600 + Space Mono 400/700 |
-| Persistence | localStorage, key `schedule-tool-v1`, schema version 3 (v1.7 plan introduces v4) |
+| Persistence | localStorage, key `schedule-tool-v1`, schema version 4 (v1.8 plan introduces v5 for project calendar + delays) |
 | Gantt | Custom (absolutely positioned divs + SVG) — no chart libraries |
 | Dark mode | `prefers-color-scheme: dark` — no manual toggle |
 
@@ -126,16 +126,17 @@ There is no C4. The numbering preserves the original handoff doc.
 - **Operating manual** (commands, critical patterns, deploy, testing quirks): `AGENTS.md`
 - **Orientation + read order** (which file when): `.claude/START-HERE.md`
 - **What state is the project in right now**: `.claude/AGENT-HANDOFF.md`, `.claude/version-status.md`
-- **Active plan**: `.claude/plan-v1.7.md` (WBS deepening).
-- **Shipped predecessors**: `.claude/plan-v1.6.md`, `.claude/plan-v1.5.md`, `.claude/plan-v1.4.md`, `.claude/plan-v1.3.md`, `.claude/plan-v1.2.md`, `.claude/plan-v1.1.md`.
+- **Active plan**: `.claude/plan-v1.8.md` (Calendar & delays).
+- **Shipped predecessors**: `.claude/plan-v1.7.md`, `.claude/plan-v1.6.md`, `.claude/plan-v1.5.md`, `.claude/plan-v1.4.md`, `.claude/plan-v1.3.md`, `.claude/plan-v1.2.md`, `.claude/plan-v1.1.md`.
 - **Long-term roadmap (v1.3 → v2.2)**: `.claude/pm-roadmap.md`
 
 ---
 
-**Last updated:** 2026-05-26
+**Last updated:** 2026-05-26 (post-v1.7 ship; flipped active pointer to plan-v1.8)
 **Maintained by:** Claude (planning agent). Update when a Key Design Decision changes, a new clarification resolves, or a convention shifts. Do not update for routine code changes.
 
 <!-- Updated 2026-05-22: flipped active version pointer from v1.1 → v1.2 after v1.1 shipped as `v0.1.0`. -->
 <!-- Updated 2026-05-21: full restructure with eight Key Design Decisions + resolved clarifications. -->
 <!-- Updated 2026-05-25: refreshed active version state to v1.5 shipped / v1.6 active, schema version to 3, expanded key decisions to ten (pure-lib boundary + dual print-mode pattern), and updated active-plan pointers. -->
 <!-- Updated 2026-05-26: marked v1.6 shipped as `v0.6.0`, flipped active plan pointer to v1.7, and clarified persistence schema transition timing. -->
+<!-- Updated 2026-05-26 (later): v1.7 shipped via PR #16 (merge commit `0eac6b6`, `v0.7.0` tag pending human action); flipped active plan pointer to plan-v1.8 (Calendar & Delays); persistence row now reads "schema version 4 (v1.8 plan introduces v5)". -->

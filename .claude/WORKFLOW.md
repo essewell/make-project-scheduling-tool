@@ -17,11 +17,14 @@ When in doubt, default to codex for code work and Claude for planning/audit/doc-
 
 ## Non-Negotiable Implementation Procedure
 
-For active-version execution (currently v1.6):
-- Work phase-by-phase in plan order.
+For active-version execution (currently **v1.8** — Calendar & Delays):
+- Work phase-by-phase in plan order (see `.claude/plan-v1.8.md`).
 - At each phase boundary: update `AGENT-HANDOFF.md`, append the active plan Build Changelog entry, and commit that phase slice.
 - Do not batch multiple phases into one commit unless the active plan explicitly authorizes bundling.
 - If a stop trigger or gate failure occurs, stop and ping the human before continuing.
+- Branch hygiene: every v[N] cycle lives on branch `v[N]`; never commit to `main` directly; PR + tag at ship.
+
+The "currently v[N]" pointer here is informational — the canonical source of truth is `.claude/version-status.md`. When a new version starts, update this line in lockstep.
 
 ---
 
@@ -52,4 +55,4 @@ Full roadmap and audit scope: `pm-roadmap.md`.
 
 ---
 
-**Last updated:** 2026-05-25
+**Last updated:** 2026-05-26 (post-v1.7 ship; active version flipped to v1.8)

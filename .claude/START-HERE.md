@@ -47,7 +47,7 @@ If any required gate fails, stop and ping the human per the plan's stop triggers
 
 ## 1. What This Project Is (One Paragraph)
 
-**MAKE Scheduling Tool** — a Gantt-style project scheduling app for construction PMs running institutional-scale builds (hospitals, civic facilities, infrastructure). Vite + TypeScript strict + React 18 + CSS custom properties + localStorage. No external state library. Custom Gantt (no chart libraries). v1.0 shipped 2026-05-21; v1.1 shipped 2026-05-22 (`v0.1.0`); v1.2 shipped 2026-05-22 (`v0.2.0`); v1.3 shipped 2026-05-23 (`v0.3.0`); v1.4 shipped 2026-05-25 (`v0.4.0`); v1.5 shipped 2026-05-25 (`v0.5.0`). **v1.6 (reporting & analytics) is implemented on branch `v1.6` and awaiting PR merge/tag for release closure.** Long-term roadmap extends to v2.2 ("10/10 fitness" — see `pm-roadmap.md`).
+**MAKE Scheduling Tool** — a Gantt-style project scheduling app for construction PMs running institutional-scale builds (hospitals, civic facilities, infrastructure). Vite + TypeScript strict + React 18 + CSS custom properties + localStorage. No external state library. Custom Gantt (no chart libraries). v1.0 shipped 2026-05-21; v1.1 shipped 2026-05-22 (`v0.1.0`); v1.2 shipped 2026-05-22 (`v0.2.0`); v1.3 shipped 2026-05-23 (`v0.3.0`); v1.4 shipped 2026-05-25 (`v0.4.0`); v1.5 shipped 2026-05-25 (`v0.5.0`); v1.6 shipped 2026-05-26 (`v0.6.0`); **v1.7 (WBS deepening + AC/CPI close-out) shipped 2026-05-26 — merged to `main` via PR #16 (merge commit `0eac6b6`); `v0.7.0` tag is the only pending human release artefact.** **v1.8 (Calendar & Delays) is the active implementation plan.** Long-term roadmap extends to v2.2 ("10/10 fitness" — see `pm-roadmap.md`).
 
 ---
 
@@ -76,8 +76,8 @@ Read these in order. Stop when you have what you need.
 | **2** | `version-status.md` | **What version is active, shipped, or pending?** Single source of truth for the version tracker. |
 | **3** | `CLAUDE.md` | **What is the codebase? Why is it this way?** Project identity, the eight Key Design Decisions with rationale, resolved clarifications, conventions. |
 | **4** | `AGENTS.md` *(project root)* | **How do I operate?** Build commands, critical patterns, deploy, testing quirks, performance targets. Read before touching code. |
-| **5** | `plan-v1.6.md` | **What am I building right now?** Reporting & analytics plan with phased Build Changelog (§17). |
-| **6** | `plan-v1.5.md` *(reference only)* | **What shipped immediately before v1.6?** Prior version changelog and release context. |
+| **5** | `plan-v1.8.md` | **What am I building right now?** Calendar & delays plan with phased Build Changelog (§17). |
+| **6** | `plan-v1.7.md` *(reference only)* | **What shipped immediately before v1.8?** WBS deepening + AC/CPI close-out changelog and release context. |
 | **7** | `pm-roadmap.md` *(when planning v1.3+)* | **What is the long-term vision?** v1.3 → v2.2 roadmap, audit checkpoints, guiding principles. |
 | **8** | `pm-audit-template.md` *(when running an audit)* | **How do I run a PM audit?** Standardized template with decision gates. |
 | **9** | `pm-audit-v*.md` *(when running an audit)* | **What did previous audits find?** Read the most recent one before running a new one. |
@@ -86,7 +86,7 @@ Read these in order. Stop when you have what you need.
 ```
 What do you need to do?
 │
-├─ Implement the next task          → Read AGENT-HANDOFF → confirm version-status → skim AGENTS.md (critical patterns) → read plan-v1.6 (active plan) → build
+├─ Implement the next task          → Read AGENT-HANDOFF → confirm version-status → skim AGENTS.md (critical patterns) → read plan-v1.8 (active plan) → build
 ├─ Ship a version (any agent)       → Update version-status → append plan changelog → update AGENT-HANDOFF
 ├─ Write a new plan (Claude only)   → Read pm-roadmap → write plan-v*.md → update version-status → update AGENT-HANDOFF
 ├─ Run a PM audit (Claude only)     → Read pm-audit-template → read latest pm-audit-v* → run audit → save pm-audit-v[N].md → update version-status + AGENT-HANDOFF
@@ -99,7 +99,7 @@ What do you need to do?
 
 ## 4. Historical Housekeeping (v1.2 cycle, archived)
 
-These items are historical carry-overs from the v1.2 cycle and are retained only for audit traceability. Do not treat them as active v1.6 work items.
+These items are historical carry-overs from the v1.2 cycle and are retained only for audit traceability. Do not treat them as active work items for the current cycle (v1.8 or later).
 
 | # | Item | Action | Risk if skipped |
 |---|------|--------|-----------------|
@@ -121,8 +121,10 @@ These housekeeping notes are closed context and should not gate current implemen
 | `version-status.md` | Living version tracker. Active / shipped / pending. | Any agent that ships a version. |
 | `CLAUDE.md` | Project conventions + the eight Key Design Decisions + resolved clarifications. Durable. | Claude — when a design decision changes or the active version flips. |
 | `AGENTS.md` *(project root)* | Operating manual: commands, critical patterns, testing quirks, performance targets. | Claude — when commands or patterns change. |
-| `plan-v1.6.md` | **Active plan** — reporting & analytics, with Build Changelog (§17). | Codex appends to changelog when work lands. Claude updates structure. |
-| `plan-v1.5.md` | ✅ Shipped 2026-05-25 (`v0.5.0`). Prior build changelog reference. | Frozen reference. Do not edit. |
+| `plan-v1.8.md` | **Active plan** — calendar & delays, with Build Changelog (§17). | Codex appends to changelog when work lands. Claude updates structure. |
+| `plan-v1.7.md` | ✅ Shipped 2026-05-26 (PR #16 merged; `v0.7.0` tag pending human action). WBS deepening + AC/CPI close-out. Prior build changelog reference. | Frozen reference. Do not edit. |
+| `plan-v1.6.md` | ✅ Shipped 2026-05-26 (`v0.6.0`). Reporting & analytics. | Frozen reference. Do not edit. |
+| `plan-v1.5.md` | ✅ Shipped 2026-05-25 (`v0.5.0`). Multi-baseline & change management. | Frozen reference. Do not edit. |
 | `pm-roadmap.md` | v1.3 → v2.2 long-term roadmap with 5 PM audit checkpoints. | Claude — when the long-term vision shifts. |
 | `pm-audit-template.md` | Standardized 11-section audit template. | Claude — rarely. |
 | `pm-audit-v1.md` | Baseline audit (3.6/10 fitness). | Immutable. Never edit historical audits. |
@@ -189,3 +191,4 @@ If every agent honours its two updates (changelog + handoff for codex; new file 
 <!-- Updated 2026-05-21: full restructure — added agent lane statement, continuity cycle, trimmed duplicate content (commands/patterns/perf now in AGENTS.md only), promoted AGENT-HANDOFF.md to read-order #1. -->
 <!-- Updated 2026-05-25: refreshed active pointers to v1.6/plan-v1.6, marked v1.2 housekeeping as archival, and aligned read-order + file map with current cycle. -->
 <!-- Updated 2026-05-25: added explicit unbreakable process-contract section (phase-boundary update/changelog/commit discipline + stop-trigger behavior). -->
+<!-- Updated 2026-05-26: v1.7 shipped (PR #16 merged to main, `v0.7.0` tag pending). Active pointer flipped to plan-v1.8.md (Calendar & Delays). Read order + file map aligned. -->

@@ -1,325 +1,98 @@
-# AGENT HANDOFF (v1.7 implementation active on branch)
+# AGENT HANDOFF (v1.8 plan written — Codex implementation starts at Phase 0.−2)
 
 ## Last Touch
 - Date: 2026-05-26
-- Branch: `v1.7`
-- Lane: Codex (implementation)
-- Status: **ACTIVE — v1.7 Phase 0 in progress**
+- Branch: `v1.8` (already created locally; content-parity with `origin/main`; no upstream set yet)
+- Lane: Claude (planning agent)
+- Status: **READY — plan-v1.8.md written; Codex picks up next**
 
-## What Landed This Session
+## What Landed This Session (Claude — planning lane)
 
-- Pre-flight release closure actions completed:
-  - Confirmed `origin/main` contains v1.6 merge commit `53e28cf`.
-  - Created and pushed missing release tag `v0.6.0`.
-  - Confirmed `origin/main:package.json` version is `0.6.0`.
-  - Restored acceptable working tree state (only recurring `playwright-report/index.html` noise).
-- Branch setup closed:
-  - `v1.7` branch verified active and upstream configured (`origin/v1.7`).
-- Phase `0.1` TopBar overflow restructure (blocking carry-over) implemented:
-  - Moved `Phases`, `Parties`, `Resources`, `Change Orders` into a new `More` overflow menu.
-  - Kept `Baselines`, `Quality`, and `Reports` in-line.
-  - Added outside-click + `Escape` close behavior with focus return.
-  - Added `data-testid` hooks for repeatable topbar density measurement.
-- Documentation created:
-  - `docs/topbar-density-v1.7.md`
-  - `docs/v1.7-screenshots-topbar-1280.png`
+- **v1.7 ship state confirmed** — PR #16 merged to `main` (merge commit `0eac6b6`); `origin/main:package.json` reads `0.7.0`; v1.8 branch already exists locally and is content-identical to `origin/main`.
+- **Continuity errors fixed** across the `.claude/` doc surface and `AGENTS.md`:
+  - `.claude/START-HERE.md` §1 / §3 / §5 — flipped active pointer from plan-v1.6 to plan-v1.8; updated read-order table; added "v1.7 shipped" line; updated file map.
+  - `.claude/CLAUDE.md` — "What This Is" paragraph now lists v1.7 shipped + v1.8 active; persistence row now reads "schema version 4 (v1.8 plan introduces v5)"; "Where to Look Next" repointed.
+  - `AGENTS.md` — persistence schema version (3 → 4) corrected; "Active implementation plan" pointer flipped from plan-v1.6 to plan-v1.8; "Authoritative references" table updated.
+  - `.claude/version-status.md` — v1.7 row flipped to ✅ shipped with note on `v0.7.0` tag pending human action; v1.8 row added as ⏳ active linked to `plan-v1.8.md`; "Current Focus" repointed; Build Changelog Index extended with v1.8.
+- **`plan-v1.8.md` written** — Calendar & Delays plan, 20 sections, ~1100 lines.
+  - Scope: project calendar overlay on Gantt + typed CalendarEvent persistence; delay log with reconciliation workflow; per-task delay records; CPM integration with calendar non-work days; DCMA-17 (open delay reconciliation); variance-by-cause attribution in executive report; CSV export of delay log; `v0.5.0` historical-tag audit (`docs/release-tags-audit.md`).
+  - Out of scope (explicit): per-resource calendars, AC import from CSV (defers to v1.9), claims-PDF export, weather data integration, delay approval workflow, scenario / what-if simulation, time-of-day precision, soft-delete on delays, calendar overlay on print mode.
+  - Schema bump: 4 → 5 (additive — `projectCalendar: CalendarEvent[]`, `delays: Delay[]`).
+  - Performance budget: <+25KB gzipped, no regression on v1.7 baselines.
+  - Phases: 0 (pre-flight + branch adoption + housekeeping + perf baseline + release-tags audit), A (pure libs), B (migration), C (workday + CPM), D (App wiring), E (TopBar + Gantt header), F (CalendarOverlay + DelayMarkers), G (modals), H (SidePanel section + variance attribution), I (DCMA-17 + CSV), J (edge states + perf re-verify), K (E2E), L (docs), M (release).
+  - Branch hygiene: plan explicitly notes `v1.8` branch already exists — Codex adopts (not creates) and sets upstream via `git push -u origin v1.8`.
+  - PM Audit Checkpoint 3 fires after v1.8 ships (Claude job).
+
+## Continuity Issues Surfaced (for human awareness)
+
+1. **`v0.7.0` tag is missing on `origin/main`.** The v1.7 merge commit `0eac6b6` exists; `package.json` reads `0.7.0`; only the tag artefact is absent. Codex Phase M.6 of plan-v1.7 lists this as human action. Phase 0.−2 of plan-v1.8 verifies but does NOT block on the tag alone.
+2. **`v0.5.0` historical tag is also missing.** The v1.5 merge commit `f9382f2` is on `main` but never received its release tag. Phase 0.H of plan-v1.8 creates `docs/release-tags-audit.md` to surface this; Codex does NOT auto-create release tags.
+3. **`v1.8` branch has no upstream.** Phase 0.0 instructs `git push -u origin v1.8` as the first commit-set step.
 
 ## Current Gate State
 
-- `npm.cmd run build` ✅
-- `npm.cmd run lint` ✅
-- `npm.cmd run type-check` ✅
+- `npm.cmd run build` — last green on v1.7 Phase M (2026-05-26)
+- `npm.cmd run lint` — last green on v1.7 Phase M
+- `npm.cmd run type-check` — last green on v1.7 Phase M
+- `npm.cmd run test:unit` — last green on v1.7 Phase M (sequential runner)
+- `npm.cmd run test:e2e` — last green on v1.7 Phase M (26/26)
 
-## Decisions (Last 3)
+## Decisions (Last 3, Planning Lane)
 
-1. Closed S13 blockers directly (tag + branch upstream + tree hygiene) instead of working around pre-flight failures.
-2. Implemented a keyboard-accessible overflow menu in `TopBar` rather than reducing labels or shrinking hit targets.
-3. Measured 1280px density as actions-cluster footprint over full topbar width for reproducible pass/fail reporting.
+1. **Bundle calendar + delays into v1.8 as one organ.** Justified in plan-v1.8 §3.3: mutually dependent (delay impact depends on calendar), same architectural surface (both persisted arrays, both modals from TopBar overflow), roadmap intent (`pm-roadmap.md` v1.8 names them together), and audit-timing (Checkpoint 3 sits post-v1.8 and splitting would push the gate into v1.9 architectural-shift territory).
+2. **Defer per-resource calendars to v2.x.** Roadmap mentions them but the multiplicative complexity (per-task × per-resource × per-day capacity windows) is not justified by current institutional-build workflow. v1.8 ships project-level calendar only.
+3. **Calendar overlay is on-screen only, NOT in print.** Diagonal hatch competes with the existing weekend band on printed A3. The PM needing a printed delay artefact prints the delay log CSV instead. Documented in plan-v1.8 §3.2 and §6.1.
 
-## Next Actions
+## Next Actions (Codex picks up here)
 
-1. Finish Phase `0.2` and `0.3` docs (`mobile-qa` defer entry + perf baseline re-measure note).
-2. Append Phase 0 entries to `.claude/plan-v1.7.md` §17.
-3. Commit Phase 0 slice (including `.claude` updates) before starting Phase A.
+1. **Read** `.claude/START-HERE.md` → `.claude/AGENT-HANDOFF.md` (this file) → `.claude/version-status.md` → `.claude/CLAUDE.md` → `AGENTS.md` → `.claude/plan-v1.8.md`.
+2. **Phase 0.−2** — pre-flight verification (`git fetch origin --tags`, confirm v1.7 merge on `main`, `package.json` reads `0.7.0`). If S13 triggers (verifications fail), STOP. Missing `v0.7.0` tag alone is NOT S13 — surfaced via Phase 0.H sister item.
+3. **Phase 0.−1** — verify working tree clean (only `playwright-report/index.html` noise allowed).
+4. **Phase 0.0** — `git checkout v1.8`, verify content parity with `origin/main`, `git push -u origin v1.8` to set upstream.
+5. **Phase 0.A–0.E** — verify `.claude/` doc surface (Claude has already refreshed; Codex confirms or fixes).
+6. **Phase 0.H** — create `docs/release-tags-audit.md` listing tag gaps (`v0.5.0`, `v0.7.0`) and recommended human actions.
+7. **Phase 0.I** — re-affirm desktop-first mobile QA defer (6th audit running) in `docs/mobile-qa.md`.
+8. **Phase 0.K** — capture v1.7-baseline perf snapshot in `docs/perf-v1.8-baseline.md`.
+9. Commit Phase 0 slice with a message like `chore(v1.8): phase 0 — branch adoption, housekeeping, perf baseline, tags audit`.
+10. **Move to Phase A** (pure libs — `projectCalendar.ts`, `delays.ts`, `delayImpact.ts` + tests + `docs/calendar-and-delays.md`).
 
 ## Working Tree Snapshot
 
-- Modified:
-  - `.claude/AGENT-HANDOFF.md`
+- Modified (planning-lane, awaiting commit):
+  - `.claude/AGENT-HANDOFF.md` (this file)
   - `.claude/CLAUDE.md`
+  - `.claude/START-HERE.md`
   - `.claude/version-status.md`
-  - `src/components/topbar/TopBar.tsx`
-  - `src/lib/icons.ts`
-- New:
-  - `docs/topbar-density-v1.7.md`
-  - `docs/v1.7-screenshots-topbar-1280.png`
-- Allowed noise remains unstaged:
+  - `AGENTS.md`
+- New (planning-lane, awaiting commit):
+  - `.claude/plan-v1.8.md`
+- Allowed noise (must remain unstaged):
   - `playwright-report/index.html`
-## Phase A Update (2026-05-26)
 
-- Completed Phase A (A.1-A.8):
-  - Schema/type extensions for v1.7 (`PERSISTED_SCHEMA_VERSION = 4`, Task/Group WBS + actualCost fields, DCMA check IDs 15/16).
-  - Added pure libs: `wbs.ts`, `rollups.ts`, `actualCost.ts`.
-  - Added unit suites: `wbs.test.ts`, `rollups.test.ts`, `actualCost.test.ts`.
-  - Added v1.7 WBS spec doc: `docs/wbs.md`.
-  - Updated storage unit assertions from v3->v4 expectations.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run test:unit` ✅ (sequential runner)
-- Last 3 decisions:
-  1. Keep WBS/rollup/actual-cost modules pure and independent to preserve lib boundary.
-  2. Treat orphan group parents as top-level during WBS computation for deterministic codes.
-  3. Keep `test:unit` sequential to avoid historic worker-exit hangs.
-- Next 2 actions:
-  1. Start Phase B migration wiring in `storage.ts` (v3->v4 defaulting + WBS stamping).
-  2. Add migration regression tests for round-trip safety.
-## Phase B Update (2026-05-26)
+## Process Contract Reminders (re-read every phase boundary)
 
-- Completed Phase B migration wiring:
-  - Added v3->v4 normalization in storage load path:
-    - `Group.parentId` defaulting
-    - `Task.actualCost` defaulting
-    - WBS stamp for groups/tasks
-  - Added deterministic WBS stamping in save path for current tasks and baseline snapshot tasks.
-  - Added/updated storage migration tests for v4 behavior and round-trip safety.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run test:unit` ✅
-- Last 3 decisions:
-  1. Recompute and stamp WBS on both `loadState` and `saveState` to guarantee consistency.
-  2. Keep baseline task WBS synchronized by stamping baseline task arrays using the same group tree.
-  3. Normalize legacy payloads defensively before stamping to prevent `undefined` drift.
-- Next 2 actions:
-  1. Start Phase C App.tsx wiring for WBS-aware derived state and rollup integration.
-  2. Begin TaskList WBS column + group indentation integration in Phase D.
-## Phase C Update (2026-05-26)
+- **One branch per version** — `v1.8` only; never commit to `main` directly.
+- **Phase-boundary discipline** — append `plan-v1.8.md §17` entry + update this handoff + commit per phase slice.
+- **Context auto-compact every 2 mini-tasks** — summarize last 3 decisions + state into this handoff before continuing.
+- **`.gitignore` is absolute** — `playwright-report/index.html` must never be staged.
+- **`.claude/` updates commit in the same cycle** — never leave handoff/changelog edits unstaged across handoffs.
+- **No new runtime dependencies** — calendar libs, date-picker libs, chart libs, PDF libs, tree libs are all forbidden.
+- **Stop-and-ping at any §16 trigger** in plan-v1.8 — surface, wait, do not silently bend the rule.
 
-- Completed Phase C App wiring:
-  - Added App-level memoized hierarchy derivations:
-    - `groupNodes = walkGroupTree(groups)`
-    - `groupRollups` map (memoized, ready for Phase D surface wiring)
-    - `totalActualCost = computeTotalActualCost(enrichedTasks)`
-  - Rewrote `visibleRows` to tree-order traversal based on group hierarchy depth instead of flat task-first grouping.
-  - Preserved collapsed-group behavior while rendering depth/WBS metadata on group rows.
-  - Wired EVM memo to consume `totalActualCost` and updated `computeEVM` to accept AC input and compute CPI.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run test:unit` ✅
-- Last 3 decisions:
-  1. Keep group rollups memoized in App even before TaskList consumption (Phase D).
-  2. Keep orphaned tasks visible by appending ungroupped rows after tree render.
-  3. Move AC/CPI compute hook-up earlier to remove fake dependencies and keep lint strict.
-- Next 2 actions:
-  1. Phase D: TaskList WBS column and group indentation/rollup pill rendering.
-  2. Phase E: SidePanel actual-cost input section wiring.
-## Phase D Update (2026-05-26)
+## Two Pending Human Actions (Codex does NOT auto-resolve)
 
-- Completed Phase D TaskList structural UI work:
-  - WBS column width widened from 24px to 48px.
-  - Switched WBS rendering from transient `computeWbs` helper to persisted `row.wbsCode` / `task.wbsCode`.
-  - Added depth-based indentation for group/task rows.
-  - Added group indentation connector rule.
-  - Added monospaced rollup pill on group rows (`tasks · % · cost · resources`).
-  - Wired App-provided `groupRollups` into TaskList.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run test:unit` ✅
-- Last 3 decisions:
-  1. Keep rollup pill compact and text-only (no icon/RAG treatments).
-  2. Derive task indentation depth from visible group depth map to match tree state.
-  3. Preserve orphan-task rendering fallback after tree pass.
-- Next 2 actions:
-  1. Phase E: add SidePanel actual-cost section with blur-save behavior.
-  2. Phase F: extend GroupsManager for parent picker and cycle prevention.
+1. **Tag `v0.7.0`** on the v1.7 merge commit `0eac6b6`:
+   ```
+   git tag -a v0.7.0 0eac6b6 -m "v1.7 — WBS deepening + AC/CPI close-out"
+   git push origin v0.7.0
+   ```
+2. **Tag `v0.5.0`** on the v1.5 merge commit `f9382f2`:
+   ```
+   git tag -a v0.5.0 f9382f2 -m "v1.5 — Multi-baseline & change management (retroactive tag)"
+   git push origin v0.5.0
+   ```
+Both tags are documented in `docs/release-tags-audit.md` (created by Codex in Phase 0.H).
 
-## Phase E Update (2026-05-26)
+## Post-v1.8 Lane Switch
 
-- Completed Phase E SidePanel WBS + AC surface:
-  - Added `SidePanelWbsBreadcrumb` component to render task WBS code + group path context.
-  - Added `SidePanelActualCostSection` component with local draft state, blur-save commit, and parse guard (`NaN`/negative rejected with field reset).
-  - Wired both into `SidePanel.tsx` header/body and connected AC commits through existing `onUpdateTask` patch flow.
-  - Enforced disabled-with-advisory state when no resource assignments exist.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run test:unit` ✅
-- Last 3 decisions:
-  1. Keep AC editing local until blur to avoid EVM recompute churn on each keystroke.
-  2. Disable AC entry when assignments are absent and show explicit advisory copy.
-  3. Keep WBS breadcrumb read-only and derived from persisted task/group hierarchy.
-- Next 2 actions:
-  1. Phase F: extend GroupsManager with parent picker, cycle prevention, and depth advisory.
-  2. Phase G: implement DCMA checks 15/16 and unit coverage.
-
-## Phase F Update (2026-05-26)
-
-- Completed Phase F GroupsManager hierarchy controls:
-  - Added parent-phase picker for each group row.
-  - Added cycle prevention by excluding self and descendants from parent options.
-  - Added depth advisory warning when selected nesting reaches configured threshold.
-  - Added schema-safe defaults for newly created groups (`parentId: null`, `wbsCode: ''`).
-  - Added shared constant `GROUP_NEST_DEPTH_WARN = 6`.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run test:unit` ✅
-- Last 3 decisions:
-  1. Enforce cycle prevention at selection time rather than post-save validation.
-  2. Keep depth warning advisory-only, not blocking, per plan intent.
-  3. Keep hierarchy logic local to GroupsManager (no new runtime deps).
-- Next 2 actions:
-  1. Phase G: implement DCMA checks 15/16 in `dcma.ts`.
-  2. Extend `dcma.test.ts` with pass/fail fixtures for new checks.
-
-## Phase G Update (2026-05-26)
-
-- Completed Phase G DCMA expansion:
-  - Added DCMA check 15: WBS Completeness (task-group validity, orphan parent detection, empty-group detection).
-  - Added DCMA check 16: Resource Over-Allocation (resource-day capacity compliance).
-  - Extended `DcmaAssessmentContext` to include `groups` and wired from `App.tsx`.
-  - Updated findings table copy to 16 checks.
-  - Extended DCMA unit suite to 19 tests with dedicated check 15/16 fail fixtures.
-  - Updated `docs/dcma-checks.md` for v1.7 additions and unchanged health-weight composition.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run test:unit` ✅
-- Last 3 decisions:
-  1. Keep check 15/16 additive with no health-weight rebalancing.
-  2. Reuse existing task/dependency/resource surfaces instead of introducing new dependencies.
-  3. Surface check 16 affected entities as resource IDs for direct linkage with capacity views.
-- Next 2 actions:
-  1. Phase H: update EVM and executive report surfaces for AC/CPI display completion.
-  2. Phase I: implement CSV WBS/Actual Cost round-trip support.
-
-## Phase H Update (2026-05-26)
-
-- Completed Phase H EVM/Executive AC+CPI close-out:
-  - Updated EVM KPI strip to five metrics: PV, EV, AC, SPI, CPI.
-  - Removed v1.6 AC/CPI deferral footer from EVM preview.
-  - Updated Executive summary SPI section to render `SPI · CPI` with null-safe fallback.
-  - Extended `ExecutiveReportData` and report-data builder to include `cpi`.
-  - Updated reportData unit tests and reports doc copy to AC/CPI-complete state.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run test:unit` ✅
-- Last 3 decisions:
-  1. Keep CPI null fallback explicit in UI (`—`) when AC is zero.
-  2. Keep AC metric always visible in EVM for stable layout/comparability.
-  3. Thread `cpi` through executive report data model instead of computing in preview.
-- Next 2 actions:
-  1. Phase I: CSV export/import WBS + Actual Cost round-trip.
-  2. Phase J: edge-state polish and post-implementation perf re-measure.
-
-## Phase I Update (2026-05-26)
-
-- Completed Phase I CSV WBS/AC plumbing:
-  - Export now includes `WBS Code` (after `ID`) and `Actual Cost` (trailing column).
-  - Import mapping now supports `wbsCode` and `actualCost` fields.
-  - CSV row conversion now parses and validates non-negative `actualCost` and stores imported `wbsCode`.
-  - CsvImportDialog mapping options/auto-guess updated for WBS + Actual Cost headers.
-  - CSV unit suite extended for WBS/Actual Cost mapping and header/column expectations.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run test:unit` ✅
-- Last 3 decisions:
-  1. Add WBS/AC as mappable fields without changing import workflow structure.
-  2. Keep actual-cost parsing strict (`number >= 0`) with row-level validation errors.
-  3. Preserve existing CSV ordering patterns while inserting WBS near identifiers and AC at tail.
-- Next 2 actions:
-  1. Phase J: edge states and post-implementation perf re-measure notes.
-  2. Phase K: E2E coverage updates and topbar/quality/report regression flow checks.
-
-## Phase J Update (2026-05-26)
-
-- Completed Phase J edge-state and perf-baseline close-out:
-  - Implemented group rollup empty state copy: `0 tasks · — · — · —`.
-  - Verified AC section disabled-with-advisory state remains active when no assignments.
-  - Verified EVM AC/CPI null-state render stays `—` when AC is zero.
-  - Appended post-implementation perf re-measure section to `docs/perf-v1.7-baseline.md`.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run test:unit` ✅
-- Last 3 decisions:
-  1. Keep zero-task rollup explicitly dash-based rather than numeric placeholders.
-  2. Treat J.2–J.4 as validation of already-landed Phase E/H behavior.
-  3. Record Phase J perf posture as append-only in the existing v1.7 baseline doc.
-- Next 2 actions:
-  1. Phase K: execute E2E updates/coverage for v1.7 features.
-  2. Phase L/M: final QA sweep, ship checklist, and PR readiness.
-
-## Phase K Update (2026-05-26)
-
-- Completed Phase K E2E coverage expansion and stabilization:
-  - Added new specs:
-    - `wbs-hierarchy.spec.ts`
-    - `wbs-csv-roundtrip.spec.ts`
-    - `actual-cost.spec.ts`
-    - `dcma-15-16.spec.ts`
-    - `evm-report.spec.ts`
-    - `executive-report.spec.ts`
-  - Extended existing specs:
-    - `quality-panel.spec.ts` (16-check expectations + check names)
-    - `a11y.spec.ts` (overflow menu sweep path)
-  - Hardened overflow helper click behavior for menuitem interactions.
-  - Resolved build-gate schema-v4 type completeness in `exampleData.ts` and App new-task seed (`wbsCode`, `actualCost`, group parent/WBS defaults).
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-  - `npm.cmd run build` ✅
-  - `npm.cmd run test:e2e` ✅ (26/26 passing)
-- Last 3 decisions:
-  1. Keep EVM assertions resilient to cost-loaded fallback state while still validating AC/CPI surface.
-  2. Prefer robust locator narrowing over brittle exact-text strict matches in high-density task list contexts.
-  3. Treat build-gate schema completeness as blocking and patch fixtures/seeds immediately before E2E.
-- Next 2 actions:
-  1. Phase L: final cross-surface manual QA and acceptance checklist sweep.
-  2. Phase M: ship prep (versioning/changelog/PR readiness) per plan.
-
-## Phase L Update (2026-05-26)
-
-- Completed Phase L docs updates:
-  - `docs/design-system.md` advanced to v1.7 with hierarchy/cost-tracking surface guidance (WBS mono treatment, group connector rule, rollup pill semantics, AC input token usage, EVM AC/CPI token reuse).
-  - `docs/onboarding-qa.md` appended v1.7 recommendation to explore group nesting + WBS/Actual Cost CSV export after first baseline/report pass.
-  - Confirmed `docs/dcma-checks.md` and `docs/reports.md` already reflected Phase G/H updates.
-- Verification:
-  - `npm.cmd run lint` ✅
-  - `npm.cmd run type-check` ✅
-- Last 3 decisions:
-  1. Keep v1.7 design-system updates as token reuse notes (no new token expansion).
-  2. Position onboarding follow-up recommendation after baseline + reports flow.
-  3. Treat DCMA/reports docs as already compliant from prior phases and avoid duplicate churn.
-- Next 2 actions:
-  1. Phase M: release hygiene updates (`CHANGELOG`, version bump, README).
-  2. Run full gates sequence required by M.4.
-
-## Phase M Update (2026-05-26)
-
-- Completed implementation-owned release hygiene:
-  - Added `0.7.0` entry to `CHANGELOG.md`.
-  - Bumped `package.json` + `package-lock.json` to `0.7.0`.
-  - Updated `README.md` feature list for v1.7 (WBS hierarchy, AC/CPI, CSV WBS/AC columns).
-  - Ran full gate suite in required order:
-    - `npm.cmd run lint` ✅
-    - `npm.cmd run type-check` ✅
-    - `npm.cmd run test:unit` ✅
-    - `npm.cmd run build` ✅
-    - `npm.cmd run test:e2e` ✅ (26/26)
-- Pending human-owned release actions:
-  1. Open/merge PR `v1.7 -> main` (M.5)
-  2. Tag `v0.7.0` on merge commit (M.6)
-  3. Mark `.claude/version-status.md` as shipped post-merge/tag (M.7)
-- Last 3 decisions:
-  1. Keep shipped-state metadata deferred until merge/tag are real (no premature status flip).
-  2. Preserve strict gate order with `build` immediately preceding E2E.
-  3. Include test-runner stability note in changelog since it directly impacts release execution reliability.
-- Next 2 actions:
-  1. Human executes PR merge + tag on main.
-  2. After merge/tag, finalize ship metadata updates and handoff to planning lane for `plan-v1.8.md`.
+After Phase M.9 lands, lane switches back to **Claude** for **PM Audit Checkpoint 3** — the post-v1.8 single-user maturity gate (last checkpoint before v1.9 data-integration architectural shift and v2.0 cloud / multi-user architectural shift). Audit uses `pm-audit-template.md` and produces `pm-audit-v5.md`. If audit passes ≥8.0/10, Claude authors `plan-v1.9.md` (Data integration & portability).

@@ -1,6 +1,6 @@
 # Version Status — MAKE Scheduling Tool
 
-**Last updated:** 2026-05-26 (v1.6 merged/tagged as `v0.6.0`; v1.7 active)
+**Last updated:** 2026-05-26 (v1.7 merged to `main` via PR #16; `v0.7.0` tag pending human action; v1.8 active)
 **Maintainer:** Any agent that ships a version. Update this file when a version ships.
 
 ---
@@ -33,8 +33,8 @@ When a version ships (code merged, tested, verified):
 | **v1.5** | Multi-baseline & change | ✅ shipped | [plan-v1.5.md](./plan-v1.5.md) | [pm-audit-v4.md](./pm-audit-v4.md) | 2026-05-25 |
 | | *⚖ PM Audit Checkpoint 2* | ✅ pass with one condition (6.7/10 holistic) | — | [pm-audit-v4.md](./pm-audit-v4.md) | 2026-05-25 |
 | **v1.6** | Reporting & analytics | ✅ shipped | [plan-v1.6.md](./plan-v1.6.md) | — | 2026-05-26 |
-| **v1.7** | WBS deepening | ⏳ active | [plan-v1.7.md](./plan-v1.7.md) | — | — |
-| **v1.8** | Calendar & delays | ⬜ pending | — | — | — |
+| **v1.7** | WBS deepening + AC/CPI close-out | ✅ shipped (PR #16 merged; `v0.7.0` tag pending human action) | [plan-v1.7.md](./plan-v1.7.md) | — | 2026-05-26 |
+| **v1.8** | Calendar & delays | ⏳ active | [plan-v1.8.md](./plan-v1.8.md) | — | — |
 | | *⚖ PM Audit Checkpoint 3* | ⬜ pending | — | — | — |
 | **v1.9** | Data integration | ⬜ pending | — | — | — |
 | **v2.0** | Collaboration | ⬜ pending | — | — | — |
@@ -53,9 +53,9 @@ When a version ships (code merged, tested, verified):
 
 ## Current Focus
 
-**Active work:** v1.7 (WBS deepening + AC/CPI close-out), starting with Phase 0 pre-flight, TopBar overflow debt close-out, and `.claude` continuity refresh.
-**Just shipped:** v1.6 (reporting & analytics) on 2026-05-26 (`v0.6.0`)
-**Latest audit:** [pm-audit-v4.md](./pm-audit-v4.md) — 2026-05-25, Checkpoint 2, **6.7/10 holistic (6.3 equal-weight)** — pass with one condition (Quality Panel cold-open perf must close in v1.6 Phase 0). Checkpoint 3 (post-v1.8) is the next gate.
+**Active work:** v1.8 (Calendar & Delays), starting with Phase 0 pre-flight, branch hygiene confirmation, and `.claude` continuity refresh.
+**Just shipped:** v1.7 (WBS deepening + AC/CPI close-out) on 2026-05-26 — PR #16 merged to `main` (merge commit `0eac6b6`); `v0.7.0` release tag is the only pending human artefact.
+**Latest audit:** [pm-audit-v4.md](./pm-audit-v4.md) — 2026-05-25, Checkpoint 2, **6.7/10 holistic (6.3 equal-weight)** — pass with one condition (closed in v1.6 Phase 0.1). **Checkpoint 3 (post-v1.8) is the next gate** and is roadmap-defined as the inflection where single-user maturity is verified before the cloud/multi-user investment.
 **Roadmap:** [pm-roadmap.md](./pm-roadmap.md)
 
 ---
@@ -73,6 +73,7 @@ Each plan file has a build changelog section at the bottom. This table links to 
 | v1.5 | [plan-v1.5.md §17 — Build Changelog](./plan-v1.5.md) |
 | v1.6 | [plan-v1.6.md §17 — Build Changelog](./plan-v1.6.md) |
 | v1.7 | [plan-v1.7.md §17 — Build Changelog](./plan-v1.7.md) |
+| v1.8 | [plan-v1.8.md §17 — Build Changelog](./plan-v1.8.md) |
 
 ---
 

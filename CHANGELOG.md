@@ -27,7 +27,7 @@ All notable changes to this project are documented in this file.
 - Unit test runner hardened to prevent recurring worker-hang issues by running per-file Vitest execution via `scripts/run-unit-tests.mjs`.
 - Example data and new-task seed paths aligned with schema v4 strict typing defaults (`wbsCode`, `actualCost`, group hierarchy fields).
 
-## [0.6.0] - 2026-05-25
+## [0.6.0] - 2026-05-26
 
 ### Added
 - Reporting & analytics foundation:
@@ -50,6 +50,21 @@ All notable changes to this project are documented in this file.
 - Documentation refresh for v1.6:
   - `CLAUDE.md` active-version/schema/design-decision updates.
   - design-system, onboarding QA, and DCMA docs updated for reporting/quality behavior.
+
+## [0.4.0] - 2026-05-25
+
+### Added
+- Schedule quality engine (v1.4):
+  - DCMA 14-point assessment with per-check pass/fail, score, and plain-English explanation.
+  - Composite health score (0–100) with weighted subscores (logic / resource feasibility / baseline adherence / float distribution / completeness).
+  - Logic validation surface (orphan tasks, excessive lag, circular dependency confirmation).
+  - Float distribution histogram with banded targets.
+  - Quality Panel modal accessible from the StatBar with full assessment.
+- StatBar density refinements and a11y verification documented in `docs/statbar-density-v1.4.md`.
+
+### Changed
+- Tokens + components extended for quality surfaces with no new hardcoded hex.
+- Documentation: design-system + onboarding QA updated for v1.4 quality behaviors.
 
 ## [0.5.0] - 2026-05-25
 
@@ -81,6 +96,16 @@ All notable changes to this project are documented in this file.
 ### Changed
 - Extended accessibility sweep coverage to include the ResourcesManager modal and assignment-related controls.
 - Updated design-system and onboarding QA docs for v1.3 resource behavior and token surface.
+
+## [0.2.0] - 2026-05-22
+
+### Changed
+- Visual refinement / de-vibecoded surface (v1.2):
+  - Swiss-design discipline applied across all surfaces (typography hierarchy, density, accent restraint).
+  - Removed generic AI patterns: gradients, KPI tile spam, low-contrast gray-on-gray layouts, decorative card chrome.
+  - Token consolidation in `src/styles/tokens.css` with dark-mode parity overrides.
+  - TopBar hierarchy refinement; party tint behavior; Gantt header tier distinction tightened.
+- Documentation refresh for v1.2 visual posture.
 
 ## [0.1.0] - 2026-05-22
 
