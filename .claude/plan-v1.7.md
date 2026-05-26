@@ -1119,3 +1119,40 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
 - Notes
   - Pre-flight S13 blockers were closed before capability work proceeded.
   - Remaining known noise file (`playwright-report/index.html`) stayed unstaged.
+### Phase A — Pure WBS, Rollup, and Actual Cost Libraries
+
+- Scope
+  - Implemented A.1 schema/type updates in `src/types/index.ts`:
+    - `Task.wbsCode`, `Task.actualCost`
+    - `Group.parentId`, `Group.wbsCode`
+    - `GroupNode`, `GroupRollup`
+    - `DcmaCheckId` expanded to include `15 | 16`
+    - `PERSISTED_SCHEMA_VERSION` bumped to `4`
+    - `EVMResult.ac` normalized to numeric field
+  - Implemented A.2/A.4/A.6 pure libs:
+    - `src/lib/wbs.ts` (`computeWbsCodes`, `walkGroupTree`, `getGroupDepth`, `getDescendantTaskIds`)
+    - `src/lib/rollups.ts` (`computeGroupRollup`)
+    - `src/lib/actualCost.ts` (`computeTotalActualCost`)
+  - Implemented A.3/A.5/A.7 unit tests:
+    - `tests/unit/lib/wbs.test.ts`
+    - `tests/unit/lib/rollups.test.ts`
+    - `tests/unit/lib/actualCost.test.ts`
+  - Implemented A.8 documentation:
+    - `docs/wbs.md`
+  - Updated storage unit expectations to schema v4 in `tests/unit/lib/storage.test.ts`.
+- Files touched
+  - `src/types/index.ts`
+  - `src/lib/wbs.ts`
+  - `src/lib/rollups.ts`
+  - `src/lib/actualCost.ts`
+  - `tests/unit/lib/wbs.test.ts`
+  - `tests/unit/lib/rollups.test.ts`
+  - `tests/unit/lib/actualCost.test.ts`
+  - `tests/unit/lib/storage.test.ts`
+  - `docs/wbs.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅
+- Notes
+  - WBS computation currently treats orphan-parent groups as top-level for deterministic output; DCMA integrity checks land in Phase G.

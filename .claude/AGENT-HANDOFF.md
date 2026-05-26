@@ -55,3 +55,22 @@
   - `docs/v1.7-screenshots-topbar-1280.png`
 - Allowed noise remains unstaged:
   - `playwright-report/index.html`
+## Phase A Update (2026-05-26)
+
+- Completed Phase A (A.1-A.8):
+  - Schema/type extensions for v1.7 (`PERSISTED_SCHEMA_VERSION = 4`, Task/Group WBS + actualCost fields, DCMA check IDs 15/16).
+  - Added pure libs: `wbs.ts`, `rollups.ts`, `actualCost.ts`.
+  - Added unit suites: `wbs.test.ts`, `rollups.test.ts`, `actualCost.test.ts`.
+  - Added v1.7 WBS spec doc: `docs/wbs.md`.
+  - Updated storage unit assertions from v3->v4 expectations.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+  - `npm.cmd run test:unit` ✅ (sequential runner)
+- Last 3 decisions:
+  1. Keep WBS/rollup/actual-cost modules pure and independent to preserve lib boundary.
+  2. Treat orphan group parents as top-level during WBS computation for deterministic codes.
+  3. Keep `test:unit` sequential to avoid historic worker-exit hangs.
+- Next 2 actions:
+  1. Start Phase B migration wiring in `storage.ts` (v3->v4 defaulting + WBS stamping).
+  2. Add migration regression tests for round-trip safety.
