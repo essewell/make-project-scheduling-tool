@@ -1370,3 +1370,18 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:e2e` ✅ (26 passed)
 - Notes
   - Full E2E suite remains green after Phase K additions and stabilization adjustments.
+### Phase L — Documentation Finalization
+
+- Scope
+  - Updated `docs/design-system.md` for v1.7 hierarchy/cost-tracking conventions.
+  - Updated `docs/onboarding-qa.md` with v1.7 follow-up recommendation (group nesting + WBS/AC export flow).
+  - Verified `docs/dcma-checks.md` and `docs/reports.md` already captured v1.7 changes from earlier phases.
+- Files touched
+  - `docs/design-system.md`
+  - `docs/onboarding-qa.md`
+  - `.claude/AGENT-HANDOFF.md`
+- Verification
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+- Notes
+  - No additional token additions were needed for v1.7; guidance explicitly documents token reuse decisions.

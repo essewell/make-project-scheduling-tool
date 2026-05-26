@@ -282,3 +282,20 @@
 - Next 2 actions:
   1. Phase L: final cross-surface manual QA and acceptance checklist sweep.
   2. Phase M: ship prep (versioning/changelog/PR readiness) per plan.
+
+## Phase L Update (2026-05-26)
+
+- Completed Phase L docs updates:
+  - `docs/design-system.md` advanced to v1.7 with hierarchy/cost-tracking surface guidance (WBS mono treatment, group connector rule, rollup pill semantics, AC input token usage, EVM AC/CPI token reuse).
+  - `docs/onboarding-qa.md` appended v1.7 recommendation to explore group nesting + WBS/Actual Cost CSV export after first baseline/report pass.
+  - Confirmed `docs/dcma-checks.md` and `docs/reports.md` already reflected Phase G/H updates.
+- Verification:
+  - `npm.cmd run lint` ✅
+  - `npm.cmd run type-check` ✅
+- Last 3 decisions:
+  1. Keep v1.7 design-system updates as token reuse notes (no new token expansion).
+  2. Position onboarding follow-up recommendation after baseline + reports flow.
+  3. Treat DCMA/reports docs as already compliant from prior phases and avoid duplicate churn.
+- Next 2 actions:
+  1. Phase M: release hygiene updates (`CHANGELOG`, version bump, README).
+  2. Run full gates sequence required by M.4.
