@@ -1,5 +1,6 @@
-import type { WorkweekConfig } from '../types'
+import type { CalendarEvent, WorkweekConfig } from '../types'
 import { fmtDate, toD } from './dates'
+import { isCalendarNonWorkDay } from './projectCalendar'
 
 const DOW_KEYS: (keyof WorkweekConfig)[] = ['sun','mon','tue','wed','thu','fri','sat']
 
@@ -8,8 +9,10 @@ export function isWorkday(
   dateStr: string,
   workweek: WorkweekConfig,
   holidays: string[],
+  projectCalendar: CalendarEvent[] = [],
 ): boolean {
   if (holidays.includes(dateStr)) return false
+  if (isCalendarNonWorkDay(dateStr, projectCalendar)) return false
   const dow = toD(dateStr).getDay()   // 0=Sun
   const key = DOW_KEYS[dow]
   if (!key) return false
@@ -25,13 +28,14 @@ export function workdays(
   end: string,
   workweek: WorkweekConfig,
   holidays: string[],
+  projectCalendar: CalendarEvent[] = [],
 ): number {
   if (start > end) return 0
   let count = 0
   const d = toD(start)
   const endDate = toD(end)
   while (d <= endDate) {
-    if (isWorkday(fmtDate(d), workweek, holidays)) count++
+    if (isWorkday(fmtDate(d), workweek, holidays, projectCalendar)) count++
     d.setDate(d.getDate() + 1)
   }
   return count
@@ -47,11 +51,11 @@ export function workdayRatio(
   today: string,
   workweek: WorkweekConfig,
   holidays: string[],
+  projectCalendar: CalendarEvent[] = [],
 ): number {
   if (today < start) return 0
-  const total = workdays(start, end, workweek, holidays)
+  const total = workdays(start, end, workweek, holidays, projectCalendar)
   if (total === 0) return 0
-  const elapsed = workdays(start, today < end ? today : end, workweek, holidays)
+  const elapsed = workdays(start, today < end ? today : end, workweek, holidays, projectCalendar)
   return Math.min(1, elapsed / total)
 }
-

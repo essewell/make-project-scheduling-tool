@@ -1,5 +1,6 @@
-import type { Task, Dependency, CpmResult } from '../types'
+import type { CalendarEvent, Task, Dependency, CpmResult } from '../types'
 import { daysBetween } from './dates'
+import { countCalendarDaysInRange } from './projectCalendar'
 
 /**
  * Critical Path Method via Kahn topological sort + forward/backward pass.
@@ -16,6 +17,7 @@ import { daysBetween } from './dates'
 export function computeCriticalPath(
   tasks: Task[],
   dependencies: Dependency[],
+  projectCalendar: CalendarEvent[] = [],
 ): CpmResult | null {
   if (tasks.length === 0) {
     return {
@@ -32,7 +34,10 @@ export function computeCriticalPath(
   const duration = (id: string): number => {
     const t = taskMap.get(id)
     if (!t) return 1
-    return Math.max(1, daysBetween(t.s, t.e) + 1)
+    const baseDays = Math.max(1, daysBetween(t.s, t.e) + 1)
+    if (projectCalendar.length === 0) return baseDays
+    const nonWorkDays = countCalendarDaysInRange(t.s, t.e, projectCalendar, 'non_work')
+    return baseDays + nonWorkDays
   }
 
   // Build adjacency lists

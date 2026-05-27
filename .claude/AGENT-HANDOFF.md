@@ -1,3 +1,29 @@
+## v1.8 Session Entry (Codex — 2026-05-27, Phase C)
+
+- Phase reached: **Phase C complete** (calendar-aware workday/CPM foundation)
+- Branch: `v1.8` tracking `origin/v1.8`
+- What landed:
+  - `workdays.ts` now accepts optional `projectCalendar` in `isWorkday`, `workdays`, and `workdayRatio` with default `[]`.
+  - `non_work` calendar events now suppress workdays; `advisory_only` remains workday-neutral.
+  - `computeCriticalPath` now accepts optional `projectCalendar` and preserves legacy output when empty.
+  - Added CPM non-work overlap test and explicit empty-calendar parity test.
+  - Added workday tests for `non_work` and `advisory_only` behavior.
+  - Appended Phase C entry in `plan-v1.8.md` §17.
+- Last 3 decisions:
+  - Keep API additions optional/defaulted to protect existing call sites until Phase D wiring.
+  - Anchor parity guard by serializing map/set output for byte-equivalent comparison.
+  - Keep `advisory_only` events display-only in math path (no workday suppression).
+- Verification gates:
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Next 2 actions:
+  1. Start Phase D app wiring (`projectCalendar`/`delays` state usage + CPM memo dependency update).
+  2. Add regression checks that App-level CPM path updates when calendar changes.
+
+---
 ## v1.8 Session Entry (Codex — 2026-05-27, Phase B)
 
 - Phase reached: **Phase B complete** (migration hardening + round-trip guarantees)
@@ -170,6 +196,7 @@ Both tags are documented in `docs/release-tags-audit.md` (created by Codex in Ph
 ## Post-v1.8 Lane Switch
 
 After Phase M.9 lands, lane switches back to **Claude** for **PM Audit Checkpoint 3** — the post-v1.8 single-user maturity gate (last checkpoint before v1.9 data-integration architectural shift and v2.0 cloud / multi-user architectural shift). Audit uses `pm-audit-template.md` and produces `pm-audit-v5.md`. If audit passes ≥8.0/10, Claude authors `plan-v1.9.md` (Data integration & portability).
+
 
 
 

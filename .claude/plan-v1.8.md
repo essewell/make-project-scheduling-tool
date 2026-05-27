@@ -1173,6 +1173,33 @@ If none of these trigger, the agent proceeds phase by phase without further ping
 - Notes
   - Migration logic itself already satisfied B.1 from prior slice; this phase focused on B.2 round-trip and fixture-proof validation depth.
 
+### Phase C — Workday and CPM integration with project calendar
+
+- Scope
+  - Extended `workdays.ts` functions with optional `projectCalendar` input and back-compatible defaults.
+  - Integrated `non_work` calendar-day exclusion into `isWorkday` checks while leaving `advisory_only` unaffected.
+  - Extended `computeCriticalPath` signature with optional `projectCalendar` and preserved legacy behavior when empty.
+  - Added CPM behavior for non-work-day overlap in task effective duration.
+  - Added unit coverage for:
+    - workday behavior under `non_work` and `advisory_only` classifications
+    - CPM shift when a non-work day falls inside task window
+    - explicit empty-calendar parity (`computeCriticalPath(..., [])` equals legacy call)
+- Files touched
+  - `src/lib/workdays.ts`
+  - `src/lib/cpm.ts`
+  - `tests/unit/lib/workdays.test.ts`
+  - `tests/unit/lib/cpm.test.ts`
+  - `.claude/AGENT-HANDOFF.md`
+  - `.claude/plan-v1.8.md`
+- Verification
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Notes
+  - Call-site wiring in `App.tsx` is intentionally deferred to Phase D per plan sequencing.
+
 ### Phase 0.X — <title>
 
 - Scope

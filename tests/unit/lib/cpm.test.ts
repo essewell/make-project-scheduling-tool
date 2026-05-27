@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { computeCriticalPath } from '../../../src/lib/cpm'
-import type { Task, Dependency } from '../../../src/types'
+import type { CalendarEvent, Task, Dependency, CpmResult } from '../../../src/types'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -12,11 +12,25 @@ function makeTask(id: string, durationDays: number): Task {
   const e = addDaysISO('2024-01-01', durationDays - 1)
   return {
     id, name: id, group: '',
+    wbsCode: '',
     s: '2024-01-01', e,
     actualStart: null, actualFinish: null,
+    actualCost: 0,
     pct: 0, status: 'not_started',
     party: null, notes: '', milestone: false,
     manualStatus: false, manualPct: false, deps: [],
+  }
+}
+
+function serializeResult(result: CpmResult | null) {
+  if (!result) return null
+  return {
+    criticalIds: Array.from(result.criticalIds).sort(),
+    earlyStart: Array.from(result.earlyStart.entries()).sort(),
+    earlyFinish: Array.from(result.earlyFinish.entries()).sort(),
+    lateStart: Array.from(result.lateStart.entries()).sort(),
+    lateFinish: Array.from(result.lateFinish.entries()).sort(),
+    totalFloat: Array.from(result.totalFloat.entries()).sort(),
   }
 }
 
@@ -226,5 +240,34 @@ describe('computeCriticalPath — edge cases', () => {
     expect(result!.criticalIds).toContain('D')
     // ES[D] driven by the longer of B's path and C's path
     expect(result!.earlyStart.get('D')).toBeGreaterThan(0)
+  })
+})
+
+describe('computeCriticalPath — project calendar integration', () => {
+  const nonWorkWeek: CalendarEvent[] = [
+    {
+      id: 'cal-1',
+      name: 'Shutdown day',
+      start: '2024-01-03',
+      end: '2024-01-03',
+      type: 'owner_shutdown',
+      classification: 'non_work',
+      notes: '',
+    },
+  ]
+
+  it('extends effective task duration when non_work day falls inside task window', () => {
+    const tasks = [makeTask('A', 3)] // Jan 1 to Jan 3
+    const withoutCalendar = computeCriticalPath(tasks, [])!
+    const withCalendar = computeCriticalPath(tasks, [], nonWorkWeek)!
+    expect(withCalendar.earlyFinish.get('A')).toBe((withoutCalendar.earlyFinish.get('A') ?? 0) + 1)
+  })
+
+  it('empty projectCalendar produces byte-identical output to legacy call shape', () => {
+    const tasks = [makeTask('A', 3), makeTask('B', 2), makeTask('C', 4)]
+    const deps = [dep('A', 'B'), dep('B', 'C')]
+    const legacy = computeCriticalPath(tasks, deps)
+    const explicitEmpty = computeCriticalPath(tasks, deps, [])
+    expect(serializeResult(explicitEmpty)).toEqual(serializeResult(legacy))
   })
 })

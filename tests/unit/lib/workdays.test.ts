@@ -1,11 +1,31 @@
 import { describe, it, expect } from 'vitest'
 import { isWorkday, workdays, workdayRatio } from '../../../src/lib/workdays'
-import type { WorkweekConfig } from '../../../src/types'
+import type { CalendarEvent, WorkweekConfig } from '../../../src/types'
 
 // Standard Mon-Fri workweek used in most tests
 const STANDARD: WorkweekConfig = {
   mon: true, tue: true, wed: true, thu: true, fri: true,
   sat: false, sun: false,
+}
+
+const NON_WORK_EVENT: CalendarEvent = {
+  id: 'c1',
+  name: 'Shutdown',
+  start: '2024-01-03',
+  end: '2024-01-03',
+  type: 'owner_shutdown',
+  classification: 'non_work',
+  notes: '',
+}
+
+const ADVISORY_EVENT: CalendarEvent = {
+  id: 'c2',
+  name: 'Advisory',
+  start: '2024-01-03',
+  end: '2024-01-03',
+  type: 'weather_window',
+  classification: 'advisory_only',
+  notes: '',
 }
 
 // 2024-01-01 is a Monday — known reference dates:
@@ -33,6 +53,14 @@ describe('isWorkday', () => {
 
   it('a holiday overrides a Monday', () => {
     expect(isWorkday('2024-01-01', STANDARD, ['2024-01-01'])).toBe(false)
+  })
+
+  it('non_work calendar events mark a weekday as non-work', () => {
+    expect(isWorkday('2024-01-03', STANDARD, [], [NON_WORK_EVENT])).toBe(false)
+  })
+
+  it('advisory_only calendar events do not change workday status', () => {
+    expect(isWorkday('2024-01-03', STANDARD, [], [ADVISORY_EVENT])).toBe(true)
   })
 
   it('Saturday can be a workday with custom workweek', () => {
@@ -79,6 +107,14 @@ describe('workdays', () => {
   it('subtracts holidays from the count', () => {
     // Mon-Fri with holiday on Wednesday = 4 workdays
     expect(workdays('2024-01-01', '2024-01-05', STANDARD, ['2024-01-03'])).toBe(4)
+  })
+
+  it('subtracts non_work calendar event days from count', () => {
+    expect(workdays('2024-01-01', '2024-01-05', STANDARD, [], [NON_WORK_EVENT])).toBe(4)
+  })
+
+  it('ignores advisory_only events in workday count', () => {
+    expect(workdays('2024-01-01', '2024-01-05', STANDARD, [], [ADVISORY_EVENT])).toBe(5)
   })
 
   it('includes Saturday when workweek includes Saturday', () => {
