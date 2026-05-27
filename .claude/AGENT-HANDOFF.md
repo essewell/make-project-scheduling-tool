@@ -1,3 +1,30 @@
+## v1.8 Session Entry (Codex — 2026-05-27, Phase A)
+
+- Phase reached: **Phase A complete** (A.1, A.2, A.4, A.6, A.8)
+- Branch: `v1.8` tracking `origin/v1.8`
+- What landed:
+  - Added v1.8 type surface: `CalendarEvent`, `Delay`, `DcmaCheckId` includes `17`.
+  - Bumped persisted schema constant to `5` and added additive persisted fields (`projectCalendar`, `delays`).
+  - Added pure libs: `projectCalendar.ts`, `delays.ts`, `delayImpact.ts`.
+  - Added unit suites: `projectCalendar.test.ts`, `delays.test.ts`, `delayImpact.test.ts`.
+  - Added `docs/calendar-and-delays.md` with model and scope notes.
+  - Updated storage tests to assert dynamic schema version instead of hardcoded `4`.
+  - Appended Phase A entry in `plan-v1.8.md` §17.
+- Last 3 decisions:
+  - Keep Phase A strictly pure-lib + schema surface (no UI wiring in this slice).
+  - Make v4->v5 additive defaults explicit in `makeDefaultState` now to avoid null-path drift.
+  - Use `PERSISTED_SCHEMA_VERSION` in tests to avoid brittle version-literal assertions.
+- Verification gates:
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Next 2 actions:
+  1. Begin Phase B migration hardening for schema `4 -> 5` round-trip behavior.
+  2. Add/update migration-specific storage tests for `projectCalendar` + `delays` defaults and preservation.
+
+---
 ## v1.8 Session Entry (Codex — 2026-05-27)
 
 - Phase reached: **Phase 0 complete** (through 0.K)
@@ -118,4 +145,5 @@ Both tags are documented in `docs/release-tags-audit.md` (created by Codex in Ph
 ## Post-v1.8 Lane Switch
 
 After Phase M.9 lands, lane switches back to **Claude** for **PM Audit Checkpoint 3** — the post-v1.8 single-user maturity gate (last checkpoint before v1.9 data-integration architectural shift and v2.0 cloud / multi-user architectural shift). Audit uses `pm-audit-template.md` and produces `pm-audit-v5.md`. If audit passes ≥8.0/10, Claude authors `plan-v1.9.md` (Data integration & portability).
+
 

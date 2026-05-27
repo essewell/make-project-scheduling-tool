@@ -1119,6 +1119,40 @@ If none of these trigger, the agent proceeds phase by phase without further ping
 - Notes
   - `git rev-list --count main..v1.8` returned `73` while `git diff origin/main v1.8 --stat` was empty; topology differs but content parity holds, consistent with prior handoff context.
 
+### Phase A — Pure library scaffold (types, calendar, delays, delay impact)
+
+- Scope
+  - Extended core types for v1.8 with `CalendarEvent`, `Delay`, and `DcmaCheckId` expansion to include `17`.
+  - Bumped persisted schema constant `PERSISTED_SCHEMA_VERSION` from `4` to `5`.
+  - Added additive persisted fields on `PersistedState`: `projectCalendar` and `delays`.
+  - Added pure calendar helper module `src/lib/projectCalendar.ts`.
+  - Added pure delay helper module `src/lib/delays.ts`.
+  - Added pure delay-impact helper module `src/lib/delayImpact.ts`.
+  - Added unit test coverage for all three new pure modules.
+  - Added v1.8 implementation notes doc `docs/calendar-and-delays.md`.
+- Files touched
+  - `src/types/index.ts`
+  - `src/lib/storage.ts`
+  - `src/lib/projectCalendar.ts`
+  - `src/lib/delays.ts`
+  - `src/lib/delayImpact.ts`
+  - `tests/unit/lib/projectCalendar.test.ts`
+  - `tests/unit/lib/delays.test.ts`
+  - `tests/unit/lib/delayImpact.test.ts`
+  - `tests/unit/lib/storage.test.ts`
+  - `docs/calendar-and-delays.md`
+  - `.claude/AGENT-HANDOFF.md`
+  - `.claude/plan-v1.8.md`
+- Verification
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Notes
+  - Unit test failures initially surfaced due hardcoded schema-version assertions (`4`); updated to assert against `PERSISTED_SCHEMA_VERSION`.
+  - Phase A is intentionally pure-library and schema-surface only; UI wiring and migration-deep behavior continue in Phase B onward.
+
 ### Phase 0.X — <title>
 
 - Scope

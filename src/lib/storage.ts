@@ -20,6 +20,8 @@ export function makeDefaultState(projectName = 'My Project'): PersistedState {
     baselines: [],
     workweek: { ...DEFAULT_WORKWEEK },
     holidays: [],
+    projectCalendar: [],
+    delays: [],
     onboardingPhase: 'fresh',
     ghostStyle: 'stripe',
     resources: [],
@@ -118,6 +120,11 @@ function migrateState(parsed: Record<string, unknown>): PersistedState {
   if (version <= 3) {
     base.groups = normalizeGroups(Array.isArray(base.groups) ? (base.groups as Group[]) : [])
     base.tasks = normalizeTasks(Array.isArray(base.tasks) ? (base.tasks as Task[]) : [])
+  }
+
+  if (version <= 4) {
+    if (!Array.isArray(base.projectCalendar)) base.projectCalendar = []
+    if (!Array.isArray(base.delays)) base.delays = []
   }
 
   const stamped = stampWbs(base.groups as Group[], base.tasks as Task[])

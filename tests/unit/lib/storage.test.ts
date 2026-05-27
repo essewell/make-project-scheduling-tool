@@ -181,7 +181,7 @@ describe('loadState — v0 migration', () => {
     expect(loaded.dependencies[0]).toMatchObject({ fromId: 't2', toId: 't1', type: 'FS', lag: 0 })
   })
 
-  it('stamps persistedSchemaVersion=3 after migration', () => {
+  it('stamps current persisted schema version after migration', () => {
     const v0 = {
       projectName: 'Legacy',
       tasks: [], groups: [], parties: [], notes: [], collapsedGroups: [],
@@ -189,7 +189,7 @@ describe('loadState — v0 migration', () => {
       onboardingPhase: 'complete',
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(v0))
-    expect(loadState().persistedSchemaVersion).toBe(4)
+    expect(loadState().persistedSchemaVersion).toBe(PERSISTED_SCHEMA_VERSION)
   })
 
   it('adds empty resources and assignments arrays on migration', () => {
@@ -213,10 +213,10 @@ describe('loadState — v0 migration', () => {
     const loaded = loadState()
     expect(loaded.resources).toEqual([])
     expect(loaded.assignments).toEqual([])
-    expect(loaded.persistedSchemaVersion).toBe(4)
+    expect(loaded.persistedSchemaVersion).toBe(PERSISTED_SCHEMA_VERSION)
   })
 
-  it('migrates v2 payload to v4 additively with baseline defaults', () => {
+  it('migrates v2 payload to current schema additively with baseline defaults', () => {
     const v2 = {
       persistedSchemaVersion: 2,
       projectName: 'v2 payload',
@@ -239,7 +239,7 @@ describe('loadState — v0 migration', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(v2))
 
     const loaded = loadState()
-    expect(loaded.persistedSchemaVersion).toBe(4)
+    expect(loaded.persistedSchemaVersion).toBe(PERSISTED_SCHEMA_VERSION)
     expect(loaded.changeOrders).toEqual([])
     expect(loaded.varianceSnapshots).toEqual([])
     expect(loaded.baselines[0]?.reason).toBe('')
@@ -247,7 +247,7 @@ describe('loadState — v0 migration', () => {
     expect(loaded.tasks[0]?.actualCost).toBe(0)
   })
 
-  it('v2 -> v4 round-trip save/load remains equivalent', () => {
+  it('v2 -> current schema round-trip save/load remains equivalent', () => {
     const v2 = {
       persistedSchemaVersion: 2,
       projectName: 'round-trip',

@@ -251,6 +251,53 @@ export interface WorkweekConfig {
   sun: boolean
 }
 
+export type CalendarEventType =
+  | 'holiday'
+  | 'owner_shutdown'
+  | 'union_action'
+  | 'weather_window'
+  | 'other'
+
+export type CalendarEventClassification =
+  | 'non_work'
+  | 'reduced_capacity'
+  | 'advisory_only'
+
+export interface CalendarEvent {
+  id: string
+  name: string
+  start: string
+  end: string
+  type: CalendarEventType
+  classification: CalendarEventClassification
+  notes: string
+}
+
+export type DelayType =
+  | 'weather'
+  | 'owner_directive'
+  | 'force_majeure'
+  | 'contractor_caused'
+  | 'subcontractor_caused'
+  | 'other'
+
+export type DelayReconciliation = 'pending' | 'accepted' | 'rejected'
+
+export interface Delay {
+  id: string
+  recordedAt: string
+  start: string
+  end: string
+  type: DelayType
+  excusable: boolean
+  affectedTaskIds: string[]
+  daysImpact: number
+  criticalPathImpactDays: number
+  responsibleParty: string
+  narrative: string
+  reconciliation: DelayReconciliation
+}
+
 // ─── Onboarding ──────────────────────────────────────────────────────────────
 
 export type OnboardingPhase = 'fresh' | 'first_added' | 'baseline_tip' | 'complete'
@@ -262,7 +309,7 @@ export type GhostStyle = 'stripe' | 'solid' | 'outline'
 // ─── Persisted state (localStorage) ─────────────────────────────────────────
 
 /** Current persisted-state schema version. Bump in lockstep with `migrateState` in storage.ts. */
-export const PERSISTED_SCHEMA_VERSION = 4
+export const PERSISTED_SCHEMA_VERSION = 5
 
 export interface PersistedState {
   /** Stamped on save by storage.ts. Absent on legacy (v0) payloads. */
@@ -277,6 +324,8 @@ export interface PersistedState {
   baselines: Baseline[]
   workweek: WorkweekConfig
   holidays: string[]           // YYYY-MM-DD strings
+  projectCalendar: CalendarEvent[]
+  delays: Delay[]
   onboardingPhase: OnboardingPhase
   ghostStyle: GhostStyle       // C2 — persisted
   resources: Resource[]
@@ -329,7 +378,7 @@ export interface CpmResult {
 export type DcmaCheckId =
   | 1 | 2 | 3 | 4 | 5 | 6 | 7
   | 8 | 9 | 10 | 11 | 12 | 13 | 14
-  | 15 | 16
+  | 15 | 16 | 17
 
 export interface DcmaCheckResult {
   id: DcmaCheckId
