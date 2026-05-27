@@ -1407,3 +1407,4 @@ These are the assumptions that shaped this plan. If any prove false, surface imm
   - `npm.cmd run test:e2e` ✅ (26 passed)
 - Notes
   - M.5/M.6/M.7 remain pending human release actions tied to main-branch merge/tag state.
+  - Post-ship closure (2026-05-26): PR #16 merged to `main` as merge commit `0eac6b6`; `v0.7.0` tag remains pending human action.

@@ -36,3 +36,7 @@ v1.6 starts desktop-first reporting and analytics implementation (reports modal,
 ## v1.7 Defer Reaffirmation (2026-05-26)
 
 v1.7 Phase 0 adds a desktop TopBar overflow restructure and `.claude`/release carry-over close-out only. No new mobile interaction model or gesture surface was introduced in this phase, so physical-device mobile QA remains intentionally deferred while desktop-first WBS and cost-tracking implementation proceeds.
+
+## v1.8 Defer Reaffirmation (2026-05-27)
+
+v1.8 begins with desktop-first calendar and delay-management foundation work (schema, pure libs, and documentation housekeeping in Phase 0). No new touch-first interaction model is introduced at this stage, so physical-device mobile QA remains intentionally deferred while desktop implementation proceeds.

@@ -1,3 +1,25 @@
+## v1.8 Session Entry (Codex — 2026-05-27)
+
+- Phase reached: **Phase 0 complete** (through 0.K)
+- Branch: `v1.8` tracking `origin/v1.8`
+- What landed:
+  - Completed pre-flight checks for v1.7-on-main (`0eac6b6`, `package.json` `0.7.0`).
+  - Hit S13 due to dirty `CHANGELOG.md`, paused, and resumed with explicit human direction.
+  - Set upstream for `v1.8` via `git push -u origin v1.8`.
+  - Added `docs/release-tags-audit.md` (missing `v0.5.0` on `f9382f2`, missing `v0.7.0` on `0eac6b6`, human-owned action).
+  - Added v1.8 desktop-first defer entry in `docs/mobile-qa.md`.
+  - Added `docs/perf-v1.8-baseline.md` anchored to v1.7 perf references.
+  - Appended v1.7 final-ship closure line in `plan-v1.7.md` §17 Phase M.
+  - Appended Phase 0 changelog entry in `plan-v1.8.md` §17.
+- Decisions captured this session:
+  - 0.F marketing-v2 pass remains deferred.
+  - 0.G branch pile-up remains below revisit threshold; keep as-is.
+  - 0.J `Task.deps[]` direct-write lint rule remains deferred to v2.0.
+- Next 2 actions:
+  1. Execute full gate run for Phase 0 commit (`lint`, `type-check`, `test:unit`, `build`, `test:e2e`).
+  2. Commit Phase 0 slice with message: `chore(v1.8): phase 0 — branch adoption, housekeeping, perf baseline, tags audit`, then start Phase A.1.
+
+---
 # AGENT HANDOFF (v1.8 plan written — Codex implementation starts at Phase 0.−2)
 
 ## Last Touch
@@ -96,3 +118,4 @@ Both tags are documented in `docs/release-tags-audit.md` (created by Codex in Ph
 ## Post-v1.8 Lane Switch
 
 After Phase M.9 lands, lane switches back to **Claude** for **PM Audit Checkpoint 3** — the post-v1.8 single-user maturity gate (last checkpoint before v1.9 data-integration architectural shift and v2.0 cloud / multi-user architectural shift). Audit uses `pm-audit-template.md` and produces `pm-audit-v5.md`. If audit passes ≥8.0/10, Claude authors `plan-v1.9.md` (Data integration & portability).
+

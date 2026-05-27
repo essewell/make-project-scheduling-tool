@@ -1091,6 +1091,34 @@ If none of these trigger, the agent proceeds phase by phase without further ping
 
 > Codex appends an entry here per phase commit set. Format follows plan-v1.7.md §17 and plan-v1.6.md §17.
 
+### Phase 0 — Branch adoption, housekeeping, perf baseline, tags audit
+
+- Scope
+  - Completed pre-flight verification: `origin/main` contains v1.7 merge `0eac6b6`; `origin/main:package.json` is `0.7.0`.
+  - S13 triggered on initial dirty working tree (`CHANGELOG.md`); surfaced to human and proceeded with explicit approval.
+  - Adopted existing `v1.8` branch and set upstream (`origin/v1.8`).
+  - Verified `.claude` continuity docs align with v1.7 shipped / v1.8 active state.
+  - Appended plan-v1.7 post-merge final-ship note in §17 Phase M.
+  - Recorded explicit deferrals for 0.F/0.G/0.J with no implementation expansion.
+  - Created `docs/release-tags-audit.md` (0.H) documenting missing `v0.5.0` and `v0.7.0` tags and human-owned action.
+  - Appended v1.8 desktop-first mobile QA defer in `docs/mobile-qa.md` (0.I).
+  - Created `docs/perf-v1.8-baseline.md` baseline snapshot anchored to v1.7 metrics (0.K).
+- Files touched
+  - `.claude/plan-v1.8.md`
+  - `.claude/plan-v1.7.md`
+  - `.claude/AGENT-HANDOFF.md`
+  - `docs/release-tags-audit.md`
+  - `docs/mobile-qa.md`
+  - `docs/perf-v1.8-baseline.md`
+- Verification
+  - `npm run lint` / `npm run type-check` / `npm run test:unit` / `npm run build` / `npm run test:e2e` to be executed in this phase before commit.
+  - Manual checks:
+    - `git log origin/main --oneline -5` includes `0eac6b6`
+    - `git show origin/main:package.json` reads `0.7.0`
+    - `git branch --show-current` is `v1.8`
+- Notes
+  - `git rev-list --count main..v1.8` returned `73` while `git diff origin/main v1.8 --stat` was empty; topology differs but content parity holds, consistent with prior handoff context.
+
 ### Phase 0.X — <title>
 
 - Scope
