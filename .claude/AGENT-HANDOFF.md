@@ -1,3 +1,31 @@
+## v1.8 Session Entry (Codex — 2026-05-27, Phase F)
+
+- Phase reached: **Phase F complete** (CalendarOverlay + DelayMarkers)
+- Branch: `v1.8` tracking `origin/v1.8`
+- What landed:
+  - Added `CalendarOverlay` with classification-specific hatch patterns and event edge lines.
+  - Mounted overlay in `Gantt` between grid and bars, controlled by `calendarOverlayEnabled`.
+  - Added Gantt hover tooltip for calendar event name and classification.
+  - Added `DelayMarkers` in `GanttBar` for task-linked delays (excusable vs non-excusable color coding).
+  - Wired marker click callback chain up to `App` to open delay log state and store focused delay id.
+  - Added overlay/marker color tokens in both light and dark token roots.
+  - Appended Phase F entry in `plan-v1.8.md` §17.
+- Last 3 decisions:
+  - Keep overlay render pure-SVG and pointer-light, with hitboxes separated from paint rects.
+  - Keep delay marker implementation inside `GanttBar` to preserve memo behavior on the hot path.
+  - Stage scroll-to-focused-delay behavior for Phase G when `DelayLogPanel` exists; Phase F only sets open/focus state.
+- Verification gates:
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Next 2 actions:
+  1. Start Phase G modal/panel scaffolds (`ProjectCalendarManager`, `DelayLogPanel`, `DelayEntryModal`).
+  2. Wire calendar and delay CRUD/reconciliation callbacks through `App` and modal entry points.
+
+---
+
 ## v1.8 Session Entry (Codex — 2026-05-27, Phase E)
 
 - Phase reached: **Phase E complete** (TopBar + Gantt header entry points)

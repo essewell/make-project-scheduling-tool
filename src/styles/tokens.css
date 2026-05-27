@@ -71,6 +71,10 @@
   --cashflow-equipment:  #27aae1;
   --cashflow-material:   #EF9F27;
   --health-sparkline:    #7F77DD;
+  --calendar-overlay-stripe: rgba(28, 48, 72, 0.24);
+  --calendar-event-edge: rgba(70, 96, 112, 0.52);
+  --delay-marker-excusable: #27aae1;
+  --delay-marker-non-excusable: #bf3b2e;
   --phase-1:            #7C5CBF;
   --phase-2:            #E0862A;
   --phase-3:            #2E8B57;
@@ -212,6 +216,10 @@
     --cashflow-equipment:  #4db8e6;
     --cashflow-material:   #f5af41;
     --health-sparkline:    #8f74cb;
+    --calendar-overlay-stripe: rgba(216, 234, 244, 0.28);
+    --calendar-event-edge: rgba(167, 194, 212, 0.56);
+    --delay-marker-excusable: #4db8e6;
+    --delay-marker-non-excusable: #d96b60;
     --phase-1:            #8f74cb;
     --phase-2:            #ee9f4d;
     --phase-3:            #43a06d;

@@ -1253,6 +1253,33 @@ If none of these trigger, the agent proceeds phase by phase without further ping
 - Notes
   - Phase E only establishes entry points and state wiring. Calendar manager and delay log UI surfaces continue in later phases.
 
+### Phase F — Calendar overlay and delay markers in Gantt
+
+- Scope
+  - Added `CalendarOverlay` SVG layer with per-classification diagonal hatch patterns.
+  - Mounted calendar overlay in `Gantt` between grid and bars, gated by `calendarOverlayEnabled`.
+  - Added hover tooltip surface in `Gantt` for event name + classification.
+  - Added `DelayMarkers` overlay rendered inside each non-milestone bar for memo-safe rendering.
+  - Wired marker click callback path from `GanttBar` up through `Gantt` to App state (`delayLogPanelOpen` + focused delay id).
+  - Added calendar/delay token entries in light/dark themes.
+- Files touched
+  - `src/components/gantt/CalendarOverlay.tsx`
+  - `src/components/gantt/DelayMarkers.tsx`
+  - `src/components/gantt/GanttBar.tsx`
+  - `src/components/gantt/Gantt.tsx`
+  - `src/components/App.tsx`
+  - `src/styles/tokens.css`
+  - `.claude/AGENT-HANDOFF.md`
+  - `.claude/plan-v1.8.md`
+- Verification
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Notes
+  - Delay marker click currently sets focus state + opens the delay log surface; the actual panel scroll-to-focus behavior lands with Phase G panel implementation.
+
 ### Phase 0.X — <title>
 
 - Scope

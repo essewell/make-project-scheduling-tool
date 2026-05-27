@@ -124,6 +124,7 @@ export function App() {
   const [isMobile, setIsMobile] = useState(false)
   const [projectCalendarManagerOpen, setProjectCalendarManagerOpen] = useState(false)
   const [delayLogPanelOpen, setDelayLogPanelOpen] = useState(false)
+  const [delayLogFocusDelayId, setDelayLogFocusDelayId] = useState<string | null>(null)
   const [delayEntryModalOpen] = useState(false)
 
   // ── Hooks ─────────────────────────────────────────────────────────────────
@@ -888,6 +889,7 @@ export function App() {
       data-calendar-overlay={calendarOverlayEnabled ? 'on' : 'off'}
       data-calendar-manager-open={projectCalendarManagerOpen ? 'true' : 'false'}
       data-delay-log-open={delayLogPanelOpen ? 'true' : 'false'}
+      data-delay-log-focus-id={delayLogFocusDelayId ?? ''}
       data-delay-entry-open={delayEntryModalOpen ? 'true' : 'false'}
       data-delay-impact-count={_delayImpactByDelayId.size}
       data-delay-cause-count={_varianceByDelayCause.size}
@@ -1046,6 +1048,8 @@ export function App() {
               criticalPath={criticalPath}
               workweek={workweek}
               holidays={holidays}
+              projectCalendar={projectCalendar}
+              delays={delays}
               ganttRef={ganttRef}
               onScroll={handleGanttScroll}
               onUpdateTask={onUpdateTask}
@@ -1060,6 +1064,10 @@ export function App() {
               onHistogramScroll={handleHistogramScroll}
               calendarOverlayEnabled={calendarOverlayEnabled}
               onToggleCalendarOverlay={() => setCalendarOverlayEnabled((value) => !value)}
+              onOpenDelayLog={(delayId) => {
+                setDelayLogFocusDelayId(delayId)
+                setDelayLogPanelOpen(true)
+              }}
               isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
             />
             </div>

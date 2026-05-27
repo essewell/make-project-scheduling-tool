@@ -1,9 +1,10 @@
 import { memo, useRef, useCallback } from 'react'
-import type { Task } from '../../types'
+import type { Delay, Task } from '../../types'
 import type { Timeline } from '../../types'
 import { dateToOffset } from '../../lib/timeline'
 import { daysBetween, addDays } from '../../lib/dates'
 import { BAR_HEIGHT, MIN_BAR_PX, MILESTONE_SIZE, ROW_HEIGHT, GANTT_HEADER_HEIGHT } from '../../constants'
+import { DelayMarkers } from './DelayMarkers'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -21,6 +22,8 @@ interface GanttBarProps {
   onUpdateTask: (id: string, patch: Partial<Task>) => void
   onSelectTask: (id: string) => void
   onOpenPanel: (id: string) => void
+  delays: Delay[]
+  onOpenDelay: (delayId: string) => void
 }
 
 // ─── Drag types ───────────────────────────────────────────────────────────────
@@ -85,6 +88,8 @@ export const GanttBar = memo(function GanttBar({
   onUpdateTask,
   onSelectTask,
   onOpenPanel,
+  delays,
+  onOpenDelay,
 }: GanttBarProps) {
   const dragRef = useRef<DragState | null>(null)
 
@@ -266,6 +271,8 @@ export const GanttBar = memo(function GanttBar({
         }} />
       )}
 
+      <DelayMarkers delays={delays} onOpenDelay={onOpenDelay} />
+
       {/* Left resize handle */}
       <div
         onMouseDown={(e) => onMouseDown(e, 'left')}
@@ -309,6 +316,8 @@ export const GanttBar = memo(function GanttBar({
     prev.isSelected === next.isSelected &&
     prev.isKbFocused === next.isKbFocused &&
     prev.isCritical === next.isCritical &&
-    prev.isDimmed === next.isDimmed
+    prev.isDimmed === next.isDimmed &&
+    prev.delays.length === next.delays.length &&
+    prev.delays.every((delay, index) => delay.id === next.delays[index]?.id)
   )
 })

@@ -1,6 +1,6 @@
-import { useCallback, useMemo, type RefObject } from 'react'
+import { useCallback, useMemo, useState, type RefObject } from 'react'
 import type {
-  Baseline, CpmResult, Dependency, GhostStyle,
+  Baseline, CalendarEvent, CpmResult, Delay, Dependency, GhostStyle,
   Group, Resource, ResourceAssignment, Task, VisibleRow, WorkweekConfig,
 } from '../../types'
 import type { Timeline } from '../../types'
@@ -13,6 +13,7 @@ import { BaselineGhostBars } from './BaselineGhostBars'
 import { ResourceHistogram } from './ResourceHistogram'
 import { computeResourceDemand } from '../../lib/resourceDemand'
 import { CalendarBlank, CircleHalf, Minus, Path, Plus, SquaresFour } from '../../lib/icons'
+import { CalendarOverlay } from './CalendarOverlay'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,8 @@ interface GanttProps {
   criticalPath: CpmResult | null
   workweek: WorkweekConfig
   holidays: string[]
+  projectCalendar: CalendarEvent[]
+  delays: Delay[]
   resources: Resource[]
   assignments: ResourceAssignment[]
   selectedResourceIds: string[]
@@ -54,6 +57,7 @@ interface GanttProps {
   onHistogramScroll: () => void
   calendarOverlayEnabled: boolean
   onToggleCalendarOverlay: () => void
+  onOpenDelayLog: (delayId: string) => void
   isComputing?: boolean
 }
 
@@ -77,6 +81,8 @@ export function Gantt({
   criticalPath,
   workweek,
   holidays,
+  projectCalendar,
+  delays,
   resources,
   assignments,
   selectedResourceIds,
@@ -97,8 +103,11 @@ export function Gantt({
   onHistogramScroll,
   calendarOverlayEnabled,
   onToggleCalendarOverlay,
+  onOpenDelayLog,
   isComputing = false,
 }: GanttProps) {
+  const [hoveredCalendarEvent, setHoveredCalendarEvent] = useState<CalendarEvent | null>(null)
+  const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null)
   // ── Derived ────────────────────────────────────────────────────────────────
 
   // Build task map for arrows and ghost bars
@@ -140,6 +149,17 @@ export function Gantt({
 
   const totalPx = timeline.totalPx
   const totalHeight = GANTT_HEADER_HEIGHT + visibleRows.length * ROW_HEIGHT
+  const delaysByTaskId = useMemo(() => {
+    const out = new Map<string, Delay[]>()
+    delays.forEach((delay) => {
+      delay.affectedTaskIds.forEach((taskId) => {
+        const current = out.get(taskId) ?? []
+        current.push(delay)
+        out.set(taskId, current)
+      })
+    })
+    return out
+  }, [delays])
 
   // ── Ctrl+Scroll zoom ───────────────────────────────────────────────────────
 
@@ -196,6 +216,24 @@ export function Gantt({
             workweek={workweek}
           />
 
+          {calendarOverlayEnabled && (
+            <CalendarOverlay
+              projectCalendar={projectCalendar}
+              timeline={timeline}
+              dayPx={dayPx}
+              rowCount={visibleRows.length}
+              totalPx={totalPx}
+              onHoverEvent={(event, clientX, clientY) => {
+                setHoveredCalendarEvent(event)
+                if (event && clientX !== undefined && clientY !== undefined) {
+                  setHoverPosition({ x: clientX, y: clientY })
+                } else {
+                  setHoverPosition(null)
+                }
+              }}
+            />
+          )}
+
           {/* Ghost bars layer (behind live bars) */}
           {baselines.length > 0 && (
             <div style={{ position: 'absolute', top: 0, left: 0, width: totalPx, height: totalHeight, pointerEvents: 'none', zIndex: 1 }}>
@@ -236,6 +274,8 @@ export function Gantt({
                   onUpdateTask={onUpdateTask}
                   onSelectTask={onSelectTask}
                   onOpenPanel={onOpenPanel}
+                  delays={delaysByTaskId.get(task.id) ?? []}
+                  onOpenDelay={onOpenDelayLog}
                 />
               )
             })}
@@ -362,6 +402,31 @@ export function Gantt({
             </button>
             )
           })}
+        </div>
+      )}
+
+      {hoveredCalendarEvent && hoverPosition && (
+        <div
+          style={{
+            position: 'fixed',
+            left: hoverPosition.x + 12,
+            top: hoverPosition.y + 12,
+            background: 'var(--surface-overlay)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius)',
+            boxShadow: 'var(--shadow-sm)',
+            padding: '6px 8px',
+            zIndex: 110,
+            pointerEvents: 'none',
+            maxWidth: 260,
+          }}
+        >
+          <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-primary)' }}>
+            {hoveredCalendarEvent.name}
+          </div>
+          <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-secondary)' }}>
+            {hoveredCalendarEvent.classification.replace(/_/g, ' ')}
+          </div>
         </div>
       )}
 
