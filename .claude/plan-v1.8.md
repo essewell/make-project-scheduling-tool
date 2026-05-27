@@ -1310,6 +1310,36 @@ If none of these trigger, the agent proceeds phase by phase without further ping
 - Notes
   - Delay CSV export uses an interim App-level generator for Phase G. Dedicated `generateDelayLogCSV` helper lands in Phase I.
 
+### Phase H — SidePanel delays section and delay-cause attribution
+
+- Scope
+  - Added `SidePanelDelaysSection` and mounted it in `SidePanel` between change-order and dependencies surfaces.
+  - Wired per-task `+ Add delay...` action from side panel into App delay-entry modal flow with seeded affected task selection.
+  - Added `computeVarianceByDelayCause` in `variance.ts` and covered it in unit tests.
+  - Extended executive report data model and builder with `delayCauseAttribution`.
+  - Added `DelayCauseAttribution` component and mounted it in `ExecutiveReportPreview`.
+- Files touched
+  - `src/components/panels/SidePanelDelaysSection.tsx`
+  - `src/components/panels/SidePanel.tsx`
+  - `src/components/variance/DelayCauseAttribution.tsx`
+  - `src/components/reports/ExecutiveReportPreview.tsx`
+  - `src/lib/variance.ts`
+  - `src/lib/reportData.ts`
+  - `src/components/App.tsx`
+  - `src/types/index.ts`
+  - `tests/unit/lib/variance.test.ts`
+  - `tests/unit/lib/reportData.test.ts`
+  - `.claude/AGENT-HANDOFF.md`
+  - `.claude/plan-v1.8.md`
+- Verification
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Notes
+  - Attribution display currently renders from live delay state in report preview while report data also carries the aggregated slice for downstream exports.
+
 ### Phase 0.X — <title>
 
 - Scope

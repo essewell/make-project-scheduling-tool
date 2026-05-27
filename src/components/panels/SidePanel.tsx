@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef, type KeyboardEvent } from 'react'
-import type { Task, Group, Party, Note, Dependency, WorkweekConfig, Resource, ResourceAssignment, ChangeOrder } from '../../types'
+import type { Task, Group, Party, Note, Dependency, WorkweekConfig, Resource, ResourceAssignment, ChangeOrder, Delay } from '../../types'
 import { daysBetween } from '../../lib/dates'
 import { workdays } from '../../lib/workdays'
 import { ActualDatesSection } from './ActualDatesSection'
@@ -7,6 +7,7 @@ import { ResourceAssignmentSection } from './ResourceAssignmentSection'
 import { ChangeOrderSection } from '../changeorder/ChangeOrderSection'
 import { SidePanelWbsBreadcrumb } from '../SidePanelWbsBreadcrumb'
 import { SidePanelActualCostSection } from '../SidePanelActualCostSection'
+import { SidePanelDelaysSection } from './SidePanelDelaysSection'
 import { CalendarBlank, X } from '../../lib/icons'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -21,6 +22,7 @@ interface SidePanelProps {
   resources: Resource[]
   assignments: ResourceAssignment[]
   changeOrders: ChangeOrder[]
+  delays: Delay[]
   workweek: WorkweekConfig
   holidays: string[]
   today: string
@@ -36,6 +38,7 @@ interface SidePanelProps {
   onStartLinkChangeOrder: () => void
   onLinkChangeOrder: (changeOrderId: string, taskId: string) => void
   onUnlinkChangeOrder: (changeOrderId: string, taskId: string) => void
+  onAddDelay: (taskId: string) => void
   mode?: 'desktop' | 'mobile'
 }
 
@@ -128,6 +131,7 @@ export function SidePanel({
   resources,
   assignments,
   changeOrders,
+  delays,
   workweek,
   holidays,
   today: _today,
@@ -143,6 +147,7 @@ export function SidePanel({
   onStartLinkChangeOrder,
   onLinkChangeOrder,
   onUnlinkChangeOrder,
+  onAddDelay,
   mode = 'desktop',
 }: SidePanelProps) {
   const [newNoteText, setNewNoteText] = useState('')
@@ -485,6 +490,12 @@ export function SidePanel({
           onStartLink={onStartLinkChangeOrder}
           onLinkChangeOrder={(changeOrderId) => onLinkChangeOrder(changeOrderId, task.id)}
           onUnlinkChangeOrder={(changeOrderId) => onUnlinkChangeOrder(changeOrderId, task.id)}
+        />
+
+        <SidePanelDelaysSection
+          taskId={task.id}
+          delays={delays}
+          onAddDelay={onAddDelay}
         />
 
         {/* Dependencies preview */}

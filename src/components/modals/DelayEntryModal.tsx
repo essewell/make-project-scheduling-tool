@@ -6,6 +6,7 @@ import { computeDelayDaysImpact, defaultExcusableForDelayType } from '../../lib/
 interface DelayEntryModalProps {
   tasks: Task[]
   initialDelay?: Delay | null
+  initialAffectedTaskIds?: string[]
   onSave: (delay: Delay) => void
   onClose: () => void
 }
@@ -19,7 +20,7 @@ const DELAY_TYPES: DelayType[] = [
   'other',
 ]
 
-export function DelayEntryModal({ tasks, initialDelay, onSave, onClose }: DelayEntryModalProps) {
+export function DelayEntryModal({ tasks, initialDelay, initialAffectedTaskIds, onSave, onClose }: DelayEntryModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
   const descId = useId()
@@ -27,7 +28,7 @@ export function DelayEntryModal({ tasks, initialDelay, onSave, onClose }: DelayE
   const [end, setEnd] = useState(initialDelay?.end ?? '')
   const [type, setType] = useState<DelayType>(initialDelay?.type ?? 'weather')
   const [excusable, setExcusable] = useState<boolean>(initialDelay?.excusable ?? (defaultExcusableForDelayType(initialDelay?.type ?? 'weather') ?? false))
-  const [affectedTaskIds, setAffectedTaskIds] = useState<string[]>(initialDelay?.affectedTaskIds ?? [])
+  const [affectedTaskIds, setAffectedTaskIds] = useState<string[]>(initialDelay?.affectedTaskIds ?? initialAffectedTaskIds ?? [])
   const [responsibleParty, setResponsibleParty] = useState(initialDelay?.responsibleParty ?? '')
   const [narrative, setNarrative] = useState(initialDelay?.narrative ?? '')
 

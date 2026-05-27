@@ -1,5 +1,5 @@
 import { daysBetween } from './dates'
-import type { Baseline, Task, VarianceSnapshot } from '../types'
+import type { Baseline, Delay, DelayType, Task, VarianceSnapshot } from '../types'
 
 function getProjectFinish(tasks: Task[]): string | null {
   if (tasks.length === 0) return null
@@ -45,4 +45,14 @@ export function trimSnapshots(
     if (left.date !== right.date) return left.date.localeCompare(right.date)
     return left.activeBaselineId.localeCompare(right.activeBaselineId)
   })
+}
+
+export function computeVarianceByDelayCause(delays: Delay[]): Array<{ type: DelayType; totalDays: number }> {
+  const byType = new Map<DelayType, number>()
+  delays.forEach((delay) => {
+    byType.set(delay.type, (byType.get(delay.type) ?? 0) + delay.daysImpact)
+  })
+  return [...byType.entries()]
+    .map(([type, totalDays]) => ({ type, totalDays }))
+    .sort((left, right) => right.totalDays - left.totalDays)
 }

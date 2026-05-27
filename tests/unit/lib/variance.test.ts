@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Baseline, Task, VarianceSnapshot } from '../../../src/types'
 import {
   appendVarianceSnapshot,
+  computeVarianceByDelayCause,
   computeProjectFinishVariance,
   trimSnapshots,
 } from '../../../src/lib/variance'
@@ -106,5 +107,54 @@ describe('variance lib', () => {
     expect(baselineTwo).toHaveLength(1)
     expect(baselineOne[0]?.projectFinishVariance).toBe(6)
     expect(baselineOne[364]?.projectFinishVariance).toBe(370)
+  })
+
+  it('computeVarianceByDelayCause aggregates and sorts by total days', () => {
+    const attribution = computeVarianceByDelayCause([
+      {
+        id: 'd1',
+        recordedAt: '2026-01-01T00:00:00.000Z',
+        start: '2026-01-02',
+        end: '2026-01-04',
+        type: 'weather',
+        excusable: true,
+        affectedTaskIds: ['t1'],
+        daysImpact: 3,
+        criticalPathImpactDays: 1,
+        responsibleParty: 'Owner',
+        narrative: 'Rain',
+        reconciliation: 'pending',
+      },
+      {
+        id: 'd2',
+        recordedAt: '2026-01-05T00:00:00.000Z',
+        start: '2026-01-05',
+        end: '2026-01-06',
+        type: 'owner_directive',
+        excusable: true,
+        affectedTaskIds: ['t2'],
+        daysImpact: 2,
+        criticalPathImpactDays: 0,
+        responsibleParty: 'Owner',
+        narrative: 'Directive',
+        reconciliation: 'pending',
+      },
+      {
+        id: 'd3',
+        recordedAt: '2026-01-07T00:00:00.000Z',
+        start: '2026-01-07',
+        end: '2026-01-08',
+        type: 'weather',
+        excusable: true,
+        affectedTaskIds: ['t3'],
+        daysImpact: 2,
+        criticalPathImpactDays: 0,
+        responsibleParty: 'Owner',
+        narrative: 'Snow',
+        reconciliation: 'pending',
+      },
+    ])
+    expect(attribution[0]).toEqual({ type: 'weather', totalDays: 5 })
+    expect(attribution[1]).toEqual({ type: 'owner_directive', totalDays: 2 })
   })
 })

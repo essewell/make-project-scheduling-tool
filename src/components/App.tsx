@@ -131,6 +131,7 @@ export function App() {
   const [delayLogFocusDelayId, setDelayLogFocusDelayId] = useState<string | null>(null)
   const [delayEntryModalOpen, setDelayEntryModalOpen] = useState(false)
   const [editingDelayId, setEditingDelayId] = useState<string | null>(null)
+  const [newDelayTaskSeedIds, setNewDelayTaskSeedIds] = useState<string[]>([])
 
   // ── Hooks ─────────────────────────────────────────────────────────────────
   const today = useMidnightTicker(() => {
@@ -386,8 +387,9 @@ export function App() {
       healthScore: scheduleHealth.score,
       evm: evmResult,
       statusDate: today,
+      delays,
     }),
-    [enrichedTasks, activeBaseline, dcmaAssessment, scheduleHealth.score, evmResult, today],
+    [enrichedTasks, activeBaseline, dcmaAssessment, scheduleHealth.score, evmResult, today, delays],
   )
 
   const weeklyReport = useMemo(
@@ -1165,8 +1167,14 @@ export function App() {
                 onOpenChangeOrders={handleOpenChangeOrders}
                 onStartLinkChangeOrder={() => handleOpenChangeOrders()}
                 onLinkChangeOrder={onLinkChangeOrder}
-                onUnlinkChangeOrder={onUnlinkChangeOrder}
-              />
+              onUnlinkChangeOrder={onUnlinkChangeOrder}
+              delays={delays}
+              onAddDelay={(taskId) => {
+                setNewDelayTaskSeedIds([taskId])
+                setEditingDelayId(null)
+                setDelayEntryModalOpen(true)
+              }}
+            />
             )}
           </div>
         </>
@@ -1213,10 +1221,12 @@ export function App() {
           focusDelayId={delayLogFocusDelayId}
           onOpenNewDelay={() => {
             setEditingDelayId(null)
+            setNewDelayTaskSeedIds([])
             setDelayEntryModalOpen(true)
           }}
           onEditDelay={(delay) => {
             setEditingDelayId(delay.id)
+            setNewDelayTaskSeedIds([])
             setDelayEntryModalOpen(true)
           }}
           onSetReconciliation={handleSetDelayReconciliation}
@@ -1232,10 +1242,12 @@ export function App() {
         <DelayEntryModal
           tasks={enrichedTasks}
           initialDelay={delays.find((delay) => delay.id === editingDelayId) ?? null}
+          initialAffectedTaskIds={newDelayTaskSeedIds}
           onSave={handleSaveDelay}
           onClose={() => {
             setDelayEntryModalOpen(false)
             setEditingDelayId(null)
+            setNewDelayTaskSeedIds([])
           }}
         />
       )}
@@ -1377,6 +1389,7 @@ export function App() {
                 scurve={scurveSeries}
                 hasBaseline={activeBaseline !== null}
                 hasCostData={cashFlowBuckets.some((bucket) => bucket.total > 0)}
+                delays={delays}
                 onExportPdf={handleExportReportPdf}
               />
             )}
@@ -1408,6 +1421,7 @@ export function App() {
             resources={resources}
             assignments={assignments}
             changeOrders={changeOrders}
+            delays={delays}
             workweek={workweek}
             holidays={holidays}
             today={today}
@@ -1423,6 +1437,11 @@ export function App() {
             onStartLinkChangeOrder={() => handleOpenChangeOrders()}
             onLinkChangeOrder={onLinkChangeOrder}
             onUnlinkChangeOrder={onUnlinkChangeOrder}
+            onAddDelay={(taskId) => {
+              setNewDelayTaskSeedIds([taskId])
+              setEditingDelayId(null)
+              setDelayEntryModalOpen(true)
+            }}
             mode="mobile"
           />
         </MobileBottomSheet>

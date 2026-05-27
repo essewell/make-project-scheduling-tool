@@ -229,6 +229,7 @@ export interface ExecutiveReportData {
   topVariances: ExecutiveVarianceItem[]
   topRisks: ExecutiveRiskItem[]
   nextMilestones: ExecutiveMilestoneItem[]
+  delayCauseAttribution: Array<{ type: DelayType; totalDays: number }>
 }
 
 export interface WeeklyReportData {

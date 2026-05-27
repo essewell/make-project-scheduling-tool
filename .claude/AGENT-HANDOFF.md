@@ -1,3 +1,30 @@
+## v1.8 Session Entry (Codex — 2026-05-27, Phase H)
+
+- Phase reached: **Phase H complete** (SidePanel delays + executive delay-cause attribution)
+- Branch: `v1.8` tracking `origin/v1.8`
+- What landed:
+  - Added `SidePanelDelaysSection` and inserted it into `SidePanel` after change-order controls.
+  - Wired side-panel `+ Add delay...` flow to open delay-entry modal with the current task pre-seeded.
+  - Added `computeVarianceByDelayCause` in `variance.ts` and extended unit coverage.
+  - Extended `buildExecutiveReport` output with `delayCauseAttribution`.
+  - Added `DelayCauseAttribution` component and mounted it in `ExecutiveReportPreview`.
+  - Appended Phase H entry in `plan-v1.8.md` §17.
+- Last 3 decisions:
+  - Keep report attribution both in data model and rendered component to support later export/report channels.
+  - Keep side-panel delay entry path callback-driven through App to centralize persistence and impact stamping.
+  - Keep attribution null-safe (`DelayCauseAttribution` returns `null` when no delays).
+- Verification gates:
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Next 2 actions:
+  1. Start Phase I (DCMA-17 + canonical delay CSV helper and panel export wiring).
+  2. Extend DCMA/quality tests and CSV unit coverage for delay-log format.
+
+---
+
 ## v1.8 Session Entry (Codex — 2026-05-27, Phase G)
 
 - Phase reached: **Phase G complete** (calendar + delay modal surfaces and App wiring)

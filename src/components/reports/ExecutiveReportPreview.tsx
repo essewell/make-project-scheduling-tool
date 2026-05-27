@@ -1,16 +1,19 @@
 import type { ExecutiveReportData, SCurveSeries } from '../../types'
 import type { ReactNode } from 'react'
 import { SCurveChart } from './charts/SCurveChart'
+import { DelayCauseAttribution } from '../variance/DelayCauseAttribution'
+import type { Delay } from '../../types'
 
 interface ExecutiveReportPreviewProps {
   report: ExecutiveReportData
   scurve: SCurveSeries
   hasBaseline: boolean
   hasCostData: boolean
+  delays: Delay[]
   onExportPdf: () => void
 }
 
-export function ExecutiveReportPreview({ report, scurve, hasBaseline, hasCostData, onExportPdf }: ExecutiveReportPreviewProps) {
+export function ExecutiveReportPreview({ report, scurve, hasBaseline, hasCostData, delays, onExportPdf }: ExecutiveReportPreviewProps) {
   if (!hasBaseline && !hasCostData) {
     return (
       <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
@@ -71,6 +74,9 @@ export function ExecutiveReportPreview({ report, scurve, hasBaseline, hasCostDat
           </Section>
           <Section title="SPI / CPI">
             {report.spi === null ? 'SPI —' : `SPI ${report.spi.toFixed(2)}`} · {report.cpi === null ? 'CPI —' : `CPI ${report.cpi.toFixed(2)}`}
+          </Section>
+          <Section title="Delay-cause attribution">
+            <DelayCauseAttribution delays={delays} />
           </Section>
         </div>
       </div>

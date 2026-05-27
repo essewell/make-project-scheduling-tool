@@ -9,6 +9,7 @@ import type {
   Task,
 } from '../types'
 import { daysBetween } from './dates'
+import { computeVarianceByDelayCause } from './variance'
 
 export interface ExecutiveReportInput {
   tasks: Task[]
@@ -17,6 +18,7 @@ export interface ExecutiveReportInput {
   healthScore: number
   evm: EVMResult
   statusDate: string
+  delays: import('../types').Delay[]
 }
 
 function buildTopVariances(tasks: Task[], baseline: Baseline | null): ExecutiveVarianceItem[] {
@@ -70,5 +72,6 @@ export function buildExecutiveReport(input: ExecutiveReportInput): ExecutiveRepo
     topVariances: buildTopVariances(input.tasks, input.baseline),
     topRisks: buildTopRisks(input.assessment),
     nextMilestones: buildNextMilestones(input.tasks, input.statusDate),
+    delayCauseAttribution: computeVarianceByDelayCause(input.delays),
   }
 }

@@ -54,6 +54,7 @@ describe('buildExecutiveReport', () => {
       healthScore: 77,
       evm: { pv: 100, ev: 90, ac: 80, spi: 0.9, cpi: 1.12 },
       statusDate: '2026-01-01',
+      delays: [],
     })
     expect(report.topVariances).toHaveLength(3)
     expect(report.topVariances[0]!.taskId).toBe('a')
@@ -76,9 +77,26 @@ describe('buildExecutiveReport', () => {
       healthScore: 70,
       evm: { pv: 0, ev: 0, ac: 0, spi: null, cpi: null },
       statusDate: '2026-01-10',
+      delays: [
+        {
+          id: 'd1',
+          recordedAt: '2026-01-10T00:00:00.000Z',
+          start: '2026-01-10',
+          end: '2026-01-11',
+          type: 'weather',
+          excusable: true,
+          affectedTaskIds: ['m1'],
+          daysImpact: 2,
+          criticalPathImpactDays: 1,
+          responsibleParty: 'Owner',
+          narrative: 'Storm',
+          reconciliation: 'pending',
+        },
+      ],
     })
     expect(report.nextMilestones).toHaveLength(5)
     expect(report.spi).toBeNull()
     expect(report.cpi).toBeNull()
+    expect(report.delayCauseAttribution[0]).toEqual({ type: 'weather', totalDays: 2 })
   })
 })
