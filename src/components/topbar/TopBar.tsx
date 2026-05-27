@@ -44,6 +44,8 @@ interface TopBarProps {
   onOpenGroups: () => void
   onOpenParties: () => void
   onOpenResources: () => void
+  onOpenProjectCalendar: () => void
+  onOpenDelayLog: () => void
   onOpenQuality: () => void
   onOpenChangeOrders: () => void
   onOpenReports: () => void
@@ -97,7 +99,7 @@ export function TopBar({
   zoomIndex, onZoomIn, onZoomOut,
   baselines, activeBaselineId, ghostStyle,
   onCaptureBaseline, onSetActiveBaseline, onDeleteBaseline, onCompareBaselines, onSetGhostStyle,
-  onOpenWorkweek, onOpenGroups, onOpenParties, onOpenResources,
+  onOpenWorkweek, onOpenGroups, onOpenParties, onOpenResources, onOpenProjectCalendar, onOpenDelayLog,
   onOpenQuality, onOpenChangeOrders, onOpenReports,
   onOpenCsvImport, onOpenPrint, onExportCsv,
   baselineMenuOpenSignal,
@@ -315,6 +317,8 @@ export function TopBar({
           <button onClick={() => handleOverflowAction(onOpenParties)} style={OVERFLOW_ITEM} role="menuitem"><UsersThree size={14} weight="regular" aria-hidden="true" />Parties</button>
           <button onClick={() => handleOverflowAction(onOpenResources)} style={OVERFLOW_ITEM} role="menuitem"><Users size={14} weight="regular" aria-hidden="true" />Resources</button>
           <button onClick={() => handleOverflowAction(onOpenChangeOrders)} style={OVERFLOW_ITEM} role="menuitem"><FileText size={14} weight="regular" aria-hidden="true" />Change Orders</button>
+          <button onClick={() => handleOverflowAction(onOpenProjectCalendar)} style={OVERFLOW_ITEM} role="menuitem"><CalendarBlank size={14} weight="regular" aria-hidden="true" />Project Calendar</button>
+          <button onClick={() => handleOverflowAction(onOpenDelayLog)} style={OVERFLOW_ITEM} role="menuitem"><Path size={14} weight="regular" aria-hidden="true" />Delay Log</button>
         </div>
       )}
     </div>

@@ -1,17 +1,27 @@
 import type { Timeline } from '../../types'
 import { getTiersForDayPx } from '../../lib/timeline'
 import { GANTT_HEADER_HEIGHT } from '../../constants'
+import { CalendarToggle } from '../topbar/CalendarToggle'
 
 interface GanttHeaderProps {
   timeline: Timeline
   dayPx: number
   totalPx: number
   overAllocatedOffsets?: Set<number>
+  calendarOverlayEnabled: boolean
+  onToggleCalendarOverlay: () => void
 }
 
 const TIER_H = GANTT_HEADER_HEIGHT / 2  // 32px each
 
-export function GanttHeader({ timeline, dayPx, totalPx, overAllocatedOffsets }: GanttHeaderProps) {
+export function GanttHeader({
+  timeline,
+  dayPx,
+  totalPx,
+  overAllocatedOffsets,
+  calendarOverlayEnabled,
+  onToggleCalendarOverlay,
+}: GanttHeaderProps) {
   const { primary, secondary } = getTiersForDayPx(dayPx)
 
   // ── Primary tier buckets ──────────────────────────────────────────────────
@@ -155,6 +165,20 @@ export function GanttHeader({ timeline, dayPx, totalPx, overAllocatedOffsets }: 
             </div>
           )
         })}
+
+        <div
+          style={{
+            position: 'absolute',
+            right: 8,
+            top: 4,
+            pointerEvents: 'auto',
+          }}
+        >
+          <CalendarToggle
+            enabled={calendarOverlayEnabled}
+            onToggle={onToggleCalendarOverlay}
+          />
+        </div>
       </div>
     </div>
   )

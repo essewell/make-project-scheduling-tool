@@ -86,7 +86,7 @@ export function App() {
   const [isPending, startTransition] = useTransition()
   const [zoomIndex, setZoomIndex] = useState(DEFAULT_ZOOM_INDEX)
   const [showCriticalPath, setShowCriticalPath] = useState(false)
-  const [calendarOverlayEnabled] = useState(false)
+  const [calendarOverlayEnabled, setCalendarOverlayEnabled] = useState(false)
   const [showCostColumn, setShowCostColumn] = useState(false)
   const [completionFlashId, setCompletionFlashId] = useState<string | null>(null)
   const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
@@ -122,8 +122,8 @@ export function App() {
   // ── Mobile tab ────────────────────────────────────────────────────────────────
   const [mobileTab, setMobileTab] = useState<MobileTab>('tasks')
   const [isMobile, setIsMobile] = useState(false)
-  const [projectCalendarManagerOpen] = useState(false)
-  const [delayLogPanelOpen] = useState(false)
+  const [projectCalendarManagerOpen, setProjectCalendarManagerOpen] = useState(false)
+  const [delayLogPanelOpen, setDelayLogPanelOpen] = useState(false)
   const [delayEntryModalOpen] = useState(false)
 
   // ── Hooks ─────────────────────────────────────────────────────────────────
@@ -922,6 +922,8 @@ export function App() {
             onOpenGroups={() => setGroupsManagerOpen(true)}
             onOpenParties={() => setPartiesManagerOpen(true)}
             onOpenResources={() => setResourcesManagerOpen(true)}
+            onOpenProjectCalendar={() => setProjectCalendarManagerOpen(true)}
+            onOpenDelayLog={() => setDelayLogPanelOpen(true)}
             onOpenChangeOrders={() => handleOpenChangeOrders()}
             onOpenQuality={() => setQualityPanelOpen(true)}
             onOpenReports={() => setReportsModalOpen(true)}
@@ -1056,6 +1058,8 @@ export function App() {
               onToggleCompareResourcesMode={() => setCompareResourcesMode((value) => !value)}
               onSelectResource={handleSelectResource}
               onHistogramScroll={handleHistogramScroll}
+              calendarOverlayEnabled={calendarOverlayEnabled}
+              onToggleCalendarOverlay={() => setCalendarOverlayEnabled((value) => !value)}
               isComputing={isPending && enrichedTasks.length > LARGE_TASK_THRESHOLD}
             />
             </div>

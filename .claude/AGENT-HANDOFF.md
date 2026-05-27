@@ -1,3 +1,29 @@
+## v1.8 Session Entry (Codex — 2026-05-27, Phase E)
+
+- Phase reached: **Phase E complete** (TopBar + Gantt header entry points)
+- Branch: `v1.8` tracking `origin/v1.8`
+- What landed:
+  - Added `CalendarToggle` and wired calendar-overlay toggle through `Gantt` -> `GanttHeader`.
+  - Extended TopBar overflow menu actions with `Project Calendar` and `Delay Log`.
+  - Wired App callbacks for opening project calendar manager and delay log surfaces.
+  - Fixed Playwright accessibility selector regression by changing overlay toggle naming to overlay-specific wording.
+  - Appended Phase E entry in `plan-v1.8.md` §17.
+- Last 3 decisions:
+  - Keep Phase E scoped to entry-point wiring only; modal/panel internals remain in later phases.
+  - Avoid broad test selector changes; resolve a11y collision by giving the new overlay toggle a distinct accessible name.
+  - Maintain existing calendar button semantics while introducing overlay controls in Gantt header.
+- Verification gates:
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Next 2 actions:
+  1. Start Phase F (calendar overlay rendering + delay markers in Gantt rows).
+  2. Extend/adjust unit and E2E coverage for overlay visibility and delay marker interactions.
+
+---
+
 ## v1.8 Session Entry (Codex — 2026-05-27, Phase D)
 
 - Phase reached: **Phase D complete** (App state + memo wiring)

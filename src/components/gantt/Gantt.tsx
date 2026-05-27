@@ -52,6 +52,8 @@ interface GanttProps {
   onToggleCompareResourcesMode: () => void
   onSelectResource: (resourceId: string, additive: boolean) => void
   onHistogramScroll: () => void
+  calendarOverlayEnabled: boolean
+  onToggleCalendarOverlay: () => void
   isComputing?: boolean
 }
 
@@ -93,6 +95,8 @@ export function Gantt({
   onToggleCompareResourcesMode,
   onSelectResource,
   onHistogramScroll,
+  calendarOverlayEnabled,
+  onToggleCalendarOverlay,
   isComputing = false,
 }: GanttProps) {
   // ── Derived ────────────────────────────────────────────────────────────────
@@ -177,6 +181,8 @@ export function Gantt({
             dayPx={dayPx}
             totalPx={totalPx}
             overAllocatedOffsets={overAllocatedOffsets}
+            calendarOverlayEnabled={calendarOverlayEnabled}
+            onToggleCalendarOverlay={onToggleCalendarOverlay}
           />
 
           {/* Grid: weekend bands, lines, today, row dividers */}

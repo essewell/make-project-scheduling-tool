@@ -1225,6 +1225,34 @@ If none of these trigger, the agent proceeds phase by phase without further ping
 - Notes
   - This phase intentionally wires state and memo plumbing only; user-facing entry points for calendar/delay modals follow in Phases E–G.
 
+### Phase E — TopBar and Gantt header entry-point wiring
+
+- Scope
+  - Added calendar overlay toggle component and threaded it into Gantt header controls.
+  - Extended `GanttHeader` and `Gantt` props with `calendarOverlayEnabled` and `onToggleCalendarOverlay`.
+  - Extended TopBar overflow actions with:
+    - `onOpenProjectCalendar`
+    - `onOpenDelayLog`
+  - Added overflow menu entries for `Project Calendar` and `Delay Log`.
+  - Wired App callbacks to open calendar manager / delay log and toggle overlay.
+  - Resolved E2E accessibility locator collision by renaming the overlay toggle accessible name to avoid overlap with existing calendar button locators.
+- Files touched
+  - `src/components/topbar/CalendarToggle.tsx`
+  - `src/components/gantt/GanttHeader.tsx`
+  - `src/components/gantt/Gantt.tsx`
+  - `src/components/topbar/TopBar.tsx`
+  - `src/components/App.tsx`
+  - `.claude/AGENT-HANDOFF.md`
+  - `.claude/plan-v1.8.md`
+- Verification
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Notes
+  - Phase E only establishes entry points and state wiring. Calendar manager and delay log UI surfaces continue in later phases.
+
 ### Phase 0.X — <title>
 
 - Scope
