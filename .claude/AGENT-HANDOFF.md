@@ -1,3 +1,31 @@
+## v1.8 Session Entry (Codex — 2026-05-27, Phase G)
+
+- Phase reached: **Phase G complete** (calendar + delay modal surfaces and App wiring)
+- Branch: `v1.8` tracking `origin/v1.8`
+- What landed:
+  - Added `ProjectCalendarManager` modal with add/edit/delete calendar event flows.
+  - Added `DelayLogPanel` with sortable rows, reconciliation updates, expanded narrative rows, and focused-delay scroll behavior.
+  - Added `DelayEntryModal` with delay entry/edit fields and affected-task multi-select.
+  - Wired App handlers for calendar CRUD and delay CRUD/reconciliation + computed CP impact stamping.
+  - Wired `WorkweekModal` with `Project Calendar ->` action that transitions to the calendar manager.
+  - Added interim App-level delay-log CSV export action for panel export button.
+  - Appended Phase G entry in `plan-v1.8.md` §17.
+- Last 3 decisions:
+  - Keep modal scaffolds lean and callback-driven, matching existing modal architecture.
+  - Keep delay impact stamping centralized in App `onSave` path to prevent inconsistent persistence.
+  - Ship CSV export button now with temporary App implementation; move canonical generator into `lib/csv.ts` in Phase I.
+- Verification gates:
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Next 2 actions:
+  1. Start Phase H (`SidePanelDelaysSection` + variance delay-cause attribution in reports).
+  2. Add/update tests for attribution math and report rendering path changes.
+
+---
+
 ## v1.8 Session Entry (Codex — 2026-05-27, Phase F)
 
 - Phase reached: **Phase F complete** (CalendarOverlay + DelayMarkers)

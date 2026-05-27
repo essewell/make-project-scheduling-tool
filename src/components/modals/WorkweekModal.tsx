@@ -8,6 +8,7 @@ interface WorkweekModalProps {
   workweek: WorkweekConfig
   holidays: string[]
   onSave: (workweek: WorkweekConfig, holidays: string[]) => void
+  onOpenProjectCalendar?: () => void
   onClose: () => void
 }
 
@@ -48,7 +49,7 @@ const BOX: React.CSSProperties = {
 
 // ─── WorkweekModal ────────────────────────────────────────────────────────────
 
-export function WorkweekModal({ workweek, holidays, onSave, onClose }: WorkweekModalProps) {
+export function WorkweekModal({ workweek, holidays, onSave, onOpenProjectCalendar, onClose }: WorkweekModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
   const descId = useId()
@@ -206,12 +207,22 @@ export function WorkweekModal({ workweek, holidays, onSave, onClose }: WorkweekM
 
         {/* Footer */}
         <div style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-          <button
-            onClick={onClose}
-            style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
-          >
-            Cancel
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {onOpenProjectCalendar && (
+              <button
+                onClick={onOpenProjectCalendar}
+                style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
+              >
+                Project Calendar →
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+          </div>
           <button
             onClick={() => { onSave(ww, hols); onClose() }}
             style={{ height: 30, padding: '0 14px', borderRadius: 'var(--radius)', border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', cursor: 'pointer' }}

@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef, useTransition } from 'react'
-import type { DelayType, PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline, ResourceAssignment } from '../types'
+import type { Delay, DelayType, PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline, ResourceAssignment } from '../types'
 import { loadState, saveState } from '../lib/storage'
 import { refreshAutoProgress } from '../lib/progress'
 import { computeCriticalPath } from '../lib/cpm'
@@ -20,6 +20,7 @@ import { computeTotalActualCost } from '../lib/actualCost'
 import { computeGroupRollup } from '../lib/rollups'
 import { getDescendantTaskIds, walkGroupTree } from '../lib/wbs'
 import { computeDelayImpact } from '../lib/delayImpact'
+import { computeDelayDaysImpact } from '../lib/delays'
 import { linkChangeOrderToTask, unlinkChangeOrderFromTask } from '../lib/changeOrders'
 import { findBaselineById } from '../lib/baselines'
 import { appendVarianceSnapshot, computeProjectFinishVariance, trimSnapshots } from '../lib/variance'
@@ -42,6 +43,9 @@ import type { MobileTab } from './mobile/MobileTabSwitcher'
 import { MobileBottomSheet } from './mobile/MobileBottomSheet'
 import { LinkBuilderModal } from './modals/LinkBuilderModal'
 import { WorkweekModal } from './modals/WorkweekModal'
+import { ProjectCalendarManager } from './modals/ProjectCalendarManager'
+import { DelayLogPanel } from './modals/DelayLogPanel'
+import { DelayEntryModal } from './modals/DelayEntryModal'
 import { GroupsManager } from './modals/GroupsManager'
 import { PartiesManager } from './modals/PartiesManager'
 import { ResourcesManager } from './modals/ResourcesManager'
@@ -125,7 +129,8 @@ export function App() {
   const [projectCalendarManagerOpen, setProjectCalendarManagerOpen] = useState(false)
   const [delayLogPanelOpen, setDelayLogPanelOpen] = useState(false)
   const [delayLogFocusDelayId, setDelayLogFocusDelayId] = useState<string | null>(null)
-  const [delayEntryModalOpen] = useState(false)
+  const [delayEntryModalOpen, setDelayEntryModalOpen] = useState(false)
+  const [editingDelayId, setEditingDelayId] = useState<string | null>(null)
 
   // ── Hooks ─────────────────────────────────────────────────────────────────
   const today = useMidnightTicker(() => {
@@ -595,6 +600,68 @@ export function App() {
       return { ...prev, collapsedGroups: collapsed }
     })
   }, [])
+
+  const handleAddCalendarEvent = useCallback((event: PersistedState['projectCalendar'][number]) => {
+    setState((prev) => ({ ...prev, projectCalendar: [...prev.projectCalendar, event] }))
+  }, [])
+
+  const handleUpdateCalendarEvent = useCallback((eventId: string, patch: Partial<PersistedState['projectCalendar'][number]>) => {
+    setState((prev) => ({
+      ...prev,
+      projectCalendar: prev.projectCalendar.map((event) => event.id === eventId ? { ...event, ...patch } : event),
+    }))
+  }, [])
+
+  const handleDeleteCalendarEvent = useCallback((eventId: string) => {
+    setState((prev) => ({ ...prev, projectCalendar: prev.projectCalendar.filter((event) => event.id !== eventId) }))
+  }, [])
+
+  const handleSaveDelay = useCallback((delay: Delay) => {
+    const impact = computeDelayImpact(delay, enrichedTasks, dependencies, qualityCpm)
+    const resolvedDelay: Delay = {
+      ...delay,
+      daysImpact: computeDelayDaysImpact(delay.start, delay.end),
+      criticalPathImpactDays: impact.criticalPathImpactDays,
+    }
+    setState((prev) => {
+      const existingIndex = prev.delays.findIndex((item) => item.id === resolvedDelay.id)
+      if (existingIndex === -1) return { ...prev, delays: [...prev.delays, resolvedDelay] }
+      const next = [...prev.delays]
+      next[existingIndex] = resolvedDelay
+      return { ...prev, delays: next }
+    })
+    setDelayEntryModalOpen(false)
+    setEditingDelayId(null)
+  }, [dependencies, enrichedTasks, qualityCpm])
+
+  const handleSetDelayReconciliation = useCallback((delayId: string, reconciliation: Delay['reconciliation']) => {
+    setState((prev) => ({
+      ...prev,
+      delays: prev.delays.map((delay) => delay.id === delayId ? { ...delay, reconciliation } : delay),
+    }))
+  }, [])
+
+  const handleExportDelayCsv = useCallback(() => {
+    const header = ['Delay ID', 'Recorded At', 'Start', 'End', 'Type', 'Excusable', 'Affected Task IDs', 'Days Impact', 'CP Impact Days', 'Responsible Party', 'Reconciliation', 'Narrative']
+    const rows = delays.map((delay) => [
+      delay.id,
+      delay.recordedAt,
+      delay.start,
+      delay.end,
+      delay.type,
+      delay.excusable ? 'yes' : 'no',
+      delay.affectedTaskIds.join('|'),
+      String(delay.daysImpact),
+      String(delay.criticalPathImpactDays),
+      delay.responsibleParty,
+      delay.reconciliation,
+      delay.narrative,
+    ])
+    const csv = [header, ...rows]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))
+      .join('\r\n')
+    triggerCSVDownload(csv, `${projectName || 'schedule'}-delay-log.csv`)
+  }, [delays, projectName])
 
   // ── Zoom ─────────────────────────────────────────────────────────────────
 
@@ -1122,7 +1189,54 @@ export function App() {
           workweek={workweek}
           holidays={holidays}
           onSave={(ww, hols) => updateState({ workweek: ww, holidays: hols })}
+          onOpenProjectCalendar={() => {
+            setWorkweekModalOpen(false)
+            setProjectCalendarManagerOpen(true)
+          }}
           onClose={() => setWorkweekModalOpen(false)}
+        />
+      )}
+
+      {projectCalendarManagerOpen && (
+        <ProjectCalendarManager
+          events={projectCalendar}
+          onAddEvent={handleAddCalendarEvent}
+          onUpdateEvent={handleUpdateCalendarEvent}
+          onDeleteEvent={handleDeleteCalendarEvent}
+          onClose={() => setProjectCalendarManagerOpen(false)}
+        />
+      )}
+
+      {delayLogPanelOpen && (
+        <DelayLogPanel
+          delays={delays}
+          focusDelayId={delayLogFocusDelayId}
+          onOpenNewDelay={() => {
+            setEditingDelayId(null)
+            setDelayEntryModalOpen(true)
+          }}
+          onEditDelay={(delay) => {
+            setEditingDelayId(delay.id)
+            setDelayEntryModalOpen(true)
+          }}
+          onSetReconciliation={handleSetDelayReconciliation}
+          onExportCsv={handleExportDelayCsv}
+          onClose={() => {
+            setDelayLogPanelOpen(false)
+            setDelayLogFocusDelayId(null)
+          }}
+        />
+      )}
+
+      {delayEntryModalOpen && (
+        <DelayEntryModal
+          tasks={enrichedTasks}
+          initialDelay={delays.find((delay) => delay.id === editingDelayId) ?? null}
+          onSave={handleSaveDelay}
+          onClose={() => {
+            setDelayEntryModalOpen(false)
+            setEditingDelayId(null)
+          }}
         />
       )}
 

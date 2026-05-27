@@ -1280,6 +1280,36 @@ If none of these trigger, the agent proceeds phase by phase without further ping
 - Notes
   - Delay marker click currently sets focus state + opens the delay log surface; the actual panel scroll-to-focus behavior lands with Phase G panel implementation.
 
+### Phase G — ProjectCalendarManager + DelayLogPanel + DelayEntryModal wiring
+
+- Scope
+  - Added `ProjectCalendarManager` modal scaffold with add/edit/delete event flows.
+  - Added `DelayLogPanel` modal scaffold with sorting, reconciliation pills, narrative expand rows, and CSV export action.
+  - Added `DelayEntryModal` scaffold with date/type/excusable/task-picker/narrative fields.
+  - Wired App callbacks for:
+    - calendar add/update/delete
+    - delay add/edit (with `computeDelayImpact` + recomputed `criticalPathImpactDays`)
+    - delay reconciliation updates
+    - delay CSV export trigger
+  - Wired marker-driven focused delay path into `DelayLogPanel` scroll/highlight behavior.
+  - Extended `WorkweekModal` with `Project Calendar ->` entry action to open calendar manager directly.
+- Files touched
+  - `src/components/modals/ProjectCalendarManager.tsx`
+  - `src/components/modals/DelayLogPanel.tsx`
+  - `src/components/modals/DelayEntryModal.tsx`
+  - `src/components/modals/WorkweekModal.tsx`
+  - `src/components/App.tsx`
+  - `.claude/AGENT-HANDOFF.md`
+  - `.claude/plan-v1.8.md`
+- Verification
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Notes
+  - Delay CSV export uses an interim App-level generator for Phase G. Dedicated `generateDelayLogCSV` helper lands in Phase I.
+
 ### Phase 0.X — <title>
 
 - Scope
