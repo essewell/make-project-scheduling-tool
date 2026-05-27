@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef, useTransition } from 'react'
-import type { PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline, ResourceAssignment } from '../types'
+import type { DelayType, PersistedState, Task, FilterState, OnboardingPhase, GhostStyle, Note, Baseline, ResourceAssignment } from '../types'
 import { loadState, saveState } from '../lib/storage'
 import { refreshAutoProgress } from '../lib/progress'
 import { computeCriticalPath } from '../lib/cpm'
@@ -19,6 +19,7 @@ import { buildWeeklyReport } from '../lib/weeklyReport'
 import { computeTotalActualCost } from '../lib/actualCost'
 import { computeGroupRollup } from '../lib/rollups'
 import { getDescendantTaskIds, walkGroupTree } from '../lib/wbs'
+import { computeDelayImpact } from '../lib/delayImpact'
 import { linkChangeOrderToTask, unlinkChangeOrderFromTask } from '../lib/changeOrders'
 import { findBaselineById } from '../lib/baselines'
 import { appendVarianceSnapshot, computeProjectFinishVariance, trimSnapshots } from '../lib/variance'
@@ -72,7 +73,8 @@ export function App() {
   const [state, setState] = useState<PersistedState>(INITIAL_STATE)
   const { tasks, groups, parties, dependencies, notes, collapsedGroups,
           workweek, holidays, onboardingPhase,
-          projectName, baselines, ghostStyle, assignments, changeOrders, varianceSnapshots } = state
+          projectName, baselines, ghostStyle, assignments, changeOrders, varianceSnapshots,
+          projectCalendar, delays } = state
   const resources = state.resources
 
   // ── Transient UI state ────────────────────────────────────────────────────
@@ -84,6 +86,7 @@ export function App() {
   const [isPending, startTransition] = useTransition()
   const [zoomIndex, setZoomIndex] = useState(DEFAULT_ZOOM_INDEX)
   const [showCriticalPath, setShowCriticalPath] = useState(false)
+  const [calendarOverlayEnabled] = useState(false)
   const [showCostColumn, setShowCostColumn] = useState(false)
   const [completionFlashId, setCompletionFlashId] = useState<string | null>(null)
   const [activeBaselineId, setActiveBaselineId] = useState<string | null>(null)
@@ -119,6 +122,9 @@ export function App() {
   // ── Mobile tab ────────────────────────────────────────────────────────────────
   const [mobileTab, setMobileTab] = useState<MobileTab>('tasks')
   const [isMobile, setIsMobile] = useState(false)
+  const [projectCalendarManagerOpen] = useState(false)
+  const [delayLogPanelOpen] = useState(false)
+  const [delayEntryModalOpen] = useState(false)
 
   // ── Hooks ─────────────────────────────────────────────────────────────────
   const today = useMidnightTicker(() => {
@@ -145,8 +151,8 @@ export function App() {
   // ── Derived / memoized ────────────────────────────────────────────────────
 
   const enrichedTasks = useMemo(
-    () => refreshAutoProgress(tasks, workweek, holidays, today),
-    [tasks, workweek, holidays, today],
+    () => refreshAutoProgress(tasks, workweek, holidays, today, projectCalendar),
+    [tasks, workweek, holidays, today, projectCalendar],
   )
 
   const filteredTasks = useMemo(() => {
@@ -231,13 +237,30 @@ export function App() {
 
   const criticalPath = useMemo(() => {
     if (!showCriticalPath || !hasDeps) return null
-    return computeCriticalPath(enrichedTasks, dependencies)
-  }, [showCriticalPath, hasDeps, enrichedTasks, dependencies])
+    return computeCriticalPath(enrichedTasks, dependencies, projectCalendar)
+  }, [showCriticalPath, hasDeps, enrichedTasks, dependencies, projectCalendar])
 
   const qualityCpm = useMemo(() => {
     if (!hasDeps) return null
-    return computeCriticalPath(enrichedTasks, dependencies)
-  }, [hasDeps, enrichedTasks, dependencies])
+    return computeCriticalPath(enrichedTasks, dependencies, projectCalendar)
+  }, [hasDeps, enrichedTasks, dependencies, projectCalendar])
+
+  const _delayImpactByDelayId = useMemo(() => {
+    const out = new Map<string, ReturnType<typeof computeDelayImpact>>()
+    delays.forEach((delay) => {
+      out.set(delay.id, computeDelayImpact(delay, enrichedTasks, dependencies, qualityCpm))
+    })
+    return out
+  }, [delays, enrichedTasks, dependencies, qualityCpm])
+
+  const _varianceByDelayCause = useMemo(() => {
+    const out = new Map<DelayType, number>()
+    delays.forEach((delay) => {
+      const current = out.get(delay.type) ?? 0
+      out.set(delay.type, current + delay.daysImpact)
+    })
+    return out
+  }, [delays])
 
   const taskCosts = useMemo(
     () =>
@@ -859,7 +882,16 @@ export function App() {
   }, [])
 
   return (
-    <div className="app" data-phase={onboardingPhase}>
+    <div
+      className="app"
+      data-phase={onboardingPhase}
+      data-calendar-overlay={calendarOverlayEnabled ? 'on' : 'off'}
+      data-calendar-manager-open={projectCalendarManagerOpen ? 'true' : 'false'}
+      data-delay-log-open={delayLogPanelOpen ? 'true' : 'false'}
+      data-delay-entry-open={delayEntryModalOpen ? 'true' : 'false'}
+      data-delay-impact-count={_delayImpactByDelayId.size}
+      data-delay-cause-count={_varianceByDelayCause.size}
+    >
       {showWizard && (
         <SetupWizard
           projectName={projectName}

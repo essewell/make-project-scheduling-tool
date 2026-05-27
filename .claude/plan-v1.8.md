@@ -1200,6 +1200,31 @@ If none of these trigger, the agent proceeds phase by phase without further ping
 - Notes
   - Call-site wiring in `App.tsx` is intentionally deferred to Phase D per plan sequencing.
 
+### Phase D — App wiring for calendar and delay state surfaces
+
+- Scope
+  - Threaded `projectCalendar` and `delays` from persisted state into `App.tsx` derived logic.
+  - Updated auto-progress derivation to pass `projectCalendar` into `refreshAutoProgress`.
+  - Updated both CPM memo call sites to pass `projectCalendar` and include it in dependency lists.
+  - Added transient UI state placeholders for calendar/delay surfaces (`calendarOverlayEnabled`, calendar manager, delay log, delay entry).
+  - Added memoized delay-derived structures:
+    - `delayImpactByDelayId` map via `computeDelayImpact`
+    - `varianceByDelayCause` map by `DelayType`
+  - Exposed phase-D transient/memo values on root `data-*` attrs for continuity and later-phase wiring.
+- Files touched
+  - `src/components/App.tsx`
+  - `src/lib/progress.ts`
+  - `.claude/AGENT-HANDOFF.md`
+  - `.claude/plan-v1.8.md`
+- Verification
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Notes
+  - This phase intentionally wires state and memo plumbing only; user-facing entry points for calendar/delay modals follow in Phases E–G.
+
 ### Phase 0.X — <title>
 
 - Scope

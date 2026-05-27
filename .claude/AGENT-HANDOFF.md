@@ -1,3 +1,30 @@
+## v1.8 Session Entry (Codex — 2026-05-27, Phase D)
+
+- Phase reached: **Phase D complete** (App state + memo wiring)
+- Branch: `v1.8` tracking `origin/v1.8`
+- What landed:
+  - App now reads `projectCalendar` and `delays` from persisted state.
+  - App auto-progress memo now passes `projectCalendar` through `refreshAutoProgress`.
+  - App CPM memos now pass `projectCalendar` and include it in dependency arrays.
+  - Added phase-scaffold transient state for calendar overlay / calendar manager / delay log / delay entry.
+  - Added memoized `delayImpactByDelayId` and `varianceByDelayCause` maps.
+  - Updated root app `data-*` attributes to surface phase-D state for downstream phase wiring.
+  - Appended Phase D entry in `plan-v1.8.md` §17.
+- Last 3 decisions:
+  - Keep D-phase UI state scaffolded but not user-triggered yet (entry points come in E/G).
+  - Preserve back-compat by keeping new progress/calendar args optional with defaults.
+  - Keep delay-derived maps local in App for reuse by SidePanel/report phases.
+- Verification gates:
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Next 2 actions:
+  1. Begin Phase E (TopBar + Gantt header controls for calendar surfaces).
+  2. Wire calendar/delay open actions into overflow and modal orchestration paths.
+
+---
 ## v1.8 Session Entry (Codex — 2026-05-27, Phase C)
 
 - Phase reached: **Phase C complete** (calendar-aware workday/CPM foundation)
@@ -196,6 +223,7 @@ Both tags are documented in `docs/release-tags-audit.md` (created by Codex in Ph
 ## Post-v1.8 Lane Switch
 
 After Phase M.9 lands, lane switches back to **Claude** for **PM Audit Checkpoint 3** — the post-v1.8 single-user maturity gate (last checkpoint before v1.9 data-integration architectural shift and v2.0 cloud / multi-user architectural shift). Audit uses `pm-audit-template.md` and produces `pm-audit-v5.md`. If audit passes ≥8.0/10, Claude authors `plan-v1.9.md` (Data integration & portability).
+
 
 
 

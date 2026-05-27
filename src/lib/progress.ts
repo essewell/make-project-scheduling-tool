@@ -1,4 +1,4 @@
-import type { Task, TaskStatus, WorkweekConfig } from '../types'
+import type { CalendarEvent, Task, TaskStatus, WorkweekConfig } from '../types'
 import { todayStr, daysBetween } from './dates'
 import { workdayRatio } from './workdays'
 
@@ -17,6 +17,7 @@ export function computeAutoStatus(
   today: string,
   workweek: WorkweekConfig,
   holidays: string[],
+  projectCalendar: CalendarEvent[] = [],
 ): { status: TaskStatus; pct: number } {
   // actualFinish overrides everything
   if (task.actualFinish) {
@@ -33,7 +34,7 @@ export function computeAutoStatus(
   } else if (today >= task.e) {
     autoPct = 100
   } else {
-    autoPct = Math.round(workdayRatio(task.s, task.e, today, workweek, holidays) * 100)
+    autoPct = Math.round(workdayRatio(task.s, task.e, today, workweek, holidays, projectCalendar) * 100)
   }
 
   const pct = manualPct !== null ? manualPct : autoPct
@@ -68,6 +69,7 @@ export function enrichTask(
   today: string,
   workweek: WorkweekConfig,
   holidays: string[],
+  projectCalendar: CalendarEvent[] = [],
 ): Task {
   // If actualFinish set, lock completion (also sets manual flags)
   if (task.actualFinish) {
@@ -78,7 +80,7 @@ export function enrichTask(
     return task  // nothing to compute
   }
 
-  const { status, pct } = computeAutoStatus(task, today, workweek, holidays)
+  const { status, pct } = computeAutoStatus(task, today, workweek, holidays, projectCalendar)
   if (status === task.status && pct === task.pct) return task
   return { ...task, status, pct }
 }
@@ -91,13 +93,13 @@ export function refreshAutoProgress(
   workweek: WorkweekConfig,
   holidays: string[],
   today = todayStr(),
+  projectCalendar: CalendarEvent[] = [],
 ): Task[] {
   let changed = false
   const next = tasks.map(task => {
-    const enriched = enrichTask(task, today, workweek, holidays)
+    const enriched = enrichTask(task, today, workweek, holidays, projectCalendar)
     if (enriched !== task) changed = true
     return enriched
   })
   return changed ? next : tasks
 }
-
