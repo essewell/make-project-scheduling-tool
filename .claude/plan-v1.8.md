@@ -1153,6 +1153,26 @@ If none of these trigger, the agent proceeds phase by phase without further ping
   - Unit test failures initially surfaced due hardcoded schema-version assertions (`4`); updated to assert against `PERSISTED_SCHEMA_VERSION`.
   - Phase A is intentionally pure-library and schema-surface only; UI wiring and migration-deep behavior continue in Phase B onward.
 
+### Phase B — Schema migration hardening (v4 to v5)
+
+- Scope
+  - Added explicit migration test coverage for v4 payload behavior into v5 schema.
+  - Verified additive defaults are applied for `projectCalendar` and `delays` on v4 load.
+  - Added v4 round-trip assertion (`v4 -> v5 -> v5`) to guarantee no non-additive field drift.
+  - Added v1.7-like fixture migration assertion to confirm legacy fields remain intact while new arrays are added.
+- Files touched
+  - `tests/unit/lib/storage.test.ts`
+  - `.claude/AGENT-HANDOFF.md`
+  - `.claude/plan-v1.8.md`
+- Verification
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Notes
+  - Migration logic itself already satisfied B.1 from prior slice; this phase focused on B.2 round-trip and fixture-proof validation depth.
+
 ### Phase 0.X — <title>
 
 - Scope

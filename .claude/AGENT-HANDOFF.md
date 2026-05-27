@@ -1,3 +1,28 @@
+## v1.8 Session Entry (Codex — 2026-05-27, Phase B)
+
+- Phase reached: **Phase B complete** (migration hardening + round-trip guarantees)
+- Branch: `v1.8` tracking `origin/v1.8`
+- What landed:
+  - Extended storage migration tests for schema `4 -> 5` additive behavior.
+  - Added explicit assertions that migrated v4 payloads receive `projectCalendar = []` and `delays = []`.
+  - Added `v4 -> v5 -> v5` round-trip no-drift test.
+  - Added v1.7-like fixture migration test ensuring legacy fields remain unchanged beyond additive defaults.
+  - Appended Phase B entry in `plan-v1.8.md` §17.
+- Last 3 decisions:
+  - Treat B.1 as already satisfied by existing `storage.ts` v4-guard logic.
+  - Use fixture-driven tests (not synthetic minimal only) to prevent hidden drift risks (S4 guard).
+  - Keep phase scope to migration integrity only before moving to Phase C.
+- Verification gates:
+  - `npm run lint` ✅
+  - `npm run type-check` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+  - `npm run test:e2e` ✅
+- Next 2 actions:
+  1. Start Phase C calendar-aware workday + CPM integration and parity test (`projectCalendar = []` no-op).
+  2. Extend `workdays`/CPM unit suites for non-work event handling and baseline-equivalence guard.
+
+---
 ## v1.8 Session Entry (Codex — 2026-05-27, Phase A)
 
 - Phase reached: **Phase A complete** (A.1, A.2, A.4, A.6, A.8)
@@ -145,5 +170,6 @@ Both tags are documented in `docs/release-tags-audit.md` (created by Codex in Ph
 ## Post-v1.8 Lane Switch
 
 After Phase M.9 lands, lane switches back to **Claude** for **PM Audit Checkpoint 3** — the post-v1.8 single-user maturity gate (last checkpoint before v1.9 data-integration architectural shift and v2.0 cloud / multi-user architectural shift). Audit uses `pm-audit-template.md` and produces `pm-audit-v5.md`. If audit passes ≥8.0/10, Claude authors `plan-v1.9.md` (Data integration & portability).
+
 
 

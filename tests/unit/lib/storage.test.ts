@@ -382,4 +382,102 @@ describe('loadState — v0 migration', () => {
     // Should deduplicate to one edge
     expect(loadState().dependencies).toHaveLength(1)
   })
+
+  it('migrates a v4 payload by adding empty projectCalendar and delays arrays', () => {
+    const v4 = {
+      persistedSchemaVersion: 4,
+      projectName: 'v4 payload',
+      tasks: [{ ...makeMinimalTask('t1'), group: 'g1', wbsCode: '1.1', actualCost: 250 }],
+      groups: [{ id: 'g1', name: 'Group 1', color: '#1c3048', parentId: null, wbsCode: '1' }],
+      parties: [],
+      notes: [],
+      dependencies: [],
+      collapsedGroups: [],
+      baselines: [],
+      workweek: DEFAULT_WORKWEEK,
+      holidays: [],
+      onboardingPhase: 'complete',
+      ghostStyle: 'stripe',
+      resources: [],
+      assignments: [],
+      changeOrders: [],
+      varianceSnapshots: [],
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v4))
+    const loaded = loadState()
+
+    expect(loaded.persistedSchemaVersion).toBe(PERSISTED_SCHEMA_VERSION)
+    expect(loaded.projectCalendar).toEqual([])
+    expect(loaded.delays).toEqual([])
+    expect(loaded.tasks[0]?.actualCost).toBe(250)
+    expect(loaded.tasks[0]?.wbsCode).toBe('1.1')
+    expect(loaded.groups[0]?.wbsCode).toBe('1')
+  })
+
+  it('v4 -> v5 -> v5 round-trip keeps non-additive fields unchanged', () => {
+    const v4 = {
+      persistedSchemaVersion: 4,
+      projectName: 'round-trip-v4',
+      tasks: [{ ...makeMinimalTask('t1'), group: 'g1', wbsCode: '1.1', actualCost: 420 }],
+      groups: [{ id: 'g1', name: 'Group 1', color: '#1c3048', parentId: null, wbsCode: '1' }],
+      parties: [],
+      notes: [],
+      dependencies: [{ fromId: 'a', toId: 'b', type: 'FS', lag: 0 }],
+      collapsedGroups: ['g1'],
+      baselines: [],
+      workweek: { ...DEFAULT_WORKWEEK, sat: true },
+      holidays: ['2026-12-25'],
+      onboardingPhase: 'complete',
+      ghostStyle: 'solid',
+      resources: [],
+      assignments: [],
+      changeOrders: [],
+      varianceSnapshots: [],
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v4))
+    const firstLoad = loadState()
+    saveState(firstLoad)
+    const secondLoad = loadState()
+
+    expect(secondLoad).toEqual(firstLoad)
+  })
+
+  it('migrates v1.7-like fixture without mutating legacy fields beyond additive defaults', () => {
+    const v17Fixture = {
+      persistedSchemaVersion: 4,
+      projectName: 'v1.7 fixture',
+      tasks: [
+        { ...makeMinimalTask('t1'), group: 'g1', wbsCode: '1.1', actualCost: 1000, status: 'in_progress', pct: 40 },
+        { ...makeMinimalTask('t2'), group: 'g1', wbsCode: '1.2', actualCost: 0, status: 'not_started', pct: 0 },
+      ],
+      groups: [{ id: 'g1', name: 'Structural', color: '#1c3048', parentId: null, wbsCode: '1' }],
+      parties: [{ id: 'p1', name: 'Owner', abbr: 'OWN', color: '#123456' }],
+      notes: [{ id: 'n1', taskId: 't1', text: 'Note', when: '2026-05-20T00:00:00.000Z' }],
+      dependencies: [{ fromId: 't1', toId: 't2', type: 'FS', lag: 0 }],
+      collapsedGroups: [],
+      baselines: [],
+      workweek: DEFAULT_WORKWEEK,
+      holidays: [],
+      onboardingPhase: 'complete',
+      ghostStyle: 'stripe',
+      resources: [],
+      assignments: [],
+      changeOrders: [],
+      varianceSnapshots: [],
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v17Fixture))
+    const loaded = loadState()
+
+    expect(loaded.persistedSchemaVersion).toBe(PERSISTED_SCHEMA_VERSION)
+    expect(loaded.projectName).toBe(v17Fixture.projectName)
+    expect(loaded.tasks.map((task) => task.id)).toEqual(['t1', 't2'])
+    expect(loaded.tasks[0]?.actualCost).toBe(1000)
+    expect(loaded.tasks[0]?.status).toBe('in_progress')
+    expect(loaded.dependencies).toEqual(v17Fixture.dependencies)
+    expect(loaded.projectCalendar).toEqual([])
+    expect(loaded.delays).toEqual([])
+  })
 })
